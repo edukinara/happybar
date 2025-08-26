@@ -1,0 +1,527 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-primary-foreground: var(--accent-primary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* Happy Bar Brand Colors - Purple & Amber Theme */
+  --background: oklch(0.99 0.01 270); /* Subtle purple tint */
+  --foreground: oklch(0.145 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* Primary - Purple */
+  --primary: oklch(0.5 0.3 290); /* Purple #8B5CF6 */
+  --primary-foreground: oklch(0.985 0 0);
+
+  /* Secondary - Amber */
+  --secondary: oklch(0.7 0.2 85); /* Amber #F59E0B */
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.97 0.01 270); /* Light purple tint */
+  --muted-foreground: oklch(0.456 0.05 270);
+
+  /* --accent: oklch(0.75 0.15 85);
+  --accent-foreground: oklch(0.145 0 0); */
+  --accent: oklch(0.89 0.05 293);
+  --accent-foreground: oklch(0.145 0 0);
+  --accent-primary: oklch(0.89 0.05 293);
+  --accent-primary-foreground: oklch(0.145 0 0);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.92 0.01 270); /* Purple tinted border */
+  --input: oklch(0.92 0.01 270);
+  --ring: oklch(0.5 0.3 290); /* Purple ring */
+
+  /* Charts - Purple to Amber gradient */
+  --chart-1: oklch(0.5 0.3 290); /* Purple */
+  --chart-2: oklch(0.55 0.25 310); /* Purple-Pink */
+  --chart-3: oklch(0.65 0.2 70); /* Orange */
+  --chart-4: oklch(0.7 0.2 85); /* Amber */
+  --chart-5: oklch(0.75 0.15 95); /* Yellow */
+
+  --warning: oklch(0.769 0.188 70.08);
+
+  /* Sidebar - Purple theme */
+  --sidebar: oklch(0.985 0.01 270);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.5 0.3 290);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0.01 270);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.92 0.01 270);
+  --sidebar-ring: oklch(0.5 0.3 290);
+
+  /* Brand Colors RGB (for gradients) */
+  --brand-primary-rgb: 139 92 246; /* #8B5CF6 Purple */
+  --brand-primary-dark-rgb: 124 58 237; /* #7C3AED */
+  --brand-primary-light-rgb: 167 139 250; /* #A78BFA */
+
+  --brand-accent-rgb: 245 158 11; /* #F59E0B Amber */
+  --brand-accent-dark-rgb: 217 119 6; /* #D97706 */
+  --brand-accent-light-rgb: 252 211 77; /* #FCD34D */
+}
+
+.dark {
+  --background: oklch(0.12 0.01 290); /* Dark with purple tint */
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.16 0.01 290);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.16 0.01 290);
+  --popover-foreground: oklch(0.985 0 0);
+
+  /* Primary - Purple (lighter in dark mode) */
+  --primary: oklch(0.65 0.25 290); /* Brighter purple */
+  --primary-foreground: oklch(0.145 0 0);
+
+  /* Secondary - Amber (adjusted for dark) */
+  --secondary: oklch(0.75 0.2 85); /* Bright amber */
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.25 0.01 290);
+  --muted-foreground: oklch(0.65 0.03 290);
+
+  /* --accent: oklch(0.75 0.15 85);
+  --accent-foreground: oklch(0.145 0 0); */
+  --accent: oklch(0.89 0.05 293);
+  --accent-foreground: oklch(0.145 0 0);
+  --accent-primary: oklch(0.89 0.05 293);
+  --accent-primary-foreground: oklch(0.145 0 0);
+
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.25 0.01 290 / 50%);
+  --input: oklch(0.25 0.01 290 / 70%);
+  --ring: oklch(0.65 0.25 290);
+
+  /* Charts - Purple to Amber gradient (brighter for dark) */
+  --chart-1: oklch(0.65 0.25 290); /* Purple */
+  --chart-2: oklch(0.7 0.2 310); /* Purple-Pink */
+  --chart-3: oklch(0.75 0.18 70); /* Orange */
+  --chart-4: oklch(0.8 0.15 85); /* Amber */
+  --chart-5: oklch(0.85 0.12 95); /* Yellow */
+
+  /* Sidebar - Dark purple theme */
+  --sidebar: oklch(0.14 0.01 290);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.65 0.25 290);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.2 0.01 290);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.25 0.01 290 / 50%);
+  --sidebar-ring: oklch(0.65 0.25 290);
+
+  /* Brand Colors RGB (same for gradients) */
+  --brand-primary-rgb: 139 92 246;
+  --brand-primary-dark-rgb: 124 58 237;
+  --brand-primary-light-rgb: 167 139 250;
+
+  --brand-accent-rgb: 245 158 11;
+  --brand-accent-dark-rgb: 217 119 6;
+  --brand-accent-light-rgb: 252 211 77;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: rgba(var(--ring) / 0.5);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 0.875rem;
+  }
+}
+
+/* Force white text for inputs and labels in dark mode */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: white !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgb(156 163 175) !important; /* gray-400 */
+}
+
+html.dark label {
+  color: white !important;
+}
+
+html.dark [data-radix-select-trigger] [data-radix-select-trigger] {
+  color: white !important;
+}
+
+html.dark [data-radix-select-content] [data-radix-select-content] {
+  background-color: rgb(31 41 55) !important; /* gray-800 */
+  color: white !important;
+  border-color: rgb(55 65 81) !important; /* gray-700 */
+}
+
+html.dark [data-radix-select-item] [data-radix-select-item] {
+  color: white !important;
+}
+
+html.dark [data-radix-dialog-content] [data-radix-dialog-content] {
+  color: white !important;
+}
+
+/* Happy Bar Brand Utility Classes */
+
+/* Backgrounds */
+.brand-gradient {
+  background: linear-gradient(
+    to bottom right,
+    rgb(250 245 255),
+    rgb(255 255 255),
+    rgb(243, 235, 255)
+  );
+}
+
+.dark .brand-gradient {
+  background: linear-gradient(
+    to bottom right,
+    rgb(23 23 23),
+    rgba(88 28 135 / 0.1),
+    rgb(23 23 23)
+  );
+}
+
+.brand-gradient-primary {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--brand-primary-rgb) / 1) 0%,
+    rgb(var(--brand-primary-dark-rgb) / 1) 100%
+  );
+}
+
+.brand-gradient-accent {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--brand-accent-rgb) / 1) 0%,
+    rgb(var(--brand-accent-dark-rgb) / 1) 100%
+  );
+}
+
+.brand-gradient-mixed {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--brand-primary-rgb) / 1) 0%,
+    rgb(var(--brand-accent-rgb) / 1) 100%
+  );
+}
+
+/* Text */
+.brand-text-gradient {
+  background: linear-gradient(to right, rgb(147 51 234), rgb(245 158 11));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-text-primary {
+  color: rgb(var(--brand-primary-rgb) / 1);
+}
+
+.brand-text-accent {
+  color: rgb(var(--brand-accent-rgb) / 1);
+}
+
+/* Cards */
+.brand-card {
+  border: 1px solid rgb(243 232 255);
+  background: rgba(255 255 255 / 0.8);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+
+.brand-card:hover {
+  border-color: rgb(216 180 254);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.dark .brand-card {
+  border-color: rgba(88 28 135 / 0.3);
+  background: rgba(23 23 23 / 0.8);
+}
+
+.dark .brand-card:hover {
+  border-color: rgba(88 28 135 / 0.5);
+}
+
+.brand-card-interactive {
+  border: 1px solid rgb(243 232 255);
+  background: rgba(255 255 255 / 0.8);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.brand-card-interactive:hover {
+  transform: scale(1.01);
+  border-color: rgb(216 180 254);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.brand-card-interactive:active {
+  transform: scale(0.99);
+}
+
+/* Buttons */
+.btn-brand-primary {
+  background: linear-gradient(to right, rgb(147 51 234), rgb(124 58 237));
+  color: white;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transition: all 0.2s;
+}
+
+.btn-brand-primary:hover {
+  background: linear-gradient(to right, rgb(124 58 237), rgb(109 40 217));
+  transform: scale(1.02);
+}
+
+.btn-brand-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-brand-secondary {
+  background: linear-gradient(to right, rgb(245 158 11), rgb(217 119 6));
+  color: white;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transition: all 0.2s;
+}
+
+.btn-brand-secondary:hover {
+  background: linear-gradient(to right, rgb(217 119 6), rgb(180 83 9));
+  transform: scale(1.02);
+}
+
+.btn-brand-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-brand-outline {
+  border: 2px solid rgb(147 51 234);
+  color: rgb(147 51 234);
+  transition: all 0.2s;
+}
+
+.btn-brand-outline:hover {
+  background: rgb(147 51 234);
+  color: white;
+  transform: scale(1.02);
+}
+
+.btn-brand-outline:active {
+  transform: scale(0.98);
+}
+
+/* Icons */
+.brand-icon-primary {
+  color: rgb(147 51 234);
+}
+
+.dark .brand-icon-primary {
+  color: rgb(196 181 253);
+}
+
+.brand-icon-accent {
+  color: rgb(217 119 6);
+}
+
+.dark .brand-icon-accent {
+  color: rgb(251 191 36);
+}
+
+/* Floating Elements */
+.brand-orb {
+  border-radius: 9999px;
+  mix-blend-mode: multiply;
+  filter: blur(48px);
+  opacity: 0.1;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dark .brand-orb {
+  opacity: 0.05;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.brand-orb-primary {
+  background: rgb(216 180 254);
+  border-radius: 9999px;
+  mix-blend-mode: multiply;
+  filter: blur(48px);
+  opacity: 0.1;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.brand-orb-accent {
+  background: rgb(252 211 77);
+  border-radius: 9999px;
+  mix-blend-mode: multiply;
+  filter: blur(48px);
+  opacity: 0.1;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation Classes */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-reverse {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 6s ease-in-out infinite;
+}
+
+/* Sidebar specific */
+.sidebar-active-hover:hover {
+  background: rgb(var(--primary));
+  color: rgba(var(--primary-foreground) / 0.8);
+}
+
+.sidebar-active-hover:active {
+  background: rgb(var(--primary));
+}
+
+/* Scrollbar utilities */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Sidebar z-index fix */
+[data-slot='sidebar-container'] {
+  z-index: 50 !important;
+}
+
+/* Floating orbs should be behind sidebar */
+.brand-orb-primary,
+.brand-orb-accent {
+  z-index: 1;
+}
+
+/* Table scrolling improvements */
+.table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+  border-radius: 3px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

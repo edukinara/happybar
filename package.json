@@ -1,0 +1,50 @@
+{
+  "name": "happy-bar",
+  "private": true,
+  "version": "1.0.0",
+  "description": "POS-integrated inventory management SaaS for bars and restaurants",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean",
+    "db:generate": "cd packages/database && pnpm db:generate",
+    "db:push": "cd packages/database && pnpm db:push",
+    "db:migrate": "cd packages/database && pnpm db:migrate",
+    "db:studio": "cd packages/database && pnpm db:studio",
+    "db:seed": "cd packages/database && pnpm db:seed",
+    "db:reset": "cd packages/database && pnpm db:reset",
+    "db:backup": "./scripts/pg-backup.sh manual \"Manual database backup\"",
+    "db:backup:auto": "./scripts/pg-backup.sh auto \"Automated backup\"",
+    "db:backup:pre-migrate": "./scripts/pg-backup.sh pre-migrate \"Backup before migration\"",
+    "db:restore": "./scripts/pg-restore.sh",
+    "db:verify": "./scripts/pg-verify-backup.sh",
+    "admin:create": "tsx scripts/create-admin-user.ts",
+    "deploy:web": "vercel --prod",
+    "deploy:admin": "cd apps/admin && vercel --prod", 
+    "deploy:api": "railway up",
+    "deploy:mobile": "cd apps/mobile && eas build --platform all",
+    "deploy:all": "pnpm run deploy:api && pnpm run deploy:web && pnpm run deploy:admin"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.3.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.20.4",
+    "turbo": "^2.5.6",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "types": ["node"],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@happy-bar/types": ["../../packages/types/src"],
+      "@happy-bar/database": ["../../packages/database/src"],
+      "@happy-bar/pos": ["../../packages/pos/src"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/database" },
+    { "path": "../../packages/pos" }
+  ]
+}

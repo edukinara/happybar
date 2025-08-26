@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "cd apps/web && pnpm build",
+  "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "build": {
+    "env": {
+      "TURBO_FORCE": "true"
+    }
+  },
+  "functions": {
+    "apps/web/app/**": {
+      "runtime": "nodejs22.x"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": false,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@happy-bar/api/*": ["./packages/api/src/*"],
+      "@happy-bar/database/*": ["./packages/database/*"],
+      "@happy-bar/types/*": ["./packages/types/*"],
+      "@happy-bar/ui/*": ["./packages/ui/*"],
+      "@happy-bar/pos/*": ["./packages/pos/*"]
+    },
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": true
+  }
+}

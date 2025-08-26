@@ -1,0 +1,58 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js
+.next
+out
+
+# Build outputs
+dist
+build
+*.tsbuildinfo
+
+# Development files
+.git
+.gitignore
+README.md
+docs
+*.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Testing
+coverage
+.nyc_output
+
+# Backups
+backups
+
+# Frontend apps (deployed separately)
+apps/web
+apps/mobile
+apps/admin
+
+# Development tools
+tools
