@@ -187,6 +187,12 @@ export const auth: any = betterAuth({
     cookieName: 'better-auth.session_token', // Explicit cookie name
     secure: env.NODE_ENV === 'production', // Use secure cookies in production
     sameSite: 'lax',
+    cookieOptions: {
+      domain: env.NODE_ENV === 'production' ? '.happybar.app' : undefined, // Allow cookie sharing across subdomains
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      httpOnly: true,
+    },
   },
   plugins: [
     expo(),
