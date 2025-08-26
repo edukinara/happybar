@@ -79,7 +79,7 @@ async function buildServer() {
         if (!origin) return callback(null, true);
         
         const allowedOrigins = env.NODE_ENV === 'production'
-          ? ['https://happybar.app']
+          ? ['https://happybar.app', 'https://www.happybar.app']
           : ['http://localhost:3000', /^http:\/\/192\.168\.\d+\.\d+:3001$/];
         
         const isAllowed = allowedOrigins.some(allowed => 

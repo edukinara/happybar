@@ -14,6 +14,12 @@ import { UsageTracker } from './utils/usage-tracker'
 const prisma = new PrismaClient()
 
 export const auth: any = betterAuth({
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: env.NODE_ENV === 'production',
+      domain: env.NODE_ENV === 'production' ? '.happybar.app' : undefined,
+    },
+  },
   databaseHooks: {
     user: {
       create: {
@@ -184,15 +190,6 @@ export const auth: any = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
-    cookieName: 'better-auth.session_token', // Explicit cookie name
-    secure: env.NODE_ENV === 'production', // Use secure cookies in production
-    sameSite: 'lax',
-    cookieOptions: {
-      domain: env.NODE_ENV === 'production' ? '.happybar.app' : undefined, // Allow cookie sharing across subdomains
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      httpOnly: true,
-    },
   },
   plugins: [
     expo(),
@@ -229,7 +226,12 @@ export const auth: any = betterAuth({
       secretKey: env.AUTUMN_SECRET_KEY!,
     }),
   ],
-  trustedOrigins: [env.APP_BASE_URL],
+  trustedOrigins: [
+    env.APP_BASE_URL,
+    env.API_BASE_URL,
+    // Include www subdomain if used
+    ...(env.NODE_ENV === 'production' ? ['https://www.happybar.app'] : []),
+  ],
   secondaryStorage: {
     get: async (key) => {
       const value = await redis.get(key)
