@@ -21,6 +21,7 @@ export function middleware(request: NextRequest) {
   // Better Auth uses session cookies (typically named 'better-auth.session_token' or similar)
   // Check for Better Auth session cookies
   const sessionCookie =
+    request.cookies.get('__Secure-better-auth.session_token') ||
     request.cookies.get('better-auth.session_token') ||
     request.cookies.get('session_token') ||
     request.cookies.get('auth.session_token')
@@ -28,7 +29,10 @@ export function middleware(request: NextRequest) {
 
   // Check if the current route is public
   const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith('/api/auth/') || pathname.startsWith('/accept-invitation/')
+    (route) =>
+      pathname === route ||
+      pathname.startsWith('/api/auth/') ||
+      pathname.startsWith('/accept-invitation/')
   )
 
   // Check if the current route is an auth page (login/register)
