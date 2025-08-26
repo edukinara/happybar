@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { posApi } from '@/lib/api/pos'
+import { POSType } from '@happy-bar/types'
 import {
   AlertTriangle,
   CheckCircle,
@@ -24,7 +25,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 interface ToastCredentials {
   name: string
-  type: 'toast'
+  type: POSType.TOAST
   integrationMode: 'standard' | 'partner'
   // Standard API Access
   clientId?: string
@@ -46,7 +47,7 @@ export function ToastIntegrationForm({
 }: ToastIntegrationFormProps) {
   const [formData, setFormData] = useState<ToastCredentials>({
     name: initialData?.name || '',
-    type: 'toast',
+    type: POSType.TOAST,
     integrationMode: initialData?.integrationMode || 'partner',
     clientId: initialData?.clientId || '',
     clientSecret: initialData?.clientSecret || '',
@@ -146,7 +147,7 @@ export function ToastIntegrationForm({
       // Create temporary integration to test
       const testData = {
         ...formData,
-        name: `Test - ${formData.name}`,
+        name: formData.name,
       }
 
       const integration = await posApi.createIntegration(testData)

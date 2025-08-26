@@ -55,7 +55,7 @@ import { posApi } from '@/lib/api/pos'
 import { organization } from '@/lib/auth/client'
 import { useAutumnFeatures } from '@/lib/hooks/useAutumnFeatures'
 import { cn } from '@/lib/utils'
-import type { POSSyncStatus } from '@happy-bar/types'
+import type { POSSyncStatus, POSType } from '@happy-bar/types'
 import {
   AlertTriangle,
   ArrowUpCircle,
@@ -82,7 +82,7 @@ import { toast } from 'sonner'
 interface POSIntegration {
   id: string
   name: string
-  type: string
+  type: POSType
   isActive: boolean
   lastSyncAt?: string
   syncStatus: POSSyncStatus

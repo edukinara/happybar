@@ -1,10 +1,10 @@
-import type { POSSyncStatus } from '@happy-bar/types'
+import type { POSSyncStatus, POSType } from '@happy-bar/types'
 import { apiClient } from './client'
 
 export interface POSIntegration {
   id: string
   name: string
-  type: string
+  type: POSType
   isActive: boolean
   lastSyncAt?: string
   syncStatus: POSSyncStatus
@@ -16,7 +16,7 @@ export interface POSIntegration {
 
 interface ToastCredentials {
   name: string
-  type: 'toast'
+  type: POSType.TOAST
   integrationMode: 'standard' | 'partner'
   // Standard API Access
   clientId?: string
