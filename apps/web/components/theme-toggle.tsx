@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Check, Monitor, Moon, Sun } from 'lucide-react'
+import { Check, Moon, Sun, SunMoon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
@@ -33,7 +33,7 @@ export function ThemeToggle() {
   const themes = [
     { name: 'Light', value: 'light', icon: Sun },
     { name: 'Dark', value: 'dark', icon: Moon },
-    { name: 'System', value: 'system', icon: Monitor },
+    { name: 'System', value: 'system', icon: SunMoon },
   ]
 
   const CurrentIcon = resolvedTheme === 'dark' ? Moon : Sun
