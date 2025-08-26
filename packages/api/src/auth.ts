@@ -184,6 +184,9 @@ export const auth: any = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
+    cookieName: 'better-auth.session_token', // Explicit cookie name
+    secure: env.NODE_ENV === 'production', // Use secure cookies in production
+    sameSite: 'lax',
   },
   plugins: [
     expo(),
