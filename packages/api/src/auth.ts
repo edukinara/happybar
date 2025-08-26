@@ -159,7 +159,7 @@ export const auth: any = betterAuth({
       },
     },
   },
-  baseURL: `${env.APP_BASE_URL}`.replace(':3000', ':3001'), // Use API port for auth base URL
+  baseURL: `api.${env.APP_BASE_URL}`.replace(':3000', ':3001'), // Use API port for auth base URL
   basePath: '/api/auth',
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
