@@ -24,6 +24,11 @@ export const env = {
     (process.env.NODE_ENV === 'production'
       ? 'https://happybar.app'
       : 'http://localhost:3000'),
+  API_BASE_URL:
+    process.env.API_BASE_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://api.happybar.app'
+      : 'http://localhost:3001'),
 }
 
 // Validate critical environment variables
