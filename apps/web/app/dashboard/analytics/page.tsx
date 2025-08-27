@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
         costsChange: -3.2, // Would need historical data to calculate
         grossMargin,
         marginChange: 2.1, // Would need historical data to calculate
-        inventoryTurns: 8.3, // Would need inventory turnover calculation
+        inventoryTurns: 0, // Would need inventory turnover calculation
         turnsChange: 0.7, // Would need historical data to calculate
         forecastAccuracy,
         accuracyChange: 1.8, // Would need historical accuracy data
@@ -114,7 +114,7 @@ export default function AnalyticsPage() {
         costsChange: -3.2,
         grossMargin: 65.2,
         marginChange: 2.1,
-        inventoryTurns: 8.3,
+        inventoryTurns: 0,
         turnsChange: 0.7,
         forecastAccuracy: 94.2,
         accuracyChange: 1.8,
@@ -304,7 +304,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
-                  {summary.grossMargin.toFixed(1)}%
+                  {summary.grossMargin?.toFixed(1)}%
                 </div>
                 <div
                   className={cn(
@@ -330,7 +330,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
-                  {summary.inventoryTurns.toFixed(1)}x
+                  {summary.inventoryTurns?.toFixed(1)}x
                 </div>
                 <div
                   className={cn(
@@ -356,7 +356,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
-                  {summary.forecastAccuracy.toFixed(1)}%
+                  {summary.forecastAccuracy?.toFixed(1)}%
                 </div>
                 <div
                   className={cn(
@@ -382,7 +382,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
-                  {summary.wastePercentage.toFixed(1)}%
+                  {summary.wastePercentage?.toFixed(1)}%
                 </div>
                 <div
                   className={cn(

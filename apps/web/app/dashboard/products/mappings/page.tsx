@@ -805,7 +805,7 @@ export default function ProductMappingsPage() {
       {!selectedIntegration ? (
         <Button asChild>
           <a href='/dashboard/settings'>
-            No active POS integration. Set up one first.
+            No active POS integration. Set one up.
           </a>
         </Button>
       ) : (

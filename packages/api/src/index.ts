@@ -2,8 +2,6 @@
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
-import swagger from '@fastify/swagger'
-import swaggerUi from '@fastify/swagger-ui'
 import websocket from '@fastify/websocket'
 import { PrismaClient } from '@happy-bar/database'
 import Fastify from 'fastify'
@@ -11,10 +9,13 @@ import { env } from './config/env'
 import { errorHandler } from './middleware/errorHandler'
 // Middleware is now inline in the main server setup
 import { auth } from './auth'
+import { registerAdminAuth } from './middleware/adminAuth'
+import { accountLinkingRoutes } from './routes/account-linking'
+import adminAuthRoutes from './routes/admin/auth'
+import adminPlatformRoutes from './routes/admin/platform'
 import { alertRoutes } from './routes/alerts'
 import { analyticsRoutes } from './routes/analytics'
 import auditLogs from './routes/audit-logs'
-import { accountLinkingRoutes } from './routes/account-linking'
 import { authRoutes } from './routes/auth'
 import { inventoryRoutes } from './routes/inventory'
 import inventoryCountRoutes from './routes/inventory-counts'
@@ -24,6 +25,8 @@ import inventoryTransactionsRoutes from './routes/inventory-transactions'
 import { locationsRoutes } from './routes/locations'
 import { onboardingRoutes } from './routes/onboarding'
 import { ordersRoutes } from './routes/orders'
+import organizationManagementRoutes from './routes/organization-management'
+import pendingAssignmentsRoutes from './routes/pending-assignments'
 import { posRoutes } from './routes/pos'
 import posSalesSync from './routes/pos-sales-sync'
 import posWebhooks from './routes/pos-webhooks'
@@ -34,13 +37,8 @@ import stockTransferRoutes from './routes/stock-transfers'
 import subscriptionRoutes from './routes/subscription'
 import { suppliersRoutes } from './routes/suppliers'
 import { userLocationAssignmentRoutes } from './routes/user-location-assignments'
-import pendingAssignmentsRoutes from './routes/pending-assignments'
-import organizationManagementRoutes from './routes/organization-management'
 import varianceAlertsRoutes from './routes/variance-alerts'
 import { webhookRoutes } from './routes/webhooks'
-import { registerAdminAuth } from './middleware/adminAuth'
-import adminAuthRoutes from './routes/admin/auth'
-import adminPlatformRoutes from './routes/admin/platform'
 import { logger } from './utils/logger'
 
 // Use environment variables from config
@@ -76,20 +74,28 @@ async function buildServer() {
     await fastify.register(cors, {
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps, Postman, etc.)
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = env.NODE_ENV === 'production'
-          ? ['https://happybar.app', 'https://www.happybar.app']
-          : ['http://localhost:3000', /^http:\/\/192\.168\.\d+\.\d+:3001$/];
-        
-        const isAllowed = allowedOrigins.some(allowed => 
-          typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
-        );
-        
-        callback(null, isAllowed);
+        if (!origin) return callback(null, true)
+
+        const allowedOrigins =
+          env.NODE_ENV === 'production'
+            ? ['https://happybar.app', 'https://www.happybar.app']
+            : ['http://localhost:3000', /^http:\/\/192\.168\.\d+\.\d+:3001$/]
+
+        const isAllowed = allowedOrigins.some((allowed) =>
+          typeof allowed === 'string'
+            ? allowed === origin
+            : allowed.test(origin)
+        )
+
+        callback(null, isAllowed)
       },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-better-auth-token'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'x-better-auth-token',
+      ],
       credentials: true, // Enable credentials for web app cookies
       maxAge: 86400, // 24 hours
     })
@@ -102,36 +108,36 @@ async function buildServer() {
     await fastify.register(multipart)
 
     // Swagger documentation
-    await fastify.register(swagger, {
-      openapi: {
-        info: {
-          title: 'Happy Bar API',
-          description: 'POS-integrated inventory management SaaS API',
-          version: '1.0.0',
-        },
-        servers: [
-          { url: 'http://localhost:3001', description: 'Development server' },
-        ],
-        components: {
-          securitySchemes: {
-            Bearer: {
-              type: 'http',
-              scheme: 'bearer',
-              bearerFormat: 'JWT',
-            },
-          },
-        },
-        security: [{ Bearer: [] }],
-      },
-    })
+    // await fastify.register(swagger, {
+    //   openapi: {
+    //     info: {
+    //       title: 'Happy Bar API',
+    //       description: 'POS-integrated inventory management SaaS API',
+    //       version: '1.0.0',
+    //     },
+    //     servers: [
+    //       { url: 'http://localhost:3001', description: 'Development server' },
+    //     ],
+    //     components: {
+    //       securitySchemes: {
+    //         Bearer: {
+    //           type: 'http',
+    //           scheme: 'bearer',
+    //           bearerFormat: 'JWT',
+    //         },
+    //       },
+    //     },
+    //     security: [{ Bearer: [] }],
+    //   },
+    // })
 
-    await fastify.register(swaggerUi, {
-      routePrefix: '/docs',
-      uiConfig: {
-        docExpansion: 'list',
-        deepLinking: false,
-      },
-    })
+    // await fastify.register(swaggerUi, {
+    //   routePrefix: '/docs',
+    //   uiConfig: {
+    //     docExpansion: 'list',
+    //     deepLinking: false,
+    //   },
+    // })
 
     // Decorators for shared services
     fastify.decorate('prisma', prisma)
@@ -145,7 +151,11 @@ async function buildServer() {
       try {
         // Log invitation acceptance attempts
         if (request.url.includes('accept-invitation')) {
-          console.log('🔥 Better Auth accept-invitation called:', request.method, request.url)
+          console.log(
+            '🔥 Better Auth accept-invitation called:',
+            request.method,
+            request.url
+          )
           console.log('🔥 Request body:', request.body)
         }
         // Build the full URL
@@ -199,8 +209,6 @@ async function buildServer() {
       }
     }
 
-
-
     // Register all auth endpoints
     fastify.get('/api/auth/session', betterAuthHandler)
     fastify.get('/api/auth/get-session', betterAuthHandler) // Alias for mobile app
@@ -231,13 +239,15 @@ async function buildServer() {
     // Handle auth error route with custom redirect
     fastify.get('/api/auth/error', async (request, reply) => {
       const { error } = request.query as { error?: string }
-      
+
       if (error === 'unable_to_create_user') {
-        const errorMessage = encodeURIComponent('Social sign-in is only available for existing accounts. Please create an account with email/password first, then link your social accounts from settings.')
+        const errorMessage = encodeURIComponent(
+          'Social sign-in is only available for existing accounts. Please create an account with email/password first, then link your social accounts from settings.'
+        )
         const redirectUrl = `${env.APP_BASE_URL}/login?error=${errorMessage}`
         return reply.redirect(redirectUrl)
       }
-      
+
       // For other errors, use default Better Auth handler
       return betterAuthHandler(request, reply)
     })
@@ -270,30 +280,29 @@ async function buildServer() {
         // Check if this is a mobile app request
         const userAgent = request.headers['user-agent'] || ''
         const isMobileApp = userAgent.includes('okhttp')
-        
+
         if (isMobileApp && request.headers.authorization) {
           // For mobile app, try direct token validation via Redis
           const token = request.headers.authorization.replace('Bearer ', '')
-          
+
           // Import redis here to avoid circular dependencies
           const { redis } = await import('./utils/redis-client')
-          
+
           try {
             // Better Auth stores sessions as: active-sessions-{userId} -> array of session tokens
             // First, we need to find which user has this token
             const pattern = 'active-sessions-*'
             const userSessionKeys = await redis.keys(pattern)
-            
-            
+
             let foundUserId = null
             let validSession = null
-            
+
             for (const userKey of userSessionKeys) {
               const sessionsData = await redis.get(userKey)
               if (sessionsData) {
                 try {
                   let sessions
-                  
+
                   // Handle different data formats from Redis
                   if (typeof sessionsData === 'string') {
                     // Try parsing as JSON string
@@ -303,18 +312,21 @@ async function buildServer() {
                     sessions = sessionsData
                   } else if (typeof sessionsData === 'object') {
                     // If it's an object, convert to array or handle accordingly
-                    sessions = Array.isArray(sessionsData) ? sessionsData : [sessionsData]
+                    sessions = Array.isArray(sessionsData)
+                      ? sessionsData
+                      : [sessionsData]
                   } else {
                     continue
                   }
-                  
-                  
+
                   if (Array.isArray(sessions)) {
                     // Find the session with matching token
-                    const matchingSession = sessions.find((session: any) => 
-                      session.token === token && session.expiresAt > Date.now()
+                    const matchingSession = sessions.find(
+                      (session: any) =>
+                        session.token === token &&
+                        session.expiresAt > Date.now()
                     )
-                    
+
                     if (matchingSession) {
                       foundUserId = userKey.replace('active-sessions-', '')
                       validSession = matchingSession
@@ -323,27 +335,31 @@ async function buildServer() {
                   } else {
                   }
                 } catch (parseError) {
-                  console.error('🔍 Error parsing sessions for key:', userKey, parseError)
+                  console.error(
+                    '🔍 Error parsing sessions for key:',
+                    userKey,
+                    parseError
+                  )
                 }
               }
             }
-            
+
             if (foundUserId && validSession) {
               // Get user data from database
               const user = await fastify.prisma.user.findUnique({
-                where: { id: foundUserId }
+                where: { id: foundUserId },
               })
-              
+
               if (user) {
                 // Set session data on request for downstream handlers
                 ;(request as any).user = user
-                ;(request as any).sessionData = { 
-                  user: user, 
-                  session: { 
+                ;(request as any).sessionData = {
+                  user: user,
+                  session: {
                     ...validSession,
                     userId: foundUserId,
-                    id: validSession.token 
-                  } 
+                    id: validSession.token,
+                  },
                 }
                 return
               }
@@ -353,12 +369,11 @@ async function buildServer() {
             console.error('🔍 Redis lookup error:', error)
           }
         }
-        
+
         // Fall back to Better Auth session validation
         const sessionData = await auth.api.getSession({
           headers: request.headers as any,
         })
-
 
         if (!sessionData?.user) {
           reply.code(401).send({
@@ -442,7 +457,9 @@ async function buildServer() {
     await fastify.register(subscriptionRoutes, { prefix: '/api/subscription' })
     await fastify.register(stockTransferRoutes, { prefix: '/api/stock' })
     await fastify.register(suppliersRoutes, { prefix: '/api/suppliers' })
-    await fastify.register(userLocationAssignmentRoutes, { prefix: '/api/user-location-assignments' })
+    await fastify.register(userLocationAssignmentRoutes, {
+      prefix: '/api/user-location-assignments',
+    })
     await fastify.register(pendingAssignmentsRoutes, { prefix: '/api' })
     await fastify.register(organizationManagementRoutes, { prefix: '/api' })
     await fastify.register(varianceAlertsRoutes, {
@@ -451,7 +468,9 @@ async function buildServer() {
 
     // Register admin routes (separate authentication system)
     await fastify.register(adminAuthRoutes, { prefix: '/api/admin/auth' })
-    await fastify.register(adminPlatformRoutes, { prefix: '/api/admin/platform' })
+    await fastify.register(adminPlatformRoutes, {
+      prefix: '/api/admin/platform',
+    })
 
     // Register Autumn SDK endpoints
     await fastify.register(subscriptionRoutes, { prefix: '/api/autumn' })
@@ -490,7 +509,7 @@ async function buildServer() {
     fastify.post('/debug/test-member-creation', async (request, reply) => {
       try {
         const { userId, organizationId, role } = request.body as any
-        
+
         // Create a member directly using Prisma to test hooks
         const member = await fastify.prisma.member.create({
           data: {
@@ -499,9 +518,9 @@ async function buildServer() {
             organizationId,
             role,
             createdAt: new Date(),
-          }
+          },
         })
-        
+
         return { success: true, member }
       } catch (error) {
         return { success: false, error: (error as Error).message }
@@ -509,51 +528,66 @@ async function buildServer() {
     })
 
     // Debug endpoint to check pending assignments
-    fastify.get('/debug/pending-assignment/:email/:organizationId', async (request, reply) => {
-      try {
-        const { email, organizationId } = request.params as { email: string; organizationId: string }
-        const { PendingAssignmentManager } = await import('./utils/pending-assignments')
-        
-        const assignment = await PendingAssignmentManager.getPendingAssignment(email, organizationId)
-        
-        return {
-          email,
-          organizationId,
-          assignment: assignment || null,
-          found: !!assignment
-        }
-      } catch (error) {
-        return {
-          error: (error as Error).message
+    fastify.get(
+      '/debug/pending-assignment/:email/:organizationId',
+      async (request, reply) => {
+        try {
+          const { email, organizationId } = request.params as {
+            email: string
+            organizationId: string
+          }
+          const { PendingAssignmentManager } = await import(
+            './utils/pending-assignments'
+          )
+
+          const assignment =
+            await PendingAssignmentManager.getPendingAssignment(
+              email,
+              organizationId
+            )
+
+          return {
+            email,
+            organizationId,
+            assignment: assignment || null,
+            found: !!assignment,
+          }
+        } catch (error) {
+          return {
+            error: (error as Error).message,
+          }
         }
       }
-    })
+    )
 
     // Debug endpoint to manually store a pending assignment
     fastify.post('/debug/store-pending-assignment', async (request, reply) => {
       try {
         const { email, organizationId, locationIds } = request.body as any
-        const { PendingAssignmentManager } = await import('./utils/pending-assignments')
-        
-        const assignment = await PendingAssignmentManager.storePendingAssignment({
-          email,
-          organizationId,
-          locationIds: locationIds || ['test-location-1'],
-          permissions: {
-            canRead: true,
-            canWrite: true,
-            canManage: false
-          }
-        })
-        
+        const { PendingAssignmentManager } = await import(
+          './utils/pending-assignments'
+        )
+
+        const assignment =
+          await PendingAssignmentManager.storePendingAssignment({
+            email,
+            organizationId,
+            locationIds: locationIds || ['test-location-1'],
+            permissions: {
+              canRead: true,
+              canWrite: true,
+              canManage: false,
+            },
+          })
+
         return {
           success: true,
-          assignment
+          assignment,
         }
       } catch (error) {
         return {
           success: false,
-          error: (error as Error).message
+          error: (error as Error).message,
         }
       }
     })
@@ -562,7 +596,7 @@ async function buildServer() {
     fastify.post('/debug/set-active-org', async (request, reply) => {
       try {
         const { organizationId } = request.body as { organizationId: string }
-        
+
         const sessionData = await auth.api.getSession({
           headers: request.headers as any,
         })
@@ -574,22 +608,22 @@ async function buildServer() {
         // Update session in database
         const updateResult = await fastify.prisma.session.update({
           where: {
-            id: sessionData.session.id
+            id: sessionData.session.id,
           },
           data: {
-            activeOrganizationId: organizationId
-          }
+            activeOrganizationId: organizationId,
+          },
         })
 
         return {
           success: true,
           sessionId: sessionData.session.id,
           updated: updateResult,
-          message: `Set activeOrganizationId to ${organizationId}`
+          message: `Set activeOrganizationId to ${organizationId}`,
         }
       } catch (error) {
         return {
-          error: (error as Error).message
+          error: (error as Error).message,
         }
       }
     })

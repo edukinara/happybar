@@ -197,7 +197,7 @@ export function ForecastingDashboardV2({
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
-              {data.metrics.overallAccuracy.toFixed(1)}%
+              {data.metrics.overallAccuracy?.toFixed(1)}%
             </div>
             <Progress value={data.metrics.overallAccuracy} className='mt-2' />
           </CardContent>
@@ -212,10 +212,10 @@ export function ForecastingDashboardV2({
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
-              {data.metrics.confidenceScore.toFixed(1)}%
+              {data.metrics.confidenceScore?.toFixed(1)}%
             </div>
             <p className='text-xs text-muted-foreground'>
-              MAPE: {data.metrics.mape.toFixed(1)}%
+              MAPE: {data.metrics.mape?.toFixed(1)}%
             </p>
           </CardContent>
         </Card>
@@ -293,7 +293,7 @@ export function ForecastingDashboardV2({
                       {algorithm.name}
                     </Badge>
                     <span className='text-sm'>
-                      Accuracy: {algorithm.accuracy.toFixed(1)}%
+                      Accuracy: {algorithm.accuracy?.toFixed(1)}%
                     </span>
                   </div>
                   <span className='text-sm font-medium'>
@@ -350,7 +350,7 @@ export function ForecastingDashboardV2({
                     </Badge>
                   </TableCell>
                   <TableCell className='text-right'>
-                    {+item.currentStock.toFixed(1)}
+                    {+item.currentStock?.toFixed(1)}
                   </TableCell>
                   <TableCell className='text-right'>
                     {item.forecastedDemand}
@@ -369,7 +369,7 @@ export function ForecastingDashboardV2({
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center space-x-1'>
                       <span className='text-sm'>
-                        {item.confidence.toFixed(0)}%
+                        {item.confidence?.toFixed(0)}%
                       </span>
                       <Progress value={item.confidence} className='w-12 h-2' />
                     </div>
@@ -430,7 +430,7 @@ export function ForecastingDashboardV2({
                       variant='outline'
                       className='bg-red-100 text-red-800 border-red-200'
                     >
-                      {item.stockoutRisk.toFixed(0)}%
+                      {item.stockoutRisk?.toFixed(0)}%
                     </Badge>
                   </div>
                 ))}
@@ -469,7 +469,7 @@ export function ForecastingDashboardV2({
                       variant='outline'
                       className='bg-yellow-100 text-yellow-800 border-yellow-200'
                     >
-                      {item.overStockRisk.toFixed(0)}%
+                      {item.overStockRisk?.toFixed(0)}%
                     </Badge>
                   </div>
                 ))}

@@ -497,7 +497,7 @@ export default function RecipesPage() {
 
         {/* Search and Filters */}
         <Card className='brand-card'>
-          <CardContent className='pt-6'>
+          <CardContent className='pt-0'>
             <div className='flex items-center space-x-2'>
               <Search className='h-4 w-4 brand-icon-primary' />
               <Input

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@happy-bar/database'
 import { AppError, ErrorCode, POSSale, POSSaleItem } from '@happy-bar/types'
+// Remove unused import - APIError from better-auth
 import { InventoryDepletionService } from './inventory-depletion'
 
 export class POSSalesSyncService {
@@ -54,6 +55,22 @@ export class POSSalesSyncService {
     errorDetails?: string[]
   }> {
     try {
+      const completedCount = await this.prisma.inventoryCount
+        .findFirst({
+          where: {
+            status: 'APPROVED',
+          },
+        })
+        .then((r) => !!r)
+      if (!completedCount) {
+        return {
+          success: true,
+          processed: 0,
+          errors: 0,
+          newSales: 0,
+          duplicates: 0,
+        }
+      }
       // Get integration details
       const integration = await this.prisma.pOSIntegration.findUnique({
         where: { id: integrationId },
@@ -226,6 +243,7 @@ export class POSSalesSyncService {
         data: {
           lastSyncAt: new Date(),
           syncStatus: totalErrors > 0 ? 'FAILED' : 'SUCCESS',
+          syncErrors: totalErrors === 0 ? [] : undefined,
         },
       })
 
@@ -453,6 +471,27 @@ export class POSSalesSyncService {
 
     for (const integration of integrations) {
       try {
+        const completedCount = await this.prisma.inventoryCount
+          .findFirst({
+            where: {
+              status: 'APPROVED',
+            },
+          })
+          .then((r) => !!r)
+        if (completedCount) {
+          // throw new AppError('Expectation failed', ErrorCode.BAD_REQUEST, 417, {
+          //   message: 'At least one completed Inventory Count required',
+          // })
+          results.push({
+            integrationId: integration.id,
+            integrationName: integration.name,
+            success: true,
+            processed: 0,
+            newSales: 0,
+          })
+          successCount++
+          continue
+        }
         const result = await this.syncSalesForIntegration(integration.id, {
           forced: options?.forced,
         })

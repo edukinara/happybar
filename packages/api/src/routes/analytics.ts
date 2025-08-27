@@ -810,7 +810,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
           }
         })
 
-        const mape = countedItems > 0 ? totalAPE / countedItems : 50
+        const mape = countedItems > 0 ? totalAPE / countedItems : 100
         const bias = countedItems > 0 ? totalBias / countedItems : 0
         const overallAccuracy = Math.max(0, Math.min(100, 100 - mape))
 
@@ -1247,7 +1247,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
         })
 
         const stockAccuracy =
-          totalCountedItems > 0 ? (accurateItems / totalCountedItems) * 100 : 95 // Default to 95% if no counts
+          totalCountedItems > 0 ? (accurateItems / totalCountedItems) * 100 : 0 // Default to 0% if no counts
 
         return {
           inventoryData: {
@@ -1300,7 +1300,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
               0
             ),
             carryingCostPercent:
-              15 + (avgTurnover > 0 ? Math.min(10, 50 / avgTurnover) : 10), // Dynamic based on turnover
+              avgTurnover > 0 ? 15 + Math.min(10, 50 / avgTurnover) : 0, // Dynamic based on turnover
           },
         }
       } catch (error) {
@@ -1435,7 +1435,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
               }).length /
                 completedOrders.length) *
               100
-            : 95.0
+            : 0
 
         return {
           purchasingData: {
