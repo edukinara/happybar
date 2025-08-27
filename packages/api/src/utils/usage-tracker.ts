@@ -9,8 +9,8 @@ export class UsageTracker {
    * Set absolute usage count for a feature
    */
   static async setFeatureUsage(
-    customerId: string, 
-    featureId: string, 
+    customerId: string,
+    featureId: string,
     absoluteValue: number
   ): Promise<void> {
     try {
@@ -20,7 +20,6 @@ export class UsageTracker {
         value: absoluteValue,
         track: false, // false means set absolute value
       })
-      console.log(`✅ Updated ${featureId} usage to ${absoluteValue} for customer ${customerId}`)
     } catch (error) {
       console.error(`⚠️ Failed to update ${featureId} usage:`, error)
       // Don't throw - usage tracking failures shouldn't break the main operation
@@ -31,8 +30,8 @@ export class UsageTracker {
    * Increment usage count for a feature
    */
   static async incrementFeatureUsage(
-    customerId: string, 
-    featureId: string, 
+    customerId: string,
+    featureId: string,
     value: number = 1
   ): Promise<void> {
     try {
@@ -42,7 +41,6 @@ export class UsageTracker {
         value,
         track: true, // true means increment/decrement
       })
-      console.log(`✅ Incremented ${featureId} usage by ${value} for customer ${customerId}`)
     } catch (error) {
       console.error(`⚠️ Failed to increment ${featureId} usage:`, error)
     }
@@ -58,9 +56,9 @@ export class UsageTracker {
   ): Promise<void> {
     try {
       const memberCount = await prisma.member.count({
-        where: { organizationId }
+        where: { organizationId },
       })
-      
+
       await this.setFeatureUsage(customerId, 'team_members', memberCount)
     } catch (error) {
       console.error('⚠️ Failed to update team member usage:', error)
@@ -77,9 +75,9 @@ export class UsageTracker {
   ): Promise<void> {
     try {
       const locationCount = await prisma.location.count({
-        where: { organizationId }
+        where: { organizationId },
       })
-      
+
       await this.setFeatureUsage(customerId, 'locations', locationCount)
     } catch (error) {
       console.error('⚠️ Failed to update location usage:', error)

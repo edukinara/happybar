@@ -29,18 +29,15 @@ const posWebhooks: FastifyPluginAsync = async (fastify) => {
   fastify.post('/pos-webhooks/sale', async (request, reply) => {
     try {
       const data = posSaleSchema.parse(request.body)
-      
+
       // Find the integration to get organization context
       const integration = await fastify.prisma.pOSIntegration.findUnique({
         where: { id: data.integrationId },
-        select: { id: true, organizationId: true, name: true, type: true }
+        select: { id: true, organizationId: true, name: true, type: true },
       })
 
       if (!integration) {
-        throw new AppError(
-          ErrorCode.NOT_FOUND,
-          'POS integration not found'
-        )
+        throw new AppError(ErrorCode.NOT_FOUND, 'POS integration not found')
       }
 
       const organizationId = integration.organizationId
@@ -59,48 +56,43 @@ const posWebhooks: FastifyPluginAsync = async (fastify) => {
             data.externalOrderId,
             data.timestamp,
             {
-              source: 'pos_webhook' // Let settings determine policy
+              source: 'pos_webhook', // Let settings determine policy
             }
           )
           results.push(result)
         } catch (error) {
-          console.error(`Error processing sale item ${item.externalProductId}:`, error)
+          console.error(
+            `Error processing sale item ${item.externalProductId}:`,
+            error
+          )
           errors.push({
             posProductId: item.posProductId,
             externalProductId: item.externalProductId,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           })
         }
       }
-
-      // Log the sale processing results
-      console.log(`POS Sale processed: ${data.externalOrderId}`, {
-        processed: results.length,
-        errors: errors.length,
-        totalItems: data.items.length
-      })
 
       reply.send({
         success: true,
         processed: results.length,
         errors: errors.length,
         results,
-        errorDetails: errors.length > 0 ? errors : undefined
+        errorDetails: errors.length > 0 ? errors : undefined,
       })
-
     } catch (error) {
       console.error('POS webhook error:', error)
-      
+
       if (error instanceof AppError) {
         reply.status(error.statusCode).send({
           success: false,
           error: error.message,
-          code: error.code
+          code: error.code,
         })
       } else {
         reply.status(500).send({
           success: false,
-          error: 'Internal server error processing POS sale'
+          error: 'Internal server error processing POS sale',
         })
       }
     }

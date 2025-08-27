@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { subscriptionApi } from '@/lib/api/subscription'
 import { useAuth } from '@/lib/auth/auth-context'
 import { useAutumnFeatures } from '@/lib/hooks/useAutumnFeatures'
 import {
@@ -106,13 +107,11 @@ export function PricingModal({
     }
   }
 
-  const handleSelectPlan = async (productId: string, isFree: boolean) => {
-    // For free plans, just close modal (user already has access)
-    if (isFree) {
-      onOpenChange(false)
-      return
-    }
-
+  const handleSelectPlan = async (
+    productId: string,
+    isFree: boolean,
+    currentPlanId?: string
+  ) => {
     // Check if user can handle billing operations
     const hasBillingAccess =
       user?.role && ['owner', 'admin'].includes(user.role)
@@ -127,6 +126,15 @@ export function PricingModal({
 
     try {
       setSubscribing(productId)
+      if (isFree && currentPlanId) {
+        await subscriptionApi.cancel({ productId: currentPlanId })
+        onOpenChange(false)
+        setSubscribing(null)
+        window.location.reload()
+        return
+      } else if (isFree) {
+        onOpenChange(false)
+      }
       await createCheckout(
         productId,
         `${window.location.origin}/dashboard?upgraded=true`
@@ -137,7 +145,8 @@ export function PricingModal({
 
       // Handle specific error cases
       if (error && typeof error === 'object' && 'response' in error) {
-        const errorResponse = error as any
+        const errorResponse = error as object &
+          Record<'response', { status: unknown }>
         if (errorResponse.response?.status === 403) {
           toast.error('Permission Denied', {
             description:
@@ -175,7 +184,7 @@ export function PricingModal({
 
   // Filter products by billing cycle and exclude free plans
   const filteredProducts = products.filter((product) => {
-    if (product.properties?.is_free) return false // Exclude free plans from modal
+    // if (product.properties?.is_free) return false // Exclude free plans from modal
     const interval = getProductInterval(product)
     if (billingCycle === 'year') {
       return interval === 'year' || product.id.includes('annual')
@@ -189,10 +198,11 @@ export function PricingModal({
   )
 
   const hasBillingAccess = user?.role && ['owner', 'admin'].includes(user.role)
+  const currentPlanId = customer?.products?.[0]?.id
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto !max-w-4xl'>
         <DialogHeader>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
@@ -254,7 +264,7 @@ export function PricingModal({
 
           {/* Pricing Plans */}
           {!loading && sortedProducts.length > 0 && (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
               {sortedProducts.map((product, index) => {
                 const price = getProductPrice(product)
                 const interval = getProductInterval(product)
@@ -290,9 +300,11 @@ export function PricingModal({
                         {product.name}
                       </CardTitle>
                       <CardDescription>
-                        {price < 100
-                          ? 'Perfect for growing bars and restaurants'
-                          : 'For established businesses and restaurant groups'}
+                        {product.properties?.is_free
+                          ? 'Perfect for small bars getting started'
+                          : price < 100
+                            ? 'Perfect for growing bars and restaurants'
+                            : 'For established businesses and restaurant groups'}
                       </CardDescription>
                       <div className='pt-2'>
                         <span className='text-3xl font-bold'>${price}</span>
@@ -309,12 +321,12 @@ export function PricingModal({
                         {features.slice(0, 5).map((item) => (
                           <div
                             key={item.feature_id}
-                            className='flex justify-between text-sm'
+                            className='flex justify-between items-center gap-2 text-sm'
                           >
-                            <span className='text-muted-foreground'>
+                            <span className='text-muted-foreground truncate flex-1'>
                               {item.feature?.name || ''}
                             </span>
-                            <span className='font-medium'>
+                            <span className='font-medium whitespace-nowrap'>
                               {item.display?.primary_text ||
                                 (item.included_usage === 'inf'
                                   ? 'Unlimited'
@@ -330,10 +342,12 @@ export function PricingModal({
                           {features.slice(5, 8).map((item) => (
                             <div
                               key={item.feature_id}
-                              className='flex items-center gap-2 text-sm'
+                              className='flex items-start gap-2 text-sm'
                             >
-                              <Check className='h-4 w-4 text-green-500' />
-                              <span>{item.feature?.name}</span>
+                              <Check className='h-4 w-4 text-green-500 flex-shrink-0 mt-0.5' />
+                              <span className='break-words'>
+                                {item.feature?.name}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -342,7 +356,13 @@ export function PricingModal({
                       <Button
                         className='w-full'
                         variant={isPopular ? 'default' : 'outline'}
-                        onClick={() => handleSelectPlan(product.id, false)}
+                        onClick={() =>
+                          handleSelectPlan(
+                            product.id,
+                            !!product.properties?.is_free,
+                            currentPlanId
+                          )
+                        }
                         disabled={
                           subscribing === product.id ||
                           isCurrentPlan ||
@@ -362,7 +382,7 @@ export function PricingModal({
                           <>
                             {product.free_trial
                               ? `Start ${product.free_trial.length}-Day Free Trial`
-                              : 'Upgrade Now'}
+                              : 'Select Plan'}
                             {!isCurrentPlan && (
                               <ArrowRight className='ml-2 h-4 w-4' />
                             )}

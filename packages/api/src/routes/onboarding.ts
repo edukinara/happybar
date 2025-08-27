@@ -204,21 +204,24 @@ export const onboardingRoutes: FastifyPluginAsync = async function (fastify) {
       try {
         // Get user data from session for customer creation
         const user = sessionData.user
-        
+
         // Create customer with proper name and email
-        const userName = user.name || 
-          (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.trim() : null) ||
+        const userName =
+          user.name ||
+          (user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`.trim()
+            : null) ||
           user.firstName ||
           user.email?.split('@')[0] || // Fallback to email username
           'Unknown User'
-          
+
         const userEmail = user.email || `user-${userId}@example.com`
-        
-        console.log('Creating customer during onboarding with:', {
+
+        console.warn('Creating customer during onboarding with:', {
           id: userId,
           email: userEmail,
           name: userName,
-          fingerprint: organization.id
+          fingerprint: organization.id,
         })
 
         const { SubscriptionService } = await import('../services/subscription')
@@ -229,7 +232,10 @@ export const onboardingRoutes: FastifyPluginAsync = async function (fastify) {
           fingerprint: organization.id, // Use organization ID as fingerprint
         })
       } catch (error) {
-        fastify.log.warn({ error }, 'Failed to create customer, will proceed with usage tracking')
+        fastify.log.warn(
+          { error },
+          'Failed to create customer, will proceed with usage tracking'
+        )
         // Don't fail the onboarding if customer creation fails
       }
 

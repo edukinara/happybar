@@ -34,6 +34,7 @@ export interface CheckoutOptions {
   entityId?: string
   options?: Record<string, number>
   customerData?: Record<string, any>
+  reward?: string // Promo code support
 }
 
 export interface FeatureCheckOptions {
@@ -133,13 +134,14 @@ export class SubscriptionService {
    */
   static async createCheckout(options: CheckoutOptions) {
     try {
-      const result = await autumn.checkout({
+      const result = await autumn.attach({
         customer_id: options.customerId,
         product_id: options.productId,
         success_url: options.successUrl,
         entity_id: options.entityId,
         // options: options.options, // Remove this for now since we need to check the correct format
         customer_data: options.customerData,
+        reward: options.reward, // Pass promo code if provided
       })
 
       if (result.error) {
@@ -166,6 +168,7 @@ export class SubscriptionService {
         entity_id: options.entityId,
         // options: options.options, // Remove this for now since we need to check the correct format
         customer_data: options.customerData,
+        reward: options.reward, // Pass promo code if provided
       })
 
       if (result.error) {

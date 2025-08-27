@@ -163,7 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (response.ok) {
             const apiResponse: { success?: boolean; data?: Me } =
               await response.json()
-            // console.log('Auth API response (no active org):', apiResponse)
 
             if (apiResponse.success && apiResponse.data?.member) {
               // User has membership but no active organization set

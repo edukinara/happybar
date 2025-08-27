@@ -12,29 +12,36 @@ function getOrganizationId(request: any): string {
 }
 
 // Helper to get organization owner's user ID for Autumn customer operations
-async function getOrganizationOwnerCustomerId(organizationId: string, prisma: any): Promise<string> {
+async function getOrganizationOwnerCustomerId(
+  organizationId: string,
+  prisma: any
+): Promise<string> {
   const ownerMember = await prisma.member.findFirst({
     where: {
       organizationId: organizationId,
-      role: 'owner'
+      role: 'owner',
     },
     include: {
-      user: true
-    }
+      user: true,
+    },
   })
-  
+
   if (!ownerMember) {
     throw new AppError('Organization owner not found', ErrorCode.NOT_FOUND, 404)
   }
-  
+
   return ownerMember.userId
 }
 
 // Helper to check if user has required permissions before making Autumn calls
-async function checkRequiredPermissions(request: any, requiredPermissions: string[], prisma: any): Promise<{ hasPermission: boolean; missingPermissions: string[] }> {
+async function checkRequiredPermissions(
+  request: any,
+  requiredPermissions: string[],
+  prisma: any
+): Promise<{ hasPermission: boolean; missingPermissions: string[] }> {
   const user = (request as any).user
   const organizationId = (request as any).organization?.id
-  
+
   if (!user || !organizationId) {
     return { hasPermission: false, missingPermissions: requiredPermissions }
   }
@@ -43,10 +50,10 @@ async function checkRequiredPermissions(request: any, requiredPermissions: strin
   const membership = await prisma.member.findFirst({
     where: {
       userId: user.id,
-      organizationId: organizationId
-    }
+      organizationId: organizationId,
+    },
   })
-  
+
   if (!membership) {
     return { hasPermission: false, missingPermissions: requiredPermissions }
   }
@@ -54,30 +61,30 @@ async function checkRequiredPermissions(request: any, requiredPermissions: strin
   // Import the role permissions check
   const { roleHasPermission } = require('../utils/permissions')
   const missingPermissions: string[] = []
-  
+
   for (const permission of requiredPermissions) {
     const [resource, action] = permission.split('.')
     if (!roleHasPermission(membership.role, resource, action)) {
       missingPermissions.push(permission)
     }
   }
-  
+
   return {
     hasPermission: missingPermissions.length === 0,
-    missingPermissions
+    missingPermissions,
   }
 }
 
 // Map feature IDs to their required permissions for common use cases
 const FEATURE_PERMISSION_MAP: Record<string, string[]> = {
-  'locations': ['admin.locations'], // Creating/managing locations
-  'team_members': ['users.invite', 'users.write'], // Adding team members
-  'integrations': ['admin.integrations'], // Setting up integrations
-  'pos_integration': ['admin.integrations'], // POS system setup
-  'advanced_analytics': ['analytics.financial'], // Financial reports
-  'bulk_operations': ['inventory.write'], // Bulk inventory operations
-  'product_management': ['products.write'], // Creating/editing products
-  'supplier_management': ['suppliers.write'], // Managing suppliers
+  locations: ['admin.locations'], // Creating/managing locations
+  team_members: ['users.invite', 'users.write'], // Adding team members
+  integrations: ['admin.integrations'], // Setting up integrations
+  pos_integration: ['admin.integrations'], // POS system setup
+  advanced_analytics: ['analytics.financial'], // Financial reports
+  bulk_operations: ['inventory.write'], // Bulk inventory operations
+  product_management: ['products.write'], // Creating/editing products
+  supplier_management: ['suppliers.write'], // Managing suppliers
 }
 
 // Helper to automatically determine required permissions for a feature
@@ -155,8 +162,11 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
     try {
       // Use organization owner's customer ID for subscription data
-      const customerId = await getOrganizationOwnerCustomerId(organizationId, fastify.prisma)
-      
+      const customerId = await getOrganizationOwnerCustomerId(
+        organizationId,
+        fastify.prisma
+      )
+
       const customer = await SubscriptionService.getCustomer(customerId)
       return {
         success: true,
@@ -204,7 +214,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
       name: user.name,
       firstName: user.firstName,
       lastName: user.lastName,
-      keys: Object.keys(user)
+      keys: Object.keys(user),
     })
 
     try {
@@ -225,22 +235,26 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
       // Create new customer
       // Better Auth user object might have firstName/lastName or name
-      const userName = validatedData.name || 
-        user.name || 
-        (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.trim() : null) ||
+      const userName =
+        validatedData.name ||
+        user.name ||
+        (user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`.trim()
+          : null) ||
         user.firstName ||
         user.email?.split('@')[0] || // Fallback to email username
         'Unknown User'
-        
-      const userEmail = validatedData.email || user.email || `user-${customerId}@example.com`
-      
+
+      const userEmail =
+        validatedData.email || user.email || `user-${customerId}@example.com`
+
       console.log('Creating customer with:', {
         id: customerId,
         email: userEmail,
         name: userName,
-        fingerprint: validatedData.fingerprint || getOrganizationId(request)
+        fingerprint: validatedData.fingerprint || getOrganizationId(request),
       })
-        
+
       const customer = await SubscriptionService.createCustomer({
         id: customerId,
         email: userEmail,
@@ -264,12 +278,18 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
   // Skip authentication for public endpoints
   const publicPaths = ['/cors', '/products']
-  
+
   // Feature gate endpoints that all authenticated users can access
   const featureGatePaths = ['/check', '/track', '/customer']
-  
+
   // Billing management endpoints restricted to owners/admins
-  const billingPaths = ['/customers', '/checkout', '/attach', '/billing-portal', '/cancel']
+  const billingPaths = [
+    '/customers',
+    '/checkout',
+    '/attach',
+    '/billing-portal',
+    '/cancel',
+  ]
 
   // Add authentication middleware for authenticated subscription routes
   fastify.addHook('onRequest', async (request, reply) => {
@@ -288,37 +308,40 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
     // Check if this is a billing management endpoint that requires owner/admin access
     // Use more precise URL matching to avoid conflicts between /customer and /customers
     const requestPath = request.url.split('?')[0] // Remove query parameters
-    const isBillingEndpoint = billingPaths.some((path) => requestPath === `/api/subscription${path}`)
-    
+    const isBillingEndpoint = billingPaths.some(
+      (path) => requestPath === `/api/subscription${path}`
+    )
+
     if (isBillingEndpoint) {
       const user = (request as any).user
       const organizationId = (request as any).organization?.id
-      
+
       if (!user || !organizationId) {
-        reply.code(403).send({ 
+        reply.code(403).send({
           error: 'Access denied. Billing management requires authentication.',
-          code: 'INSUFFICIENT_PERMISSIONS'
+          code: 'INSUFFICIENT_PERMISSIONS',
         })
         return
       }
-      
+
       // Check user's role in the organization
       const membership = await fastify.prisma.member.findFirst({
         where: {
           userId: user.id,
-          organizationId: organizationId
-        }
+          organizationId: organizationId,
+        },
       })
-      
+
       if (!membership || !['owner', 'admin'].includes(membership.role)) {
-        reply.code(403).send({ 
-          error: 'Access denied. Billing management requires owner or admin role.',
-          code: 'INSUFFICIENT_PERMISSIONS'
+        reply.code(403).send({
+          error:
+            'Access denied. Billing management requires owner or admin role.',
+          code: 'INSUFFICIENT_PERMISSIONS',
         })
         return
       }
     }
-    
+
     // Feature gate endpoints are accessible to all authenticated organization members
     // No additional role check needed for /check, /track, /customer endpoints
   })
@@ -331,6 +354,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
         successUrl: z.string().optional(),
         entityId: z.string().optional(),
         options: z.record(z.string(), z.number()).optional(),
+        reward: z.string().optional(), // Promo code support
       })
       .parse(request.body)
 
@@ -353,25 +377,28 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           name: user.name,
           firstName: user.firstName,
           lastName: user.lastName,
-          keys: Object.keys(user)
+          keys: Object.keys(user),
         })
 
         // Better Auth user object might have firstName/lastName or name
-        const userName = user.name || 
-          (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.trim() : null) ||
+        const userName =
+          user.name ||
+          (user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`.trim()
+            : null) ||
           user.firstName ||
           user.email?.split('@')[0] || // Fallback to email username
           'Unknown User'
-          
+
         const userEmail = user.email || `user-${customerId}@example.com`
-        
+
         console.log('Creating customer in checkout with:', {
           id: customerId,
           email: userEmail,
           name: userName,
-          fingerprint: organizationId
+          fingerprint: organizationId,
         })
-          
+
         await SubscriptionService.createCustomer({
           id: customerId,
           email: userEmail,
@@ -386,10 +413,76 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
         successUrl: validatedData.successUrl,
         entityId: validatedData.entityId,
         options: validatedData.options,
+        reward: validatedData.reward, // Pass promo code if provided
         customerData: {
           organizationId,
-          organizationName: (request as any).organization?.name || 'Unknown Organization',
+          organizationName:
+            (request as any).organization?.name || 'Unknown Organization',
         },
+      }).then(async (res) => {
+        try {
+          const [locations, products, teamMembers, posIntegrations] =
+            await fastify.prisma.$transaction(async (tx) => {
+              const posIntegrations = (
+                await tx.pOSIntegration.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              const products = (
+                await tx.product.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              const locations = (
+                await tx.location.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              const teamMembers = (
+                await tx.member.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              return [locations, products, teamMembers, posIntegrations]
+            })
+          await Promise.all([
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'locations',
+              value: locations,
+              track: false,
+            }),
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'products',
+              value: products,
+              track: false,
+            }),
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'team_members',
+              value: teamMembers,
+              track: false,
+            }),
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'pos_integrations',
+              value: posIntegrations,
+              track: false,
+            }),
+          ])
+        } catch (_err) {
+          console.error('Error tracking usage')
+        }
+        return res
       })
 
       return {
@@ -420,6 +513,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
         successUrl: z.string().optional(),
         entityId: z.string().optional(),
         options: z.record(z.string(), z.number()).optional(),
+        reward: z.string().optional(), // Promo code support
       })
       .parse(request.body)
 
@@ -434,9 +528,11 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
         successUrl: validatedData.successUrl,
         entityId: validatedData.entityId,
         options: validatedData.options,
+        reward: validatedData.reward, // Pass promo code if provided
         customerData: {
           organizationId,
-          organizationName: (request as any).organization?.name || 'Unknown Organization',
+          organizationName:
+            (request as any).organization?.name || 'Unknown Organization',
         },
       })
 
@@ -471,29 +567,37 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
     try {
       // Determine required permissions - either explicit or from feature mapping
-      const requiredPermissions = validatedData.requiredPermissions || 
+      const requiredPermissions =
+        validatedData.requiredPermissions ||
         getRequiredPermissionsForFeature(validatedData.featureId)
-      
+
       // Pre-check permissions if we have any to check
       if (requiredPermissions && requiredPermissions.length > 0) {
-        const permissionCheck = await checkRequiredPermissions(request, requiredPermissions, fastify.prisma)
-        
+        const permissionCheck = await checkRequiredPermissions(
+          request,
+          requiredPermissions,
+          fastify.prisma
+        )
+
         if (!permissionCheck.hasPermission) {
           // Return permission denied without calling Autumn
-          return { 
-            data: { 
+          return {
+            data: {
               access: false,
               reason: 'insufficient_permissions',
               missingPermissions: permissionCheck.missingPermissions,
-              skipAutumnCheck: true
-            } 
+              skipAutumnCheck: true,
+            },
           }
         }
       }
 
       // Use organization owner's customer ID for feature checks
-      const customerId = await getOrganizationOwnerCustomerId(organizationId, fastify.prisma)
-      
+      const customerId = await getOrganizationOwnerCustomerId(
+        organizationId,
+        fastify.prisma
+      )
+
       const access = await SubscriptionService.checkFeatureAccess({
         customerId,
         featureId: validatedData.featureId,
@@ -529,8 +633,11 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
     try {
       // Use organization owner's customer ID for usage tracking
-      const customerId = await getOrganizationOwnerCustomerId(organizationId, fastify.prisma)
-      
+      const customerId = await getOrganizationOwnerCustomerId(
+        organizationId,
+        fastify.prisma
+      )
+
       const event = await SubscriptionService.trackUsage({
         customerId,
         featureId: validatedData.featureId,
@@ -560,8 +667,11 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
     try {
       // Use organization owner's customer ID for subscription data
-      const customerId = await getOrganizationOwnerCustomerId(organizationId, fastify.prisma)
-      
+      const customerId = await getOrganizationOwnerCustomerId(
+        organizationId,
+        fastify.prisma
+      )
+
       const customer = await SubscriptionService.getCustomer(customerId)
       return {
         success: true,
@@ -621,6 +731,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
   // Cancel subscription/product
   fastify.post('/cancel', async (request, reply) => {
+    const organizationId = getOrganizationId(request)
     const validatedData = z
       .object({
         productId: z.string(),
@@ -634,7 +745,71 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
       const result = await SubscriptionService.cancelProduct(
         customerId,
         validatedData.productId
-      )
+      ).then(async (res) => {
+        try {
+          const [locations, products, teamMembers, posIntegrations] =
+            await fastify.prisma.$transaction(async (tx) => {
+              const posIntegrations = (
+                await tx.pOSIntegration.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              const products = (
+                await tx.product.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              const locations = (
+                await tx.location.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              const teamMembers = (
+                await tx.member.findMany({
+                  where: {
+                    organizationId,
+                  },
+                })
+              ).length
+              return [locations, products, teamMembers, posIntegrations]
+            })
+          await Promise.all([
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'locations',
+              value: locations,
+              track: false,
+            }),
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'products',
+              value: products,
+              track: false,
+            }),
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'team_members',
+              value: teamMembers,
+              track: false,
+            }),
+            SubscriptionService.trackUsage({
+              customerId,
+              featureId: 'pos_integrations',
+              value: posIntegrations,
+              track: false,
+            }),
+          ])
+        } catch (_err) {
+          console.error('Error tracking usage')
+        }
+        return res
+      })
 
       return {
         success: true,

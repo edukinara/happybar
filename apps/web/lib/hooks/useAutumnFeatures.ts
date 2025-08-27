@@ -18,8 +18,9 @@ export function useAutumnFeatures() {
   // Only fetch customer data for owners/admins who have billing access
   useEffect(() => {
     // Check if user has billing access (owner or admin role)
-    const hasBillingAccess = user?.role && ['owner', 'admin'].includes(user.role)
-    
+    const hasBillingAccess =
+      user?.role && ['owner', 'admin'].includes(user.role)
+
     if (session && !isPending && hasBillingAccess) {
       setLoading(true)
       subscriptionApi
@@ -113,9 +114,12 @@ export function useAutumnFeatures() {
     }
 
     // Check if user has billing access
-    const hasBillingAccess = user?.role && ['owner', 'admin'].includes(user.role)
+    const hasBillingAccess =
+      user?.role && ['owner', 'admin'].includes(user.role)
     if (!hasBillingAccess) {
-      throw new Error('Billing access restricted to organization owners and administrators')
+      throw new Error(
+        'Billing access restricted to organization owners and administrators'
+      )
     }
 
     try {
@@ -135,9 +139,12 @@ export function useAutumnFeatures() {
     }
 
     // Check if user has billing access
-    const hasBillingAccess = user?.role && ['owner', 'admin'].includes(user.role)
+    const hasBillingAccess =
+      user?.role && ['owner', 'admin'].includes(user.role)
     if (!hasBillingAccess) {
-      throw new Error('Checkout access restricted to organization owners and administrators')
+      throw new Error(
+        'Checkout access restricted to organization owners and administrators'
+      )
     }
 
     try {
@@ -149,10 +156,14 @@ export function useAutumnFeatures() {
 
       if (checkout?.url) {
         window.location.href = checkout.url
+      } else if (checkout?.checkout_url) {
+        window.location.href = checkout.checkout_url
       } else if (checkout?.success) {
         // Payment was successful (card on file)
         window.location.href = successUrl || '/dashboard?upgraded=true'
         // Session will be refreshed automatically
+      } else if (checkout.product_ids?.some((p) => p === productId)) {
+        window.location.href = successUrl || '/dashboard?upgraded=true'
       }
     } catch (err) {
       console.error('Failed to create checkout:', err)
@@ -235,14 +246,15 @@ export function useFeatureAccess(
     loading,
     trackUsage,
   } = useAutumnFeatures()
-  
+
   const [checkingAccess, setCheckingAccess] = useState(false)
   const [accessResult, setAccessResult] = useState<boolean | null>(null)
 
   // For non-billing users, use the check endpoint
   useEffect(() => {
-    const hasBillingAccess = user?.role && ['owner', 'admin'].includes(user.role)
-    
+    const hasBillingAccess =
+      user?.role && ['owner', 'admin'].includes(user.role)
+
     // If user doesn't have billing access and we don't have features data,
     // use the check endpoint to verify access
     if (user && !hasBillingAccess && !getFeatureBalance(featureId)) {
@@ -262,10 +274,11 @@ export function useFeatureAccess(
   }, [user, featureId, requiredBalance, getFeatureBalance])
 
   // For billing users, use the cached features data
-  const hasAccess = user?.role && ['owner', 'admin'].includes(user.role)
-    ? hasFeatureAccess(featureId, requiredBalance)
-    : (accessResult ?? false)
-    
+  const hasAccess =
+    user?.role && ['owner', 'admin'].includes(user.role)
+      ? hasFeatureAccess(featureId, requiredBalance)
+      : (accessResult ?? false)
+
   const balance = getFeatureBalance(featureId)
   const usage = getFeatureUsage(featureId)
   const unlimited = isFeatureUnlimited(featureId)

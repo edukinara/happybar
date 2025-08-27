@@ -24,6 +24,7 @@ import {
   usePOSIntegrationUsageTracker,
   useTeamMemberUsageTracker,
 } from '@/components/subscription/usage-tracker'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -52,11 +53,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
 import { posApi } from '@/lib/api/pos'
+import { subscriptionApi } from '@/lib/api/subscription'
 import { organization } from '@/lib/auth/client'
 import { useAutumnFeatures } from '@/lib/hooks/useAutumnFeatures'
 import { cn } from '@/lib/utils'
 import type { POSSyncStatus, POSType } from '@happy-bar/types'
 import {
+  AlertCircleIcon,
   AlertTriangle,
   ArrowUpCircle,
   Building2,
@@ -73,6 +76,7 @@ import {
   TestTube,
   Trash2,
   Users,
+  X,
   XCircle,
   Zap,
 } from 'lucide-react'
@@ -96,6 +100,7 @@ export default function SettingsPage() {
   const [locations, setLocations] = useState<LocationsResponse>([])
   const [integrations, setIntegrations] = useState<POSIntegration[]>([])
   const [loading, setLoading] = useState(true)
+  const [changingPlans, setChangingPlan] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showNewIntegrationDialog, setShowNewIntegrationDialog] =
     useState(false)
@@ -391,10 +396,28 @@ export default function SettingsPage() {
                       <DialogTrigger asChild>
                         <POSIntegrationsGate
                           fallback={
-                            <Button disabled>
-                              <Plus className='mr-2 h-4 w-4' />
-                              Add Integration (Upgrade Required)
-                            </Button>
+                            // <Button disabled>
+                            //   <Plus className='mr-2 h-4 w-4' />
+                            //   Add Integration (Upgrade Required)
+                            // </Button>
+                            <div className='grid items-start gap-0'>
+                              <Alert variant='warn'>
+                                <AlertCircleIcon />
+                                <AlertDescription className='gap-0 font-medium leading-0 p-0'>
+                                  <p>
+                                    You have hit the POS Integration limit for
+                                    your plan.
+                                  </p>
+                                  <Button
+                                    variant='link'
+                                    onClick={() => handleTabChange('billing')}
+                                    className='p-0 text-warning leading-0 m-0 h-5 font-semibold'
+                                  >
+                                    Please upgrade to add more
+                                  </Button>
+                                </AlertDescription>
+                              </Alert>
+                            </div>
                           }
                         >
                           <Button
@@ -706,7 +729,7 @@ export default function SettingsPage() {
                     }
                   >
                     <div>
-                      <Card className='brand-card'>
+                      <Card className='brand-card gap-2'>
                         <CardHeader>
                           <CardTitle className='flex items-center'>
                             <Crown className='mr-2 h-5 w-5 brand-icon-accent' />
@@ -719,61 +742,227 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                           {subscriptionLoading ? (
-                            <div className='flex items-center justify-center py-8'>
-                              <Loader2 className='h-6 w-6 animate-spin' />
+                            <div className='flex items-start justify-center py-0'>
+                              <Loader2 className='size-6 animate-spin' />
                               <span className='ml-2'>
                                 Loading subscription data...
                               </span>
                             </div>
                           ) : customer ? (
                             <div className='space-y-4'>
-                              <div className='flex items-center justify-between p-4 border rounded-lg'>
-                                <div>
-                                  <h4 className='font-medium'>Current Plan</h4>
-                                  <div className='flex items-center gap-2 mt-1'>
-                                    <span className='text-2xl font-bold'>
-                                      {customer.products?.[0]?.name || 'Free'}
-                                    </span>
-                                    {customer.products?.[0]?.name !==
-                                      'Free' && (
-                                      <Badge variant='secondary'>Active</Badge>
-                                    )}
+                              <div className='flex flex-col gap-4'>
+                                {/* Show scheduled plan change */}
+                                {(() => {
+                                  const activePlan = customer.products?.find(
+                                    (p) => p.status === 'active'
+                                  )
+                                  const scheduledPlan = customer.products?.find(
+                                    (p) => p.status === 'scheduled'
+                                  )
+
+                                  if (
+                                    scheduledPlan &&
+                                    activePlan?.canceled_at
+                                  ) {
+                                    const switchDate = new Date(
+                                      scheduledPlan.started_at
+                                    )
+                                    const isDowngrade =
+                                      scheduledPlan.name === 'Free' ||
+                                      (scheduledPlan.items?.find(
+                                        (i) => i.type === 'price'
+                                      )?.price || 0) <
+                                        (activePlan.items?.find(
+                                          (i) => i.type === 'price'
+                                        )?.price || 0)
+
+                                    return (
+                                      <div
+                                        className={`mt-3 p-3 rounded-md ${isDowngrade ? 'bg-orange-50 dark:bg-orange-950/20' : 'bg-blue-50 dark:bg-blue-950/20'}`}
+                                      >
+                                        <div className='flex items-start gap-2'>
+                                          <AlertCircleIcon
+                                            className={`h-5 w-5 mt-0.5 ${isDowngrade ? 'text-orange-600' : 'text-blue-600'}`}
+                                          />
+                                          <div className='flex-1'>
+                                            <p
+                                              className={`text-sm font-medium ${isDowngrade ? 'text-orange-900 dark:text-orange-200' : 'text-blue-900 dark:text-blue-200'}`}
+                                            >
+                                              {isDowngrade
+                                                ? 'Scheduled Downgrade'
+                                                : 'Scheduled Plan Change'}
+                                            </p>
+                                            <p
+                                              className={`text-sm mt-1 ${isDowngrade ? 'text-orange-700 dark:text-orange-300' : 'text-blue-700 dark:text-blue-300'}`}
+                                            >
+                                              Switching to{' '}
+                                              <strong>
+                                                {scheduledPlan.name}
+                                              </strong>{' '}
+                                              on{' '}
+                                              {switchDate.toLocaleDateString()}
+                                            </p>
+                                            {activePlan.current_period_end && (
+                                              <p
+                                                className={`text-xs mt-1 ${isDowngrade ? 'text-orange-600 dark:text-orange-400' : 'text-blue-600 dark:text-blue-400'}`}
+                                              >
+                                                You&apos;ll continue to have
+                                                access to {activePlan.name}{' '}
+                                                features until then
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )
+                                  }
+
+                                  if (customer.products?.[0]?.name === 'Free') {
+                                    return (
+                                      <p className='text-sm text-muted-foreground mt-2'>
+                                        Upgrade to unlock advanced features
+                                      </p>
+                                    )
+                                  }
+
+                                  return null
+                                })()}
+                                <div className='flex flex-wrap items-center justify-between p-4 border rounded-lg gap-2'>
+                                  <div>
+                                    <h4 className='font-medium'>
+                                      Current Plan
+                                    </h4>
+                                    <div className='flex items-center gap-2 mt-1'>
+                                      <span className='text-2xl font-bold'>
+                                        {(() => {
+                                          const activePlan =
+                                            customer.products?.find(
+                                              (p) => p.status === 'active'
+                                            )
+                                          return activePlan?.name || 'Free'
+                                        })()}
+                                      </span>
+                                      {customer.products?.find(
+                                        (p) => p.status === 'active'
+                                      )?.name !== 'Free' && (
+                                        <Badge variant='secondary'>
+                                          Active
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
-                                  {customer.products?.[0]?.name === 'Free' && (
-                                    <p className='text-sm text-muted-foreground mt-2'>
-                                      Upgrade to unlock advanced features
-                                    </p>
-                                  )}
-                                </div>
-                                <div className='flex gap-2'>
-                                  {customer.products?.[0]?.name === 'Free' ? (
-                                    <Button
-                                      onClick={() => setShowPricingModal(true)}
-                                      className='btn-brand-primary'
-                                    >
-                                      <ArrowUpCircle className='mr-2 h-4 w-4' />
-                                      Upgrade Plan
-                                    </Button>
-                                  ) : (
-                                    <>
-                                      <Button
-                                        variant='outline'
-                                        onClick={() =>
-                                          setShowPricingModal(true)
-                                        }
-                                      >
-                                        <ArrowUpCircle className='mr-2 h-4 w-4' />
-                                        Change Plan
-                                      </Button>
-                                      <Button
-                                        onClick={openBillingPortal}
-                                        className='btn-brand-primary'
-                                      >
-                                        <CreditCard className='mr-2 h-4 w-4' />
-                                        Manage Billing
-                                      </Button>
-                                    </>
-                                  )}
+                                  <div className='flex gap-2'>
+                                    {(() => {
+                                      const activePlan =
+                                        customer.products?.find(
+                                          (p) => p.status === 'active'
+                                        )
+                                      const scheduledPlan =
+                                        customer.products?.find(
+                                          (p) => p.status === 'scheduled'
+                                        )
+
+                                      // If there's a scheduled change, show cancel and manage buttons
+                                      if (
+                                        scheduledPlan &&
+                                        activePlan?.canceled_at
+                                      ) {
+                                        return (
+                                          <>
+                                            <Button
+                                              variant='outline'
+                                              onClick={async () => {
+                                                try {
+                                                  // Reactivate the current plan by attaching it again
+                                                  // This will cancel the scheduled downgrade
+                                                  setChangingPlan(true)
+                                                  await subscriptionApi.attachProduct(
+                                                    {
+                                                      productId: activePlan.id,
+                                                    }
+                                                  )
+
+                                                  toast.success(
+                                                    'Plan change cancelled',
+                                                    {
+                                                      description: `You'll remain on the ${activePlan.name} plan`,
+                                                    }
+                                                  )
+
+                                                  // Refresh the page to update customer data
+                                                  window.location.reload()
+                                                } catch (error) {
+                                                  console.error(
+                                                    'Failed to cancel plan change:',
+                                                    error
+                                                  )
+                                                  toast.error(
+                                                    'Failed to cancel',
+                                                    {
+                                                      description:
+                                                        'Unable to cancel the scheduled plan change. Please try again.',
+                                                    }
+                                                  )
+                                                } finally {
+                                                  setChangingPlan(false)
+                                                }
+                                              }}
+                                              loading={changingPlans}
+                                            >
+                                              <X className='mr-2 h-4 w-4' />
+                                              Cancel Scheduled Change
+                                            </Button>
+                                            <Button
+                                              onClick={openBillingPortal}
+                                              className='btn-brand-primary'
+                                            >
+                                              <CreditCard className='mr-2 h-4 w-4' />
+                                              Manage Billing
+                                            </Button>
+                                          </>
+                                        )
+                                      }
+
+                                      // Regular flow based on current plan
+                                      if (
+                                        activePlan?.name === 'Free' ||
+                                        !activePlan
+                                      ) {
+                                        return (
+                                          <Button
+                                            onClick={() =>
+                                              setShowPricingModal(true)
+                                            }
+                                            className='btn-brand-primary'
+                                          >
+                                            <ArrowUpCircle className='mr-2 h-4 w-4' />
+                                            Upgrade Plan
+                                          </Button>
+                                        )
+                                      }
+
+                                      return (
+                                        <>
+                                          <Button
+                                            variant='outline'
+                                            onClick={() =>
+                                              setShowPricingModal(true)
+                                            }
+                                          >
+                                            <ArrowUpCircle className='mr-2 h-4 w-4' />
+                                            Change Plan
+                                          </Button>
+                                          <Button
+                                            onClick={openBillingPortal}
+                                            className='btn-brand-primary'
+                                          >
+                                            <CreditCard className='mr-2 h-4 w-4' />
+                                            Manage Billing
+                                          </Button>
+                                        </>
+                                      )
+                                    })()}
+                                  </div>
                                 </div>
                               </div>
 

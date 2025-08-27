@@ -441,6 +441,8 @@ export interface AutumnProduct {
   is_add_on: boolean
   version: number
   items: AutumnItem[]
+  current_period_start?: number
+  current_period_end?: number
 }
 
 export interface AutumnItem {
@@ -453,6 +455,7 @@ export interface AutumnItem {
   interval_count: number
   reset_usage_when_enabled: boolean
   entity_feature_id: string | null
+  price?: number
 }
 
 export interface AutumnFeature {

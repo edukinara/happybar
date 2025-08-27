@@ -44,7 +44,14 @@ export const subscriptionApi = {
   async createCheckout(data: CheckoutRequest) {
     const response = await apiClient.post<{
       success: boolean
-      data: { checkout: { url?: string; success?: boolean } }
+      data: {
+        checkout: {
+          checkout_url?: string
+          url?: string
+          success?: boolean
+          product_ids?: string[]
+        }
+      }
     }>('/api/subscription/checkout', data)
     return response.data.checkout
   },

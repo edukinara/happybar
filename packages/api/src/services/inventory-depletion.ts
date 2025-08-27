@@ -1,13 +1,13 @@
 import { PrismaClient } from '@happy-bar/database'
-import { UnitConverter, UnitConversionResult } from '../utils/unit-conversion'
-import { InventorySettingsService } from './inventory-settings'
+import { UnitConversionResult, UnitConverter } from '../utils/unit-conversion'
 import { AuditLoggingService } from './audit-logging'
+import { InventorySettingsService } from './inventory-settings'
 
 export interface InventoryDepletionOptions {
   allowOverDepletion?: boolean
   warningThresholds?: {
-    low: number  // % of minimum quantity
-    critical: number  // % of minimum quantity
+    low: number // % of minimum quantity
+    critical: number // % of minimum quantity
   }
   auditUserId?: string
   source?: string
@@ -58,11 +58,19 @@ export class InventoryDepletionService {
   ): Promise<InventoryDepletionResult> {
     // Load settings if not provided in options
     let finalOptions = { ...options }
-    
-    if (options.source && (options.allowOverDepletion === undefined || !options.warningThresholds)) {
-      const sourceType = InventorySettingsService.parseSourceType(options.source)
-      const policy = await this.settingsService.getPolicyForSource(organizationId, sourceType)
-      
+
+    if (
+      options.source &&
+      (options.allowOverDepletion === undefined || !options.warningThresholds)
+    ) {
+      const sourceType = InventorySettingsService.parseSourceType(
+        options.source
+      )
+      const policy = await this.settingsService.getPolicyForSource(
+        organizationId,
+        sourceType
+      )
+
       // Use settings values if not explicitly provided
       if (finalOptions.allowOverDepletion === undefined) {
         finalOptions.allowOverDepletion = policy.allowOverDepletion
@@ -178,7 +186,7 @@ export class InventoryDepletionService {
     // Get serving information from mapping or POS product
     const servingUnit = mapping.servingUnit || posProduct?.servingUnit
     const servingSize = mapping.servingSize || posProduct?.servingSize || 1
-    
+
     if (servingUnit && servingSize) {
       if (servingUnit !== product.unit) {
         // Convert POS serving to inventory unit (different units)
@@ -189,7 +197,7 @@ export class InventoryDepletionService {
           product.unitSize,
           quantity
         )
-        
+
         // Check if we need to calculate fractional depletion
         // The converter returns amount in the target unit, but we may need fractions of containers
         if (product.unitSize && product.unitSize > 0) {
@@ -198,7 +206,7 @@ export class InventoryDepletionService {
         } else {
           depletionAmount = unitConversion.convertedAmount
         }
-        
+
         // Log unit conversion for audit if enabled
         await this.auditService.logUnitConversionEvent(
           organizationId,
@@ -223,7 +231,7 @@ export class InventoryDepletionService {
         // Same units - need to consider if we're depleting fractions of a container
         // For example: 44ml serving from a 750ml bottle = 44/750 = 0.0587 bottles
         const totalServingAmount = quantity * servingSize
-        
+
         // If product has a unitSize (e.g., 750ml bottle), calculate fractional depletion
         if (product.unitSize && product.unitSize > 0) {
           depletionAmount = totalServingAmount / product.unitSize
@@ -231,7 +239,7 @@ export class InventoryDepletionService {
           // No unitSize defined, use the serving amount directly
           depletionAmount = totalServingAmount
         }
-        
+
         // Log this as a "conversion" for audit purposes
         await this.auditService.logUnitConversionEvent(
           organizationId,
@@ -263,7 +271,7 @@ export class InventoryDepletionService {
 
     // Check inventory sufficiency and over-depletion policy
     const shortfall = depletionAmount - totalCurrentQuantity
-    
+
     if (totalCurrentQuantity < depletionAmount) {
       if (!options.allowOverDepletion) {
         throw new Error(
@@ -273,7 +281,7 @@ export class InventoryDepletionService {
         warnings.push(
           `Over-depletion allowed: ${product.name} went negative by ${shortfall.toFixed(2)} ${product.unit}`
         )
-        
+
         // Log over-depletion event for audit
         await this.auditService.logOverDepletionEvent(
           organizationId,
@@ -294,10 +302,15 @@ export class InventoryDepletionService {
         )
       }
     }
-    
+
     // Check warning thresholds
     const finalQuantity = totalCurrentQuantity - depletionAmount
-    this.checkWarningThresholds(product, finalQuantity, warnings, options.warningThresholds)
+    this.checkWarningThresholds(
+      product,
+      finalQuantity,
+      warnings,
+      options.warningThresholds
+    )
 
     // Deplete inventory with proper over-depletion handling
     let remainingToDeplete = depletionAmount
@@ -306,14 +319,14 @@ export class InventoryDepletionService {
     // First pass: deplete from available stock
     for (const inventoryItem of inventoryItems) {
       if (remainingToDeplete <= 0) break
-      
+
       const availableQuantity = Math.max(0, inventoryItem.currentQuantity)
       const amountToDeplete = Math.min(remainingToDeplete, availableQuantity)
-      
+
       if (amountToDeplete > 0) {
         itemUpdates.set(inventoryItem.id, {
           item: inventoryItem,
-          totalDepletion: amountToDeplete
+          totalDepletion: amountToDeplete,
         })
         remainingToDeplete -= amountToDeplete
       }
@@ -321,10 +334,14 @@ export class InventoryDepletionService {
 
     // Second pass: if over-depletion is allowed and there's still amount remaining,
     // apply it to the first inventory item (making it negative)
-    if (remainingToDeplete > 0 && options.allowOverDepletion && inventoryItems.length > 0) {
+    if (
+      remainingToDeplete > 0 &&
+      options.allowOverDepletion &&
+      inventoryItems.length > 0
+    ) {
       const firstItem = inventoryItems[0]
       const existingUpdate = itemUpdates.get(firstItem.id)
-      
+
       if (existingUpdate) {
         // Add to existing depletion
         existingUpdate.totalDepletion += remainingToDeplete
@@ -332,7 +349,7 @@ export class InventoryDepletionService {
         // Create new depletion entry
         itemUpdates.set(firstItem.id, {
           item: firstItem,
-          totalDepletion: remainingToDeplete
+          totalDepletion: remainingToDeplete,
         })
       }
     }
@@ -356,15 +373,6 @@ export class InventoryDepletionService {
 
     // Calculate final total quantity
     const finalTotalQuantity = totalCurrentQuantity - depletionAmount
-
-    // Log the inventory depletion
-    // console.log(`Inventory depleted: ${product.name}`, {
-    //   depletedAmount: depletionAmount,
-    //   originalQuantity: totalCurrentQuantity,
-    //   newQuantity: finalTotalQuantity,
-    //   source: 'pos_sale',
-    //   externalOrderId,
-    // })
 
     return {
       type: 'direct',
@@ -415,7 +423,7 @@ export class InventoryDepletionService {
 
       // Check inventory sufficiency and over-depletion policy
       const shortfall = totalIngredientUsage - totalCurrentQuantity
-      
+
       if (totalCurrentQuantity < totalIngredientUsage) {
         if (!options.allowOverDepletion) {
           throw new Error(
@@ -425,7 +433,7 @@ export class InventoryDepletionService {
           warnings.push(
             `Over-depletion allowed: ${product.name} went negative by ${shortfall.toFixed(2)} ${product.unit}`
           )
-          
+
           // Log over-depletion event for audit
           await this.auditService.logOverDepletionEvent(
             organizationId,
@@ -447,26 +455,34 @@ export class InventoryDepletionService {
           )
         }
       }
-      
+
       // Check warning thresholds
       const finalQuantity = totalCurrentQuantity - totalIngredientUsage
-      this.checkWarningThresholds(product, finalQuantity, warnings, options.warningThresholds)
+      this.checkWarningThresholds(
+        product,
+        finalQuantity,
+        warnings,
+        options.warningThresholds
+      )
 
       // Deplete inventory with proper over-depletion handling for this ingredient
       let remainingToDeplete = totalIngredientUsage
-      const itemUpdates = new Map<string, { item: any; totalDepletion: number }>()
+      const itemUpdates = new Map<
+        string,
+        { item: any; totalDepletion: number }
+      >()
 
       // First pass: deplete from available stock
       for (const inventoryItem of inventoryItems) {
         if (remainingToDeplete <= 0) break
-        
+
         const availableQuantity = Math.max(0, inventoryItem.currentQuantity)
         const amountToDeplete = Math.min(remainingToDeplete, availableQuantity)
-        
+
         if (amountToDeplete > 0) {
           itemUpdates.set(inventoryItem.id, {
             item: inventoryItem,
-            totalDepletion: amountToDeplete
+            totalDepletion: amountToDeplete,
           })
           remainingToDeplete -= amountToDeplete
         }
@@ -474,10 +490,14 @@ export class InventoryDepletionService {
 
       // Second pass: if over-depletion is allowed and there's still amount remaining,
       // apply it to the first inventory item (making it negative)
-      if (remainingToDeplete > 0 && options.allowOverDepletion && inventoryItems.length > 0) {
+      if (
+        remainingToDeplete > 0 &&
+        options.allowOverDepletion &&
+        inventoryItems.length > 0
+      ) {
         const firstItem = inventoryItems[0]
         const existingUpdate = itemUpdates.get(firstItem.id)
-        
+
         if (existingUpdate) {
           // Add to existing depletion
           existingUpdate.totalDepletion += remainingToDeplete
@@ -485,7 +505,7 @@ export class InventoryDepletionService {
           // Create new depletion entry
           itemUpdates.set(firstItem.id, {
             item: firstItem,
-            totalDepletion: remainingToDeplete
+            totalDepletion: remainingToDeplete,
           })
         }
       }
@@ -509,17 +529,6 @@ export class InventoryDepletionService {
 
       // Calculate final total quantity
       const finalTotalQuantity = totalCurrentQuantity - totalIngredientUsage
-
-      // Log the ingredient depletion
-      // console.log(`Recipe ingredient depleted: ${product.name}`, {
-      //   recipe: recipe.name,
-      //   totalIngredientUsage,
-      //   originalQuantity: totalCurrentQuantity,
-      //   newQuantity: finalTotalQuantity,
-      //   servings: quantity,
-      //   source: 'pos_sale',
-      //   externalOrderId,
-      // })
 
       results.push({
         productId: product.id,
@@ -554,20 +563,27 @@ export class InventoryDepletionService {
 
     // Get minimum quantity across all locations for this product
     const inventoryItems = product.inventoryItems || []
-    const minQuantity = Math.min(...inventoryItems.map((item: any) => item.minimumQuantity || 0))
-    
+    const minQuantity = Math.min(
+      ...inventoryItems.map((item: any) => item.minimumQuantity || 0)
+    )
+
     if (minQuantity > 0) {
       const percentageOfMin = (finalQuantity / minQuantity) * 100
-      
+
       if (percentageOfMin <= thresholds.critical) {
-        warnings.push(`CRITICAL: ${product.name} is at ${percentageOfMin.toFixed(1)}% of minimum stock level`)
+        warnings.push(
+          `CRITICAL: ${product.name} is at ${percentageOfMin.toFixed(1)}% of minimum stock level`
+        )
       } else if (percentageOfMin <= thresholds.low) {
-        warnings.push(`LOW STOCK: ${product.name} is at ${percentageOfMin.toFixed(1)}% of minimum stock level`)
+        warnings.push(
+          `LOW STOCK: ${product.name} is at ${percentageOfMin.toFixed(1)}% of minimum stock level`
+        )
       }
     } else if (finalQuantity <= 5) {
       // If no minimum set, warn when very low
-      warnings.push(`LOW STOCK: ${product.name} has only ${finalQuantity.toFixed(2)} ${product.unit} remaining`)
+      warnings.push(
+        `LOW STOCK: ${product.name} has only ${finalQuantity.toFixed(2)} ${product.unit} remaining`
+      )
     }
   }
-
 }

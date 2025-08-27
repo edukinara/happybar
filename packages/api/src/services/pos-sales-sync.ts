@@ -89,13 +89,6 @@ export class POSSalesSyncService {
         startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       }
 
-      // console.log(`Syncing sales for integration ${integration.name}`, {
-      //   organizationId,
-      //   startDate: startDate.toISOString(),
-      //   endDate: endDate.toISOString(),
-      //   forced: options?.forced || false,
-      // })
-
       // For now, we'll use the Toast client directly
       // TODO: Refactor POS client interface to support sales fetching
       if (integration.type !== 'TOAST') {
@@ -167,10 +160,6 @@ export class POSSalesSyncService {
               closeoutHour
             )
 
-            // console.log(
-            //   `Using business date range: ${startBusinessDate} to ${endBusinessDate}`
-            // )
-
             // Use business date range if available
             if (startBusinessDate === endBusinessDate) {
               // Single business date - more efficient
@@ -200,10 +189,6 @@ export class POSSalesSyncService {
           }
 
           const sales = posClient.convertToPOSSales(orders)
-
-          // console.log(
-          //   `Fetched ${sales.length} sales from restaurant ${restaurant.general.name}`
-          // )
 
           // Process each sale
           for (const sale of sales) {
@@ -253,7 +238,6 @@ export class POSSalesSyncService {
         errorDetails: errorDetails.length > 0 ? errorDetails : undefined,
       }
 
-      // console.log(`Sales sync completed for ${integration.name}:`, result)
       return result
     } catch (error) {
       console.error(
@@ -297,7 +281,6 @@ export class POSSalesSyncService {
     })
 
     if (existingSale) {
-      // console.log(`Skipping duplicate sale: ${sale.externalId}`)
       return { isNew: false, saleId: existingSale.id }
     }
 
@@ -324,70 +307,70 @@ export class POSSalesSyncService {
         totalAmount: sale.totalAmount,
         saleDate: sale.timestamp,
         items: {
-          create: await Promise.all(Array.from(aggregatedItems.values()).map(async (item) => {
-            // Find the POS product for this sale item
-            const posProduct = await this.prisma.pOSProduct.findFirst({
-              where: {
-                organizationId,
-                integrationId,
-                externalId: item.productId,
-              },
-              include: {
-                mappings: true,
-                recipePOSMappings: {
-                  include: {
-                    recipe: true,
-                  },
-                },
-              },
-            })
-
-            if (!posProduct) {
-              console.warn(`POS Product not found for external ID: ${item.productId}`)
-              // Create a placeholder POS product if it doesn't exist
-              const newPosProduct = await this.prisma.pOSProduct.create({
-                data: {
+          create: await Promise.all(
+            Array.from(aggregatedItems.values()).map(async (item) => {
+              // Find the POS product for this sale item
+              const posProduct = await this.prisma.pOSProduct.findFirst({
+                where: {
                   organizationId,
                   integrationId,
                   externalId: item.productId,
-                  name: `Unknown Product ${item.productId}`,
-                  isActive: true,
+                },
+                include: {
+                  mappings: true,
+                  recipePOSMappings: {
+                    include: {
+                      recipe: true,
+                    },
+                  },
                 },
               })
-              
+
+              if (!posProduct) {
+                console.warn(
+                  `POS Product not found for external ID: ${item.productId}`
+                )
+                // Create a placeholder POS product if it doesn't exist
+                const newPosProduct = await this.prisma.pOSProduct.create({
+                  data: {
+                    organizationId,
+                    integrationId,
+                    externalId: item.productId,
+                    name: `Unknown Product ${item.productId}`,
+                    isActive: true,
+                  },
+                })
+
+                return {
+                  posProductId: newPosProduct.id,
+                  itemName: item.name || newPosProduct.name,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                  totalPrice: item.totalPrice,
+                }
+              }
+
+              // Determine if this maps to a product or recipe
+              const productMapping = posProduct.mappings[0]
+              const recipeMapping = posProduct.recipePOSMappings[0]
+
               return {
-                posProductId: newPosProduct.id,
-                itemName: item.name || newPosProduct.name,
+                posProductId: posProduct.id,
+                productId: productMapping?.productId || undefined,
+                recipeId: recipeMapping?.recipeId || undefined,
+                itemName: item.name || posProduct.name,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
                 totalPrice: item.totalPrice,
               }
-            }
-
-            // Determine if this maps to a product or recipe
-            const productMapping = posProduct.mappings[0]
-            const recipeMapping = posProduct.recipePOSMappings[0]
-
-            return {
-              posProductId: posProduct.id,
-              productId: productMapping?.productId || undefined,
-              recipeId: recipeMapping?.recipeId || undefined,
-              itemName: item.name || posProduct.name,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              totalPrice: item.totalPrice,
-            }
-          })),
+            })
+          ),
         },
       },
       include: {
         items: true,
       },
     })
-
-    // console.log(
-    //   `Created sale record: ${saleRecord.id} for external ID: ${sale.externalId}`
-    // )
 
     // Process inventory depletion for each aggregated sale item
     const inventoryResults = []
@@ -412,11 +395,6 @@ export class POSSalesSyncService {
           quantity: item.quantity,
           ...result,
         })
-
-        // console.log(
-        //   `✅ Inventory depleted for sale item ${item.productId}:`,
-        //   result
-        // )
       } catch (error) {
         const errorMsg = `❌ Failed to deplete inventory for item ${item.productId}: ${error instanceof Error ? error.message : 'Unknown error'}`
         // console.error(errorMsg)
@@ -426,15 +404,6 @@ export class POSSalesSyncService {
         // This allows sales to be recorded even if inventory mapping is incomplete
       }
     }
-
-    // console.log(
-    //   `📦 Sale processed: ${sale.externalId} with ${sale.items.length} items`,
-    //   {
-    //     inventorySuccess: inventoryResults.length,
-    //     inventoryErrors: inventoryErrors.length,
-    //     totalItems: sale.items.length,
-    //   }
-    // )
 
     return { isNew: true, saleId: saleRecord.id }
   }
@@ -482,10 +451,6 @@ export class POSSalesSyncService {
     let successCount = 0
     let errorCount = 0
 
-    // console.log(
-    //   `Starting bulk sales sync for ${integrations.length} integrations`
-    // )
-
     for (const integration of integrations) {
       try {
         const result = await this.syncSalesForIntegration(integration.id, {
@@ -520,10 +485,6 @@ export class POSSalesSyncService {
         errorCount++
       }
     }
-
-    // console.log(
-    //   `Bulk sales sync completed: ${successCount} success, ${errorCount} errors`
-    // )
 
     return {
       success: errorCount === 0,
