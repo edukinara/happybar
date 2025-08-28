@@ -1,0 +1,31 @@
+{
+  "name": "Happy Bar",
+  "short_name": "Happy Bar",
+  "description": "POS-integrated inventory management for bars and restaurants",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["business", "productivity", "food"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/x-icon"
+    }
+  ]
+}
