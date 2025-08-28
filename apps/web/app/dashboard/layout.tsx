@@ -1,10 +1,10 @@
 'use client'
 
-import { SimpleThemeToggle } from '@/components/theme-toggle'
 import { AppSidebar } from '@/components/app-sidebar'
 import { ErrorBoundary } from '@/components/error-boundary'
-import { Loading } from '@/components/loading'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { NavUser } from '@/components/nav-user'
+import { SimpleThemeToggle } from '@/components/theme-toggle'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -67,7 +67,7 @@ export default function DashboardLayout({
   }, [user, loading, router])
 
   if (loading) {
-    return <Loading message='Loading dashboard...' size='lg' />
+    return <HappBarLoader className='p-16' text='Loading Dashboard...' />
   }
 
   if (!user) {

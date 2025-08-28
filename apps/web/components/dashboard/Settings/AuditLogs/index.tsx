@@ -1,5 +1,6 @@
 'use client'
 
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,7 +44,6 @@ import {
   FileText,
   Filter,
   HelpCircle,
-  Loader2,
   Package,
   RefreshCw,
   Search,
@@ -445,12 +445,7 @@ export default function AuditLogsCard() {
 
               {loading || isFiltering ? (
                 <div className='flex items-center justify-center py-8'>
-                  <Loader2 className='h-6 w-6 animate-spin' />
-                  <span className='ml-2'>
-                    {isFiltering
-                      ? 'Filtering audit logs...'
-                      : 'Loading audit logs...'}
-                  </span>
+                  <HappBarLoader text='Loading audit logs...' />
                 </div>
               ) : logs.length === 0 ? (
                 <div className='text-center py-8 text-muted-foreground'>

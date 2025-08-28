@@ -13,6 +13,7 @@ import AuditLogsCard from '@/components/dashboard/Settings/AuditLogs'
 import InventorySettingsCard from '@/components/dashboard/Settings/InventorySettings'
 import LocationsCard from '@/components/dashboard/Settings/Locations'
 import { UserManagementCard } from '@/components/dashboard/Settings/UserManagement'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { SalesSyncCard } from '@/components/pos/sales-sync-card'
 import { SyncDialog } from '@/components/pos/sync-dialog'
 import { ToastIntegrationForm } from '@/components/pos/toast-integration-form'
@@ -278,8 +279,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading settings...</span>
+        <HappBarLoader />
       </div>
     )
   }
@@ -657,8 +657,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <div className='flex items-center justify-center py-8'>
-                  <Loader2 className='h-6 w-6 animate-spin mr-2' />
-                  <span>Loading organization data...</span>
+                  <HappBarLoader />
                 </div>
               )}
             </TabsContent>
@@ -743,10 +742,7 @@ export default function SettingsPage() {
                         <CardContent>
                           {subscriptionLoading ? (
                             <div className='flex items-start justify-center py-0'>
-                              <Loader2 className='size-6 animate-spin' />
-                              <span className='ml-2'>
-                                Loading subscription data...
-                              </span>
+                              <HappBarLoader />
                             </div>
                           ) : customer ? (
                             <div className='space-y-4'>
@@ -1073,8 +1069,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <div className='flex items-center justify-center py-8'>
-                  <Loader2 className='h-6 w-6 animate-spin mr-2' />
-                  <span>Loading billing data...</span>
+                  <HappBarLoader />
                 </div>
               )}
             </TabsContent>
@@ -1105,8 +1100,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <div className='flex items-center justify-center py-8'>
-                  <Loader2 className='h-6 w-6 animate-spin mr-2' />
-                  <span>Loading system data...</span>
+                  <HappBarLoader />
                 </div>
               )}
             </TabsContent>

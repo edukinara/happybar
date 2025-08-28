@@ -1,6 +1,7 @@
 'use client'
 
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -45,7 +46,6 @@ import {
   AlertTriangle,
   CalendarDays,
   FileText,
-  Loader2,
   MinusCircle,
   PlusCircle,
   Settings,
@@ -178,8 +178,7 @@ export default function InventoryAdjustmentsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading adjustments...</span>
+        <HappBarLoader />
       </div>
     )
   }
@@ -318,15 +317,12 @@ export default function InventoryAdjustmentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button type='submit' disabled={submitting}>
-                  {submitting ? (
-                    <>
-                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                      Creating...
-                    </>
-                  ) : (
-                    'Create Adjustment'
-                  )}
+                <Button
+                  type='submit'
+                  disabled={submitting}
+                  loading={submitting}
+                >
+                  Create Adjustment
                 </Button>
               </div>
             </form>

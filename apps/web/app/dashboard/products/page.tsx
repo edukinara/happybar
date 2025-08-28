@@ -4,6 +4,7 @@ import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import AddProductDialog from '@/components/dashboard/Products/AddProductDialog'
 import BulkSupplierDialog from '@/components/dashboard/Products/BulkSupplierDialog'
 import ImportFromPOS from '@/components/dashboard/Products/ImportFromPOS'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { ProductsGate } from '@/components/subscription/feature-gate'
 import { useProductUsageTracker } from '@/components/subscription/usage-tracker'
 import { Badge } from '@/components/ui/badge'
@@ -49,7 +50,6 @@ import {
   Edit,
   Link2,
   ListPlus,
-  Loader2,
   MoreHorizontal,
   Package,
   Percent,
@@ -210,8 +210,7 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading products...</span>
+        <HappBarLoader />
       </div>
     )
   }

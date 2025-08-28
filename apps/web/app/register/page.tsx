@@ -1,6 +1,7 @@
 'use client'
 
-import { Logo } from '@/components/brand/logo'
+import { NewLogo } from '@/components/brand/new-logo'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -90,7 +91,12 @@ function RegisterForm() {
       <Card className='w-full max-w-lg relative z-10 border-purple-100 dark:border-purple-900/50 shadow-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur'>
         <CardHeader className='text-center space-y-2 py-4'>
           <div className='flex justify-center'>
-            <Logo size='lg' />
+            <div className='flex flex-row gap-1 items-center'>
+              <NewLogo className='size-12' />
+              <span className='font-bold tracking-tight text-2xl text-nowrap'>
+                Happy Bar
+              </span>
+            </div>
           </div>
           <div className='gap-1'>
             <CardTitle className='text-2xl'>Create your account</CardTitle>
@@ -235,7 +241,7 @@ export default function RegisterPage() {
     <Suspense
       fallback={
         <div className='min-h-screen flex items-center justify-center'>
-          <Loader2 className='h-8 w-8 animate-spin' />
+          <HappBarLoader />
         </div>
       }
     >

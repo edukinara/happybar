@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/lib/auth/auth-context'
-import { Loader2, Mail, Settings, User } from 'lucide-react'
+import { Mail, Settings, User } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -94,7 +94,9 @@ export default function AccountPage() {
                   <Input
                     id='lastName'
                     type='text'
-                    defaultValue={user?.name?.split(' ').slice(1).join(' ') || ''}
+                    defaultValue={
+                      user?.name?.split(' ').slice(1).join(' ') || ''
+                    }
                     placeholder='Enter your Last name'
                   />
                 </div>
@@ -102,15 +104,12 @@ export default function AccountPage() {
             </div>
 
             <div className='flex items-center gap-2 pt-4 border-t'>
-              <Button onClick={handleSaveProfile} disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
+              <Button
+                onClick={handleSaveProfile}
+                disabled={saving}
+                loading={saving}
+              >
+                Save Changes
               </Button>
               <p className='text-xs text-muted-foreground'>
                 Changes will be saved to your profile.

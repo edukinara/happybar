@@ -14,15 +14,10 @@ import {
   type AlertNotification,
   type AlertSummary,
 } from '@/lib/api/alerts'
-import {
-  AlertTriangle,
-  Bell,
-  CheckCircle,
-  Loader2,
-  Settings,
-} from 'lucide-react'
+import { AlertTriangle, Bell, CheckCircle, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { HappBarLoader } from '../HappyBarLoader'
 
 interface AlertSummaryProps {
   locationId?: string
@@ -83,8 +78,7 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
         </CardHeader>
         <CardContent>
           <div className='flex items-center justify-center py-4'>
-            <Loader2 className='h-6 w-6 animate-spin' />
-            <span className='ml-2'>Loading alerts...</span>
+            <HappBarLoader />
           </div>
         </CardContent>
       </Card>

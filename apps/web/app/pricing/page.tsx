@@ -1,5 +1,7 @@
 'use client'
 
+import { NewLogo } from '@/components/brand/new-logo'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +14,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/auth-context'
 import { useAutumnFeatures } from '@/lib/hooks/useAutumnFeatures'
-import { Logo } from '@/components/brand/logo'
 import {
   ArrowRight,
   Building,
@@ -355,8 +356,7 @@ export default function PricingPage() {
   if (loading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading pricing plans...</span>
+        <HappBarLoader />
       </div>
     )
   }
@@ -364,17 +364,22 @@ export default function PricingPage() {
   return (
     <div className='min-h-screen relative overflow-hidden'>
       {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-amber-50 dark:from-neutral-900 dark:via-purple-900/10 dark:to-neutral-900 -z-10" />
-      
+      <div className='absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-amber-50 dark:from-neutral-900 dark:via-purple-900/10 dark:to-neutral-900 -z-10' />
+
       {/* Floating orbs for visual interest */}
-      <div className="absolute top-40 left-10 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse dark:opacity-5" />
-      <div className="absolute bottom-40 right-10 w-96 h-96 bg-amber-300 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse dark:opacity-5" />
+      <div className='absolute top-40 left-10 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse dark:opacity-5' />
+      <div className='absolute bottom-40 right-10 w-96 h-96 bg-amber-300 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse dark:opacity-5' />
       {/* Navigation */}
       <nav className='border-b bg-background/95 backdrop-blur-sm'>
         <div className='container mx-auto px-4 py-4'>
           <div className='flex items-center justify-between'>
             <Link href='/' className='flex items-center gap-2'>
-              <Logo size='md' />
+              <div className='flex flex-row gap-1 items-center'>
+                <NewLogo className='size-12' />
+                <span className='font-bold tracking-tight text-2xl text-nowrap'>
+                  Happy Bar
+                </span>
+              </div>
             </Link>
             <div className='flex items-center gap-4'>
               <Link href={!user ? '/login' : 'dashboard'}>
@@ -397,7 +402,11 @@ export default function PricingPage() {
       <section className='container mx-auto px-4 py-16'>
         <div className='text-center max-w-3xl mx-auto'>
           <h1 className='text-4xl font-bold tracking-tight sm:text-5xl mb-6'>
-            Simple, <span className='bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent'>Transparent</span> Pricing
+            Simple,{' '}
+            <span className='bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent'>
+              Transparent
+            </span>{' '}
+            Pricing
           </h1>
           <p className='text-xl text-muted-foreground mb-8'>
             Start free, scale as you grow. No hidden fees, no surprise charges.
@@ -515,11 +524,11 @@ export default function PricingPage() {
 
                   <Button
                     className={`w-full transition-all transform hover:scale-[1.02] ${
-                      isPopular 
+                      isPopular
                         ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg'
                         : isFree
-                        ? 'border-purple-200 text-purple-600 hover:bg-purple-50'
-                        : 'border-purple-200 text-purple-600 hover:bg-purple-50'
+                          ? 'border-purple-200 text-purple-600 hover:bg-purple-50'
+                          : 'border-purple-200 text-purple-600 hover:bg-purple-50'
                     }`}
                     variant='outline'
                     onClick={() => handleSelectPlan(product.id, !!isFree)}
@@ -827,7 +836,12 @@ export default function PricingPage() {
         <div className='container mx-auto px-4 py-12'>
           <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
             <div>
-              <Logo size='md' theme='dark' className='mb-4' />
+              <div className='flex flex-row gap-1 items-center pb-2'>
+                <NewLogo className='size-10' />
+                <span className='font-bold tracking-tight text-lg text-nowrap'>
+                  Happy Bar
+                </span>
+              </div>
               <p className='text-sm text-muted-foreground'>
                 Intelligent inventory management for the modern bar
               </p>

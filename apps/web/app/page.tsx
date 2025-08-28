@@ -1,6 +1,6 @@
 'use client'
 
-import { Logo } from '@/components/brand/logo'
+import { NewLogo } from '@/components/brand/new-logo'
 import { SimpleThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import {
@@ -116,7 +116,12 @@ export default function LandingPage() {
       <nav className='sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60'>
         <div className='container mx-auto px-4 py-4'>
           <div className='flex items-center justify-between'>
-            <Logo size='md' />
+            <div className='flex flex-row gap-1 items-center'>
+              <NewLogo className='size-10' />
+              <span className='font-bold tracking-tight text-xl text-nowrap'>
+                Happy Bar
+              </span>
+            </div>
             <div className='flex items-center gap-4'>
               {/* <Link href='/login'>
                 <Button variant='ghost'>Sign In</Button>
@@ -398,7 +403,12 @@ export default function LandingPage() {
         <div className='container mx-auto px-4 py-12'>
           <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
             <div>
-              <Logo size='md' theme='auto' className='mb-4' />
+              <div className='flex flex-row gap-1 items-center pb-2'>
+                <NewLogo className='size-9' />
+                <span className='font-bold tracking-tight text-lg text-nowrap'>
+                  Happy Bar
+                </span>
+              </div>
               <p className='text-sm text-muted-foreground'>
                 Intelligent inventory management for the modern bar
               </p>

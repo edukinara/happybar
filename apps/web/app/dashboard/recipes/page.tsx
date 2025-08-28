@@ -1,5 +1,6 @@
 'use client'
 
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -44,7 +45,6 @@ import {
   ChefHat,
   DollarSign,
   Edit,
-  Loader2,
   Plus,
   Search,
   Trash2,
@@ -268,8 +268,7 @@ export default function RecipesPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading recipes...</span>
+        <HappBarLoader />
       </div>
     )
   }
@@ -477,17 +476,9 @@ export default function RecipesPage() {
                     type='submit'
                     disabled={submitting}
                     className='btn-brand-primary'
+                    loading={submitting}
                   >
-                    {submitting ? (
-                      <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                        {editingRecipe ? 'Updating...' : 'Creating...'}
-                      </>
-                    ) : editingRecipe ? (
-                      'Update Recipe'
-                    ) : (
-                      'Create Recipe'
-                    )}
+                    {editingRecipe ? 'Update Recipe' : 'Create Recipe'}
                   </Button>
                 </div>
               </form>

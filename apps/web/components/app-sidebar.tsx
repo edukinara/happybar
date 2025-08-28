@@ -16,7 +16,6 @@ import {
 } from 'lucide-react'
 
 import { InventoryAlertBadge } from '@/components/alerts/InventoryAlertBadge'
-import { Logo } from '@/components/brand/logo'
 import { NavMain } from '@/components/nav-main'
 import { OrganizationSwitcher } from '@/components/organization-switcher'
 import {
@@ -29,6 +28,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useNavigationVisibility } from '@/lib/hooks/use-permissions'
+import { NewLogo } from './brand/new-logo'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
@@ -106,7 +106,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size='lg'>
-              <Logo size='md' variant='full' />
+              <div className='flex flex-row gap-1 items-end'>
+                <NewLogo className='size-9' />
+                <span className='font-bold tracking-tight text-lg text-nowrap'>
+                  Happy Bar
+                </span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

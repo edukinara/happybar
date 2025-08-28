@@ -1,6 +1,6 @@
 'use client'
 
-import { Logo } from '@/components/brand/logo'
+import { NewLogo } from '@/components/brand/new-logo'
 import { SimpleThemeToggle } from '@/components/theme-toggle'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -124,7 +124,12 @@ function LoginPageContent() {
       <Card className='w-full max-w-md relative z-10 border-purple-100 dark:border-purple-900/50 shadow-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur'>
         <CardHeader className='text-center space-y-4 py-4'>
           <div className='flex justify-center'>
-            <Logo size='lg' />
+            <div className='flex flex-row gap-1 items-center'>
+              <NewLogo className='size-10' />
+              <span className='font-bold tracking-tight text-xl text-nowrap'>
+                Happy Bar
+              </span>
+            </div>
           </div>
           <div className='gap-1'>
             <CardTitle className='text-2xl'>Welcome back</CardTitle>
@@ -175,18 +180,12 @@ function LoginPageContent() {
               type='submit'
               className='w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg transition-all transform hover:scale-[1.02]'
               disabled={loading || googleLoading}
+              loading={loading}
             >
-              {loading ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  <Sparkles className='mr-2 h-4 w-4' />
-                  Sign In
-                </>
-              )}
+              <>
+                <Sparkles className='mr-2 h-4 w-4' />
+                Sign In
+              </>
             </Button>
           </form>
 

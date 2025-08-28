@@ -2,6 +2,7 @@
 
 import { UsageAlertsIntegration } from '@/components/alerts/UsageAlertsIntegration'
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -29,7 +30,6 @@ import {
   DollarSign,
   Download,
   FileText,
-  Loader2,
   Package,
   TrendingDown,
   TrendingUp,
@@ -213,8 +213,7 @@ export default function InventoryReportsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading reports...</span>
+        <HappBarLoader />
       </div>
     )
   }

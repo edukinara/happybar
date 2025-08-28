@@ -1,5 +1,6 @@
 'use client'
 
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -11,7 +12,7 @@ import {
 } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth/auth-context'
 import { organization } from '@/lib/auth/client'
-import { CheckCircle, Loader2, Mail, UserPlus, XCircle } from 'lucide-react'
+import { CheckCircle, Mail, UserPlus, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -166,8 +167,7 @@ export default function AcceptInvitationPage() {
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <Card className='w-full max-w-md'>
           <CardContent className='flex items-center justify-center py-8'>
-            <Loader2 className='h-6 w-6 animate-spin mr-2' />
-            <span>Loading invitation...</span>
+            <HappBarLoader showText={false} size='sm' />
           </CardContent>
         </Card>
       </div>
@@ -309,7 +309,7 @@ export default function AcceptInvitationPage() {
             disabled={accepting}
             className='w-full'
           >
-            {accepting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+            {accepting && <HappBarLoader size='sm' />}
             Accept Invitation
           </Button>
           <Button

@@ -2,6 +2,7 @@
 
 import { TransactionHistoryDrawer } from '@/components/dashboard/Inventory/TransactionHistoryDrawer'
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { InputWithIcon } from '@/components/InputWithIcon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -37,7 +38,6 @@ import type { InventoryLevel } from '@happy-bar/types'
 import {
   AlertTriangle,
   DollarSign,
-  Loader2,
   MapPin,
   Package,
   Search,
@@ -149,8 +149,7 @@ export default function InventoryPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading inventory...</span>
+        <HappBarLoader className='p-16' text='Loading inventory data...' />
       </div>
     )
   }

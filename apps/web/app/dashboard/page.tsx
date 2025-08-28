@@ -2,6 +2,7 @@
 
 import { AlertSummaryCard } from '@/components/alerts/AlertSummary'
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -22,7 +23,6 @@ import {
   Box,
   ClipboardList,
   DollarSign,
-  Loader2,
   MapPin,
   ShoppingCart,
   TrendingUp,
@@ -121,8 +121,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading dashboard...</span>
+        <HappBarLoader />
       </div>
     )
   }
@@ -262,8 +261,10 @@ export default function DashboardPage() {
           <CardContent>
             {loadingLocationData ? (
               <div className='flex items-center justify-center py-8'>
-                <Loader2 className='size-6 animate-spin mr-2' />
-                <span>Loading location data...</span>
+                <HappBarLoader
+                  className='p-16'
+                  text='Loading location data...'
+                />
               </div>
             ) : selectedLocationId ? (
               // Single location view

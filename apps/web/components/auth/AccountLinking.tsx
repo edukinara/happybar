@@ -17,6 +17,7 @@ import { signIn, useSession } from '@/lib/auth/client'
 import { Link2, Loader2, Unlink, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { HappBarLoader } from '../HappyBarLoader'
 
 export function AccountLinking() {
   const { data: session } = useSession()
@@ -104,8 +105,7 @@ export function AccountLinking() {
         </CardHeader>
         <CardContent>
           <div className='flex items-center justify-center py-8'>
-            <Loader2 className='h-6 w-6 animate-spin mr-2' />
-            <span>Loading connected accounts...</span>
+            <HappBarLoader />
           </div>
         </CardContent>
       </Card>
@@ -222,18 +222,12 @@ export function AccountLinking() {
                 variant='outline'
                 onClick={handleLinkGoogle}
                 disabled={linking}
+                loading={linking}
               >
-                {linking ? (
-                  <>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    Linking...
-                  </>
-                ) : (
-                  <>
-                    <Link2 className='mr-2 h-4 w-4' />
-                    Link Account
-                  </>
-                )}
+                <>
+                  <Link2 className='mr-2 h-4 w-4' />
+                  Link Account
+                </>
               </Button>
             </div>
           </div>

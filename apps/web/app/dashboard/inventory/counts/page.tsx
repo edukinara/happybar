@@ -1,5 +1,6 @@
 'use client'
 
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,7 +24,6 @@ import {
   BarChart3,
   Calendar,
   ClipboardCheck,
-  Loader2,
   MapPin,
   Plus,
 } from 'lucide-react'
@@ -162,8 +162,7 @@ export default function InventoryCountsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin' />
-        <span className='ml-2'>Loading inventory counts...</span>
+        <HappBarLoader />
       </div>
     )
   }
