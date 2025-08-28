@@ -11,6 +11,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
+      "@happy-bar/api/auth-exports": ["../../packages/api/dist/auth-exports"],
       "@happy-bar/types": ["../../packages/types/src"],
       "@happy-bar/database": ["../../packages/database/src"],
       "@happy-bar/pos": ["../../packages/pos/src"]
@@ -19,6 +20,7 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"],
   "references": [
+    { "path": "../../packages/api" },
     { "path": "../../packages/types" },
     { "path": "../../packages/database" },
     { "path": "../../packages/pos" }

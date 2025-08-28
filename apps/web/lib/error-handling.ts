@@ -29,7 +29,7 @@ export interface AxiosPermissionError {
     status: number
     data: PermissionError
   }
-  config?: any
+  config?: Record<string, unknown>
 }
 
 /**

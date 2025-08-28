@@ -1,5 +1,6 @@
 // API Types
 
+import type { HappyBarRole } from './auth'
 import { ProductContainer } from './product'
 
 export * from './adjustment'
@@ -540,7 +541,7 @@ export interface UserProfile {
   email: string
   firstName: string
   lastName: string
-  role: string // Will use HappyBarRole from auth types
+  role: HappyBarRole // Will use HappyBarRole from auth types
   organizationId: string
   organization: Organization
 }

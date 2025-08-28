@@ -128,19 +128,11 @@ export function InviteUserModal({
         return
       }
 
-      // Map Happy Bar role to Better Auth role for the invitation
-      // Store actual role in metadata
-      const authRole =
-        data.role === 'admin'
-          ? 'admin'
-          : data.role === 'viewer'
-            ? 'member'
-            : 'member' // Default all other roles to member
-
-      // Use Better Auth organization invite
+      // Use Better Auth organization invite with the actual role
+      // Better Auth now supports all our custom roles directly
       const result = await organization.inviteMember({
         email: data.email,
-        role: authRole,
+        role: data.role, // Send the actual role directly
       })
 
       if (result.error) {
@@ -277,7 +269,7 @@ export function InviteUserModal({
                     </FormControl>
                     <SelectContent>
                       {availableRoles.map((role) => {
-                        const roleInfo = getRoleDisplayInfo(role as any)
+                        const roleInfo = getRoleDisplayInfo(role)
                         return (
                           <SelectItem key={role} value={role}>
                             <div className='flex items-center space-x-2'>

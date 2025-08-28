@@ -6,7 +6,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, organization } from 'better-auth/plugins'
 import { ac, roles } from './auth/roles'
 import { env } from './config/env'
-import { sendInvitationEmail } from './utils/email'
+import { sendInvitationEmail, sendVerificationEmail } from './utils/email'
 import { PendingAssignmentManager } from './utils/pending-assignments'
 import { redis } from './utils/redis-client'
 import { UsageTracker } from './utils/usage-tracker'
@@ -172,7 +172,42 @@ export const auth: any = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Start simple, can enable later
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true, // Send verification email when unverified users try to sign in
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async (data, request) => {
+      // Check if there's a pending invitation for this user
+      const pendingInvitation = await prisma.invitation.findFirst({
+        where: {
+          email: data.user.email,
+          status: 'pending',
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+      })
+
+      // If user has a pending invitation, redirect them to accept it after verification
+      // Otherwise, redirect to dashboard
+      const callbackUrl = pendingInvitation
+        ? `${env.APP_BASE_URL}/accept-invitation/${pendingInvitation.id}`
+        : `${env.APP_BASE_URL}/dashboard`
+
+      const verificationUrl = data.url.replace(
+        'callbackURL=/',
+        `callbackURL=${encodeURIComponent(callbackUrl)}`
+      )
+
+      await sendVerificationEmail({
+        email: data.user.email,
+        name: data.user.name,
+        verificationUrl: verificationUrl,
+        verificationToken: data.token,
+      })
+    },
   },
   socialProviders: {
     google: {
@@ -196,6 +231,7 @@ export const auth: any = betterAuth({
     organization({
       allowUserToCreateOrganization: true,
       allowUserToLeaveOrganization: true,
+      defaultRole: 'staff', // Set explicit default role instead of 'member'
       sendInvitationEmail: async (data) => {
         // Use APP_BASE_URL environment variable for the frontend URL
         const invitationUrl = `${env.APP_BASE_URL}/accept-invitation/${data.invitation.id}`
@@ -215,7 +251,7 @@ export const auth: any = betterAuth({
         owner: roles.owner,
         admin: roles.admin,
         manager: roles.manager,
-        inventory_manager: roles.inventory_manager,
+        inventoryManager: roles.inventoryManager,
         buyer: roles.buyer,
         supervisor: roles.supervisor,
         staff: roles.staff,
@@ -307,5 +343,4 @@ export type Member = {
 }
 
 // Export roles and access controller for use in other files
-export type { HappyBarStatements, Permission } from './auth/permissions'
 export { ac, roles } from './auth/roles'

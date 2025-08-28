@@ -57,7 +57,7 @@ export function InventoryAlertBadge({ className }: InventoryAlertBadgeProps) {
 
   return (
     <Badge
-      variant={hasCritical ? 'destructive' : 'warning'}
+      variant={hasCritical ? 'destructive' : 'secondary'}
       className={`text-[11px] ${className} px-1.5`}
     >
       {totalAlerts > 99 ? '99+' : totalAlerts}

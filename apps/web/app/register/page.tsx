@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/lib/auth/auth-context'
-import { Loader2, UserPlus } from 'lucide-react'
+import { Loader2, UserPlus, Mail, CheckCircle } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 
@@ -27,6 +27,8 @@ function RegisterForm() {
   const [companyName, setCompanyName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [registrationSuccess, setRegistrationSuccess] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
   const { register } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -61,13 +63,23 @@ function RegisterForm() {
           password,
           companyName: '',
         })
-        // Redirect back to accept invitation page
-        router.push(`/accept-invitation/${invitationId}`)
       } else {
         // Regular registration flow - create user and organization
         await register({ firstName, lastName, email, password, companyName })
-        router.push('/login?registered=true')
       }
+      
+      // Show success message instead of redirecting
+      setRegistrationSuccess(true)
+      setRegisteredEmail(email)
+      setLoading(false)
+      
+      // Clear form
+      setFirstName('')
+      setLastName('')
+      setEmail('')
+      setPassword('')
+      setConfirmPassword('')
+      setCompanyName('')
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error && 'response' in err
@@ -78,6 +90,57 @@ function RegisterForm() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show success message if registration completed
+  if (registrationSuccess) {
+    return (
+      <div className='min-h-screen flex items-center justify-center relative overflow-hidden p-4'>
+        {/* Animated background gradient */}
+        <div className='absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-amber-50 dark:from-neutral-900 dark:via-purple-900/20 dark:to-neutral-900' />
+
+        {/* Floating shapes for visual interest */}
+        <div className='absolute top-20 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse dark:opacity-10' />
+        <div className='absolute bottom-20 right-20 w-72 h-72 bg-amber-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse dark:opacity-10' />
+        
+        <Card className='w-full max-w-lg relative z-10 border-green-100 dark:border-green-900/50 shadow-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur'>
+          <CardHeader className='text-center space-y-4 py-6'>
+            <div className='flex justify-center'>
+              <CheckCircle className='size-16 text-green-500' />
+            </div>
+            <CardTitle className='text-2xl'>Registration Successful!</CardTitle>
+            <CardDescription className='text-base'>
+              We've sent a verification email to <strong>{registeredEmail}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <Alert className='border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'>
+              <Mail className='h-4 w-4' />
+              <AlertDescription>
+                Please check your inbox and click the verification link to activate your account. 
+                The link will automatically log you in and redirect you to {isInvitationFlow ? 'accept your organization invitation' : 'your dashboard'}.
+              </AlertDescription>
+            </Alert>
+            
+            <div className='text-center text-sm text-muted-foreground'>
+              <p>Didn't receive the email?</p>
+              <p className='mt-2'>
+                Check your spam folder or{' '}
+                <button 
+                  onClick={() => {
+                    setRegistrationSuccess(false)
+                    setError('Please try registering again.')
+                  }}
+                  className='text-purple-600 hover:text-purple-700 hover:underline font-medium'
+                >
+                  try again
+                </button>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

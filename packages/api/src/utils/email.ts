@@ -11,6 +11,13 @@ export interface InvitationEmailData {
   role: string
 }
 
+export interface VerificationEmailData {
+  email: string
+  name: string
+  verificationUrl: string
+  verificationToken: string
+}
+
 export async function sendInvitationEmail(data: InvitationEmailData) {
   if (!resend) {
     console.warn('Resend API key not configured, skipping email send')
@@ -165,6 +172,143 @@ function generateInvitationEmailHTML(data: InvitationEmailData): string {
                   </p>
                   <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
                     If you didn't expect this invitation, you can safely ignore this email.<br>
+                    Questions? Contact us at <a href="mailto:support@happybar.app" style="color: #667eea; text-decoration: none;">support@happybar.app</a>
+                  </p>
+                </td>
+              </tr>
+            </table>
+            
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `
+}
+
+export async function sendVerificationEmail(data: VerificationEmailData) {
+  if (!resend) {
+    console.warn('Resend API key not configured, skipping email verification send')
+    console.log('Would send verification email:', data)
+    return { success: false, error: 'Email service not configured' }
+  }
+
+  try {
+    const fromEmail = 'Happy Bar <noreply@updates.happybar.app>'
+
+    const result = await resend.emails.send({
+      from: fromEmail,
+      to: data.email,
+      subject: 'Verify your Happy Bar account',
+      html: generateVerificationEmailHTML(data),
+    })
+
+    console.log('Verification email sent successfully:', result)
+    return { success: true, id: result.data?.id }
+  } catch (error) {
+    console.error('Failed to send verification email:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+function generateVerificationEmailHTML(data: VerificationEmailData): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verify your Happy Bar account</title>
+      <style>
+        @media only screen and (max-width: 620px) {
+          .email-container { padding: 10px !important; }
+          .email-content { padding: 20px !important; }
+          .cta-button { padding: 14px 20px !important; font-size: 16px !important; }
+        }
+      </style>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif; background-color: #f8fafc; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
+        <tr>
+          <td align="center" style="padding: 40px 20px;">
+            
+            <!-- Header -->
+            <table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; margin: 0 auto;">
+              <tr>
+                <td style="text-align: center; padding-bottom: 32px;">
+                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-block; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: white; letter-spacing: -0.02em;">Happy Bar</h1>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Main Content -->
+            <table class="email-content" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 25px rgba(0, 0, 0, 0.06); overflow: hidden;">
+              <tr>
+                <td style="padding: 48px 40px;">
+                  
+                  <!-- Verification Header -->
+                  <div style="text-align: center; margin-bottom: 32px;">
+                    <div style="background: #f1f5f9; width: 64px; height: 64px; border-radius: 32px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                      <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 16px; height: 12px; border: 2px solid white; border-top: none; border-right: none; transform: rotate(-45deg); margin-top: -2px;"></div>
+                      </div>
+                    </div>
+                    <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: #1e293b; line-height: 1.3;">Verify your email address</h2>
+                  </div>
+
+                  <!-- Greeting -->
+                  <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #475569;">
+                    Hi ${data.name || 'there'}!
+                  </p>
+                  
+                  <!-- Verification Message -->
+                  <p style="margin: 24px 0; font-size: 16px; line-height: 1.6; color: #475569;">
+                    Thanks for signing up for Happy Bar! To complete your account setup and start managing your inventory, please verify your email address by clicking the button below.
+                  </p>
+                  
+                  <!-- CTA Button -->
+                  <div style="text-align: center; margin: 40px 0;">
+                    <a href="${data.verificationUrl}" 
+                       class="cta-button"
+                       style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); transition: all 0.2s ease;">
+                      Verify Email Address
+                    </a>
+                  </div>
+                  
+                  <!-- Alternative Link -->
+                  <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 32px 0;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                      Alternative link:
+                    </p>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #475569; word-break: break-all;">
+                      <a href="${data.verificationUrl}" style="color: #10b981; text-decoration: underline;">${data.verificationUrl}</a>
+                    </p>
+                  </div>
+
+                  <!-- Security Notice -->
+                  <div style="border: 1px solid #fbbf24; background: #fffbeb; padding: 16px; border-radius: 8px; margin: 32px 0;">
+                    <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #92400e;">
+                      <strong>🔒 For your security:</strong> This verification link will expire in 24 hours. If you didn't create an account with Happy Bar, you can safely ignore this email.
+                    </p>
+                  </div>
+                  
+                </td>
+              </tr>
+            </table>
+
+            <!-- Footer -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; margin: 32px auto 0 auto;">
+              <tr>
+                <td style="text-align: center; padding: 24px 20px;">
+                  <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b;">
+                    This verification email was sent to <strong>${data.email}</strong>
+                  </p>
+                  <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
                     Questions? Contact us at <a href="mailto:support@happybar.app" style="color: #667eea; text-decoration: none;">support@happybar.app</a>
                   </p>
                 </td>

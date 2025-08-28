@@ -1,6 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,34 +28,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { organization } from '@/lib/auth/client'
 import { getRoleDisplayInfo } from '@/lib/utils/permissions'
-import { 
-  Clock, 
-  Mail, 
-  X, 
-  RefreshCw,
+import type { HappyBarRole } from '@happy-bar/types'
+import {
   AlertTriangle,
+  Clock,
   Loader2,
-  UserX
+  Mail,
+  RefreshCw,
+  UserX,
+  X,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface PendingInvitation {
   id: string
   email: string
-  role: string
+  role: HappyBarRole
   createdAt?: string
   expiresAt?: string | Date
   status: 'pending' | 'expired'
@@ -67,7 +68,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
       setError(null)
 
       const result = await organization.listInvitations()
-      
+
       if (result.error) {
         throw new Error(result.error.message || 'Failed to fetch invitations')
       }
@@ -75,20 +76,24 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
       if (result.data) {
         // The data is directly an array of invitations from Better Auth
         const invitationsList = Array.isArray(result.data) ? result.data : []
-        setInvitations(invitationsList.map((inv: any) => ({
-          id: inv.id,
-          email: inv.email,
-          role: inv.role,
-          createdAt: inv.createdAt || inv.expiresAt || new Date().toISOString(),
-          expiresAt: inv.expiresAt,
-          status: inv.status === 'pending' ? 'pending' : 'expired'
-        })))
+        setInvitations(
+          invitationsList.map((inv) => ({
+            id: inv.id,
+            email: inv.email,
+            role: inv.role,
+            createdAt: inv.expiresAt.toISOString() || new Date().toISOString(),
+            expiresAt: inv.expiresAt,
+            status: inv.status === 'pending' ? 'pending' : 'expired',
+          }))
+        )
       } else {
         setInvitations([])
       }
     } catch (err) {
       console.warn('Failed to fetch pending invitations:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load invitations')
+      setError(
+        err instanceof Error ? err.message : 'Failed to load invitations'
+      )
     } finally {
       setLoading(false)
     }
@@ -100,10 +105,10 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
 
   const handleCancelInvitation = async (invitationId: string) => {
     try {
-      setCancellingIds(prev => new Set(prev.add(invitationId)))
+      setCancellingIds((prev) => new Set(prev.add(invitationId)))
 
       const result = await organization.cancelInvitation({
-        invitationId
+        invitationId,
       })
 
       if (result.error) {
@@ -111,10 +116,10 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
       }
 
       toast.success('Invitation cancelled successfully')
-      
+
       // Remove from local state
-      setInvitations(prev => prev.filter(inv => inv.id !== invitationId))
-      
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId))
+
       // Trigger refresh of parent component if needed
       if (onRefresh) {
         onRefresh()
@@ -122,10 +127,13 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
     } catch (error) {
       console.warn('Failed to cancel invitation:', error)
       toast.error('Failed to cancel invitation', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       })
     } finally {
-      setCancellingIds(prev => {
+      setCancellingIds((prev) => {
         const newSet = new Set(prev)
         newSet.delete(invitationId)
         return newSet
@@ -136,10 +144,13 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
   const handleResendInvitation = async (email: string, role: string) => {
     try {
       // Map role to Better Auth standard roles
-      const authRole = role === 'admin' ? 'admin' : 
-                      role === 'owner' ? 'owner' :
-                      'member' as 'member' | 'admin' | 'owner'
-      
+      const authRole =
+        role === 'admin'
+          ? 'admin'
+          : role === 'owner'
+            ? 'owner'
+            : ('member' as HappyBarRole)
+
       const result = await organization.inviteMember({
         email,
         role: authRole,
@@ -154,13 +165,16 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
     } catch (error) {
       console.warn('Failed to resend invitation:', error)
       toast.error('Failed to resend invitation', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       })
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    const roleInfo = getRoleDisplayInfo(role as unknown)
+  const getRoleBadge = (role: HappyBarRole) => {
+    const roleInfo = getRoleDisplayInfo(role)
     const colorMap: Record<string, string> = {
       purple: 'bg-purple-100 text-purple-800',
       red: 'bg-red-100 text-red-800',
@@ -169,9 +183,9 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
       orange: 'bg-orange-100 text-orange-800',
       yellow: 'bg-yellow-100 text-yellow-800',
       gray: 'bg-gray-100 text-gray-800',
-      slate: 'bg-slate-100 text-slate-800'
+      slate: 'bg-slate-100 text-slate-800',
     }
-    
+
     return (
       <Badge className={colorMap[roleInfo.color] || colorMap.gray}>
         {roleInfo.title}
@@ -181,10 +195,10 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
 
   const getStatusBadge = (invitation: PendingInvitation) => {
     if (invitation.status === 'expired') {
-      return <Badge variant="destructive">Expired</Badge>
+      return <Badge variant='destructive'>Expired</Badge>
     }
-    
-    return <Badge variant="secondary">Pending</Badge>
+
+    return <Badge variant='secondary'>Pending</Badge>
   }
 
   const formatDate = (dateString: string | undefined) => {
@@ -199,8 +213,8 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <CardContent className='flex items-center justify-center py-8'>
+          <Loader2 className='h-6 w-6 animate-spin mr-2' />
           <span>Loading pending invitations...</span>
         </CardContent>
       </Card>
@@ -210,10 +224,12 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
   if (error) {
     return (
       <Card>
-        <CardContent className="text-center py-8">
-          <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-500" />
-          <h3 className="text-lg font-medium mb-2">Failed to load invitations</h3>
-          <p className="text-muted-foreground mb-4">{error}</p>
+        <CardContent className='text-center py-8'>
+          <AlertTriangle className='h-12 w-12 mx-auto mb-4 text-red-500' />
+          <h3 className='text-lg font-medium mb-2'>
+            Failed to load invitations
+          </h3>
+          <p className='text-muted-foreground mb-4'>{error}</p>
           <Button onClick={fetchInvitations}>Try Again</Button>
         </CardContent>
       </Card>
@@ -224,8 +240,8 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Clock className="mr-2 h-5 w-5" />
+          <CardTitle className='flex items-center'>
+            <Clock className='mr-2 h-5 w-5' />
             Pending Invitations
           </CardTitle>
           <CardDescription>
@@ -233,9 +249,9 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Mail className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium mb-2">No pending invitations</h3>
+          <div className='text-center py-8 text-muted-foreground'>
+            <Mail className='h-12 w-12 mx-auto mb-4 text-gray-300' />
+            <h3 className='text-lg font-medium mb-2'>No pending invitations</h3>
             <p>All invitations have been accepted or expired.</p>
           </div>
         </CardContent>
@@ -245,18 +261,18 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
         <div>
-          <CardTitle className="flex items-center">
-            <Clock className="mr-2 h-5 w-5" />
+          <CardTitle className='flex items-center'>
+            <Clock className='mr-2 h-5 w-5' />
             Pending Invitations
           </CardTitle>
           <CardDescription>
             Manage pending team member invitations.
           </CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchInvitations}>
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button variant='outline' size='sm' onClick={fetchInvitations}>
+          <RefreshCw className='h-4 w-4 mr-2' />
           Refresh
         </Button>
       </CardHeader>
@@ -268,51 +284,52 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Sent</TableHead>
-              <TableHead className="w-[140px]">Actions</TableHead>
+              <TableHead className='w-[140px]'>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {invitations.map((invitation) => (
               <TableRow key={invitation.id}>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{invitation.email}</span>
+                  <div className='flex items-center space-x-2'>
+                    <Mail className='h-4 w-4 text-muted-foreground' />
+                    <span className='font-medium'>{invitation.email}</span>
                   </div>
                 </TableCell>
-                <TableCell>
-                  {getRoleBadge(invitation.role)}
-                </TableCell>
-                <TableCell>
-                  {getStatusBadge(invitation)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell>{getRoleBadge(invitation.role)}</TableCell>
+                <TableCell>{getStatusBadge(invitation)}</TableCell>
+                <TableCell className='text-muted-foreground'>
                   {formatDate(invitation.createdAt)}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
+                  <div className='flex items-center space-x-2'>
                     {invitation.status === 'expired' ? (
                       <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleResendInvitation(invitation.email, invitation.role)}
+                        variant='outline'
+                        size='sm'
+                        onClick={() =>
+                          handleResendInvitation(
+                            invitation.email,
+                            invitation.role
+                          )
+                        }
                       >
-                        <RefreshCw className="h-3 w-3 mr-1" />
+                        <RefreshCw className='h-3 w-3 mr-1' />
                         Resend
                       </Button>
                     ) : (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant='outline'
+                            size='sm'
                             disabled={cancellingIds.has(invitation.id)}
                           >
                             {cancellingIds.has(invitation.id) ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <Loader2 className='h-3 w-3 animate-spin' />
                             ) : (
                               <>
-                                <X className="h-3 w-3 mr-1" />
+                                <X className='h-3 w-3 mr-1' />
                                 Cancel
                               </>
                             )}
@@ -320,20 +337,25 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle className="flex items-center">
-                              <UserX className="mr-2 h-5 w-5" />
+                            <AlertDialogTitle className='flex items-center'>
+                              <UserX className='mr-2 h-5 w-5' />
                               Cancel Invitation
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to cancel the invitation for <strong>{invitation.email}</strong>? 
-                              They will no longer be able to accept this invitation.
+                              Are you sure you want to cancel the invitation for{' '}
+                              <strong>{invitation.email}</strong>? They will no
+                              longer be able to accept this invitation.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Keep Invitation</AlertDialogCancel>
+                            <AlertDialogCancel>
+                              Keep Invitation
+                            </AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleCancelInvitation(invitation.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() =>
+                                handleCancelInvitation(invitation.id)
+                              }
+                              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
                             >
                               Cancel Invitation
                             </AlertDialogAction>

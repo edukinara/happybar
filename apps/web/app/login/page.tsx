@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/lib/auth/auth-context'
 import { signIn } from '@/lib/auth/client'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles, Mail, CheckCircle } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 
@@ -32,7 +32,21 @@ function LoginPageContent() {
 
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
-      setSuccess('Registration successful! Please sign in.')
+      const email = searchParams.get('email')
+      const invitationId = searchParams.get('invitation')
+      if (email) {
+        if (invitationId) {
+          setSuccess(`Registration successful! Please check your email at ${decodeURIComponent(email)} for a verification link. After verifying, you'll be able to accept your organization invitation.`)
+        } else {
+          setSuccess(`Registration successful! Please check your email at ${decodeURIComponent(email)} for a verification link to activate your account.`)
+        }
+      } else {
+        setSuccess('Registration successful! Please check your email for a verification link to activate your account.')
+      }
+    }
+
+    if (searchParams.get('verified') === 'true') {
+      setSuccess('Email verified successfully! You can now sign in.')
     }
 
     // Handle error parameter from OAuth failures
@@ -61,12 +75,8 @@ function LoginPageContent() {
         router.push('/dashboard')
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error && 'response' in err
-          ? (err as { response?: { data?: { message?: string } } }).response
-              ?.data?.message
-          : undefined
-      setError(errorMessage || 'Login failed. Please try again.')
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -141,12 +151,22 @@ function LoginPageContent() {
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
             {error && (
-              <Alert variant='destructive'>
-                <AlertDescription>{error}</AlertDescription>
+              <Alert variant={error.includes('verification') || error.includes('verify your account') ? 'default' : 'destructive'}>
+                {(error.includes('verification') || error.includes('verify your account')) && (
+                  <Mail className="h-4 w-4" />
+                )}
+                <AlertDescription>
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
             {success && (
-              <Alert variant='default'>
+              <Alert variant='default' className={success.includes('check your email') ? 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950' : ''}>
+                {success.includes('check your email') ? (
+                  <Mail className="h-4 w-4" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
                 <AlertDescription>{success}</AlertDescription>
               </Alert>
             )}

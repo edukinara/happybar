@@ -69,10 +69,9 @@ export function LocationAccessAlert({
         <div className='text-sm'>
           <p className='text-amber-800 font-medium'>Location Access Notice</p>
           <p className='text-amber-700 mt-1'>
-            {`Your role (`}
-            <strong>{user.role}</strong>
-            {`) has restricted access. You can only view and manage 
-            inventory for locations you&apos;ve been assigned to by an administrator.`}
+            Your role (<strong>{user.role}</strong>) has restricted access. You
+            can only view and manage inventory for locations you&apos;ve been
+            assigned to by an administrator.
           </p>
         </div>
       </div>
