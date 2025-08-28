@@ -20,10 +20,8 @@ export async function sendInvitationEmail(data: InvitationEmailData) {
 
   try {
     // Use different sender based on environment
-    const fromEmail = env.NODE_ENV === 'production' 
-      ? 'Happy Bar <noreply@happybar.app>'
-      : 'Happy Bar <onboarding@resend.dev>' // Default Resend domain for development
-    
+    const fromEmail = 'Happy Bar <noreply@updates.happybar.app>' // 'Happy Bar <onboarding@resend.dev>' Default Resend domain for development
+
     const result = await resend.emails.send({
       from: fromEmail,
       to: data.email,
@@ -35,7 +33,10 @@ export async function sendInvitationEmail(data: InvitationEmailData) {
     return { success: true, id: result.data?.id }
   } catch (error) {
     console.error('Failed to send invitation email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
 

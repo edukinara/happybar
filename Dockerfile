@@ -67,4 +67,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start script that runs migrations then starts the app
+# For Neon: Migrations use DIRECT_URL, application uses DATABASE_URL
 CMD ["sh", "-c", "cd packages/database && npx prisma migrate deploy && cd ../.. && node packages/api/dist/index.js"]
