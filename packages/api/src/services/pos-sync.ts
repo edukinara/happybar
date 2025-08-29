@@ -1,5 +1,5 @@
 import { createPOSClient } from '@happy-bar/pos'
-import { POSProduct, POSSale, SyncResult } from '@happy-bar/types'
+import { POSProduct, SyncResult } from '@happy-bar/types'
 
 export class POSSyncService {
   constructor(private prisma: any) {}
@@ -82,73 +82,6 @@ export class POSSyncService {
     }
 
     return { created, updated, errors }
-  }
-
-  /**
-   * Sync sales data from POS to database
-   */
-  async syncSales(
-    organizationId: string,
-    posSales: POSSale[]
-  ): Promise<{ imported: number; errors: number }> {
-    let imported = 0
-    let errors = 0
-
-    for (const posSale of posSales) {
-      try {
-        // Check if sale already exists
-        const existingSale = await this.prisma.sale.findFirst({
-          where: {
-            organizationId,
-            posId: posSale.externalId,
-          },
-        })
-
-        if (existingSale) {
-          continue // Skip if already imported
-        }
-
-        // Create sale record
-        const sale = await this.prisma.sale.create({
-          data: {
-            organizationId,
-            posId: posSale.externalId,
-            totalAmount: posSale.totalAmount,
-            saleDate: posSale.timestamp,
-          },
-        })
-
-        // Create sale items
-        for (const item of posSale.items) {
-          // Find product by POS product ID
-          const product = await this.prisma.product.findFirst({
-            where: {
-              organizationId,
-              posProductId: item.productId,
-            },
-          })
-
-          if (product) {
-            await this.prisma.saleItem.create({
-              data: {
-                saleId: sale.id,
-                productId: product.id,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                totalPrice: item.totalPrice,
-              },
-            })
-          }
-        }
-
-        imported++
-      } catch (error) {
-        console.error(`Failed to sync sale ${posSale.externalId}:`, error)
-        errors++
-      }
-    }
-
-    return { imported, errors }
   }
 
   /**

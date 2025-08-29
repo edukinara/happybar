@@ -25,6 +25,7 @@ import {
 } from '@/lib/api/user-location-assignments'
 import { organization } from '@/lib/auth/client'
 import { getRoleDisplayInfo } from '@/lib/utils/permissions'
+import type { HappyBarRole } from '@happy-bar/types'
 import {
   AlertTriangle,
   Edit,
@@ -43,7 +44,7 @@ interface Member {
   id: string
   name: string
   email: string
-  role: string
+  role: HappyBarRole
   createdAt: string
 }
 
@@ -81,7 +82,7 @@ export function UserManagementCard() {
             id: member.userId,
             name: member.user.name,
             email: member.user.email,
-            role: member.role,
+            role: member.role as HappyBarRole,
             createdAt: member.createdAt.toISOString(),
           })
         )
@@ -125,8 +126,8 @@ export function UserManagementCard() {
     void fetchData() // Refresh data
   }
 
-  const getRoleBadge = (role: string) => {
-    const roleInfo = getRoleDisplayInfo(role as any)
+  const getRoleBadge = (role: HappyBarRole) => {
+    const roleInfo = getRoleDisplayInfo(role)
     const colorMap: Record<string, string> = {
       purple: 'bg-purple-100 text-purple-800',
       red: 'bg-red-100 text-red-800',
@@ -155,17 +156,6 @@ export function UserManagementCard() {
     const assignedCount = userAssignments.length
     const hasManageAccess = userAssignments.some((a) => a.canManage)
     const hasWriteAccess = userAssignments.some((a) => a.canWrite)
-
-    if (assignedCount === totalLocations) {
-      return {
-        text: `All ${totalLocations} locations`,
-        color: hasManageAccess
-          ? 'text-purple-600'
-          : hasWriteAccess
-            ? 'text-blue-600'
-            : 'text-green-600',
-      }
-    }
 
     return {
       text: `${assignedCount} of ${totalLocations} locations`,
@@ -295,7 +285,7 @@ export function UserManagementCard() {
                                       variant='outline'
                                       className='text-xs'
                                     >
-                                      Manage
+                                      Manager
                                     </Badge>
                                   )}
                                   {userAssignments.some(

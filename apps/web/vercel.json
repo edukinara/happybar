@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-pos-sales",
+      "schedule": "0 10/12 * * *"
+    }
+  ]
+}

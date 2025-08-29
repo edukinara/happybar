@@ -4,9 +4,9 @@ import { z } from 'zod'
 import { POSSalesSyncService } from '../services/pos-sales-sync'
 
 const syncRequestSchema = z.object({
-  integrationId: z.string().cuid().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  integrationId: z.cuid().optional(),
+  startDate: z.iso.datetime().optional(),
+  endDate: z.iso.datetime().optional(),
   forced: z.boolean().default(false),
 })
 
@@ -17,7 +17,6 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
   fastify.post('/:integrationId', async (request, reply) => {
     try {
       const integrationId = z
-        .string()
         .cuid()
         .parse((request.params as any).integrationId)
       const body = syncRequestSchema.parse(request.body || {})
@@ -42,10 +41,46 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
         throw new AppError(ErrorCode.NOT_FOUND, 'POS integration not found')
       }
 
+      const completedCount = await fastify.prisma.inventoryCount.findFirst({
+        where: {
+          status: 'APPROVED',
+          organizationId: integration.organizationId,
+        },
+        orderBy: {
+          approvedAt: 'desc',
+        },
+      })
+      if (!completedCount?.approvedAt || completedCount.approvedAt === null) {
+        try {
+          // Create sync log entry
+          await fastify.prisma.syncLog.create({
+            data: {
+              organizationId: integration.organizationId,
+              syncType: 'SALES',
+              status: 'SUCCESS',
+              recordsProcessed: 0,
+              recordsFailed: 0,
+              errorMessage: 'First Count not run yet',
+              startDate: new Date(),
+              endDate: new Date(),
+              completedAt: new Date(),
+            },
+          })
+        } catch (_error) {}
+        return {
+          integrationId: integration.id,
+          integrationName: integration.name,
+          success: true,
+          processed: 0,
+          newSales: 0,
+        }
+      }
+
       const result = await syncService.syncSalesForIntegration(integrationId, {
         startDate: body.startDate ? new Date(body.startDate) : undefined,
         endDate: body.endDate ? new Date(body.endDate) : undefined,
         forced: body.forced,
+        lastCountDate: completedCount.approvedAt,
       })
 
       reply.send({
@@ -132,14 +167,14 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
           id: true,
           name: true,
           type: true,
-          lastSyncAt: true,
+          lastSalesSyncAt: true,
           syncStatus: true,
           syncErrors: true,
           createdAt: true,
           updatedAt: true,
         },
         orderBy: {
-          lastSyncAt: 'desc',
+          lastSalesSyncAt: 'desc',
         },
       })
 
@@ -148,7 +183,7 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
           id: integration.id,
           name: integration.name,
           type: integration.type,
-          lastSyncAt: integration.lastSyncAt,
+          lastSalesSyncAt: integration.lastSalesSyncAt,
           syncStatus: integration.syncStatus,
           hasErrors: integration.syncErrors
             ? Array.isArray(integration.syncErrors) &&
@@ -158,9 +193,9 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
             integration.syncErrors && Array.isArray(integration.syncErrors)
               ? integration.syncErrors.length
               : 0,
-          daysSinceLastSync: integration.lastSyncAt
+          daysSinceLastSync: integration.lastSalesSyncAt
             ? Math.floor(
-                (Date.now() - integration.lastSyncAt.getTime()) /
+                (Date.now() - integration.lastSalesSyncAt.getTime()) /
                   (1000 * 60 * 60 * 24)
               )
             : null,
@@ -198,13 +233,9 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
           return
         }
 
-        console.log('Starting scheduled POS sales sync...')
-
         const result = await syncService.syncAllIntegrations({
           forced: false, // Use incremental sync for cron jobs
         })
-
-        console.log('Scheduled POS sales sync completed:', result)
 
         reply.send({
           timestamp: new Date().toISOString(),

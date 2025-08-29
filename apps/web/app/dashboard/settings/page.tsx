@@ -14,7 +14,6 @@ import InventorySettingsCard from '@/components/dashboard/Settings/InventorySett
 import LocationsCard from '@/components/dashboard/Settings/Locations'
 import { UserManagementCard } from '@/components/dashboard/Settings/UserManagement'
 import { HappBarLoader } from '@/components/HappyBarLoader'
-import { SalesSyncCard } from '@/components/pos/sales-sync-card'
 import { SyncDialog } from '@/components/pos/sync-dialog'
 import { ToastIntegrationForm } from '@/components/pos/toast-integration-form'
 import ToastIcon from '@/components/pos/toastIcon'
@@ -583,26 +582,6 @@ export default function SettingsPage() {
                     )}
                   </CardContent>
                 </Card>
-              </SettingsOnly>
-
-              {/* POS Sales Sync Management - Requires admin.settings permission */}
-              <SettingsOnly
-                fallback={
-                  <Card className='brand-card'>
-                    <CardContent className='text-center py-8'>
-                      <RefreshCw className='h-12 w-12 mx-auto mb-4 text-gray-300' />
-                      <h3 className='text-lg font-medium mb-2 text-muted-foreground'>
-                        Sales Sync Management (Admin Only)
-                      </h3>
-                      <p className='text-muted-foreground'>
-                        Administrator privileges required to manage sales
-                        synchronization.
-                      </p>
-                    </CardContent>
-                  </Card>
-                }
-              >
-                <SalesSyncCard />
               </SettingsOnly>
             </TabsContent>
 

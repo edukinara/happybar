@@ -45,6 +45,7 @@ export class POSSalesSyncService {
       startDate?: Date
       endDate?: Date
       forced?: boolean // Skip last sync check
+      lastCountDate: Date
     }
   ): Promise<{
     success: boolean
@@ -54,6 +55,26 @@ export class POSSalesSyncService {
     duplicates: number
     errorDetails?: string[]
   }> {
+    // Get integration details
+    const integration = await this.prisma.pOSIntegration.findUnique({
+      where: { id: integrationId },
+      include: {
+        organization: true,
+      },
+    })
+
+    if (!integration) {
+      throw new AppError(ErrorCode.NOT_FOUND, 'POS integration not found')
+    }
+
+    if (!integration.isActive) {
+      throw new AppError(
+        ErrorCode.VALIDATION_ERROR,
+        'POS integration is not active'
+      )
+    }
+
+    const organizationId = integration.organizationId
     try {
       const completedCount = await this.prisma.inventoryCount
         .findFirst({
@@ -71,37 +92,20 @@ export class POSSalesSyncService {
           duplicates: 0,
         }
       }
-      // Get integration details
-      const integration = await this.prisma.pOSIntegration.findUnique({
-        where: { id: integrationId },
-        include: {
-          organization: true,
-        },
-      })
-
-      if (!integration) {
-        throw new AppError(ErrorCode.NOT_FOUND, 'POS integration not found')
-      }
-
-      if (!integration.isActive) {
-        throw new AppError(
-          ErrorCode.VALIDATION_ERROR,
-          'POS integration is not active'
-        )
-      }
-
-      const organizationId = integration.organizationId
 
       // Determine date range for sync
       const endDate = options?.endDate || new Date()
       let startDate = options?.startDate
 
-      if (!startDate && !options?.forced) {
-        // Use last sync time as start date (default to 7 days ago for business date approach)
-        startDate = integration.lastSyncAt
-          ? new Date(integration.lastSyncAt.getTime() + 1000) // Start 1 second after last sync
-          : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days ago for business date safety
-      } else if (!startDate) {
+      if (!startDate && !options?.forced && options?.lastCountDate) {
+        // Use last sales sync time as start date (default to last count date for business date approach)
+        startDate = integration.lastSalesSyncAt
+          ? new Date(integration.lastSalesSyncAt.getTime() + 1000) // Start 1 second after last sync
+          : options.lastCountDate // last count date for business date safety
+      } else if (!startDate && options?.lastCountDate) {
+        // Forced sync without start date - use last count date for comprehensive sync
+        startDate = options.lastCountDate
+      } else {
         // Forced sync without start date - use 7 days ago for comprehensive sync
         startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       }
@@ -241,9 +245,30 @@ export class POSSalesSyncService {
       await this.prisma.pOSIntegration.update({
         where: { id: integrationId },
         data: {
-          lastSyncAt: new Date(),
+          lastSalesSyncAt: new Date(),
           syncStatus: totalErrors > 0 ? 'FAILED' : 'SUCCESS',
           syncErrors: totalErrors === 0 ? [] : undefined,
+        },
+      })
+
+      // Create sync log entry
+      await this.prisma.syncLog.create({
+        data: {
+          organizationId: integration.organizationId,
+          syncType: 'SALES',
+          status:
+            totalErrors === 0
+              ? 'SUCCESS'
+              : totalErrors < totalProcessed
+                ? 'PARTIAL_SUCCESS'
+                : 'FAILED',
+          recordsProcessed: totalProcessed,
+          recordsFailed: totalErrors,
+          errorMessage:
+            errorDetails.length > 0 ? errorDetails.join('; ') : null,
+          startDate: startDate,
+          endDate: endDate,
+          completedAt: new Date(),
         },
       })
 
@@ -265,13 +290,29 @@ export class POSSalesSyncService {
 
       // Update integration sync status to error
       try {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown sync error'
+
         await this.prisma.pOSIntegration.update({
           where: { id: integrationId },
           data: {
             syncStatus: 'FAILED',
-            syncErrors: [
-              error instanceof Error ? error.message : 'Unknown sync error',
-            ],
+            syncErrors: [errorMessage],
+          },
+        })
+
+        // Log the failed sync
+        await this.prisma.syncLog.create({
+          data: {
+            organizationId,
+            syncType: 'SALES',
+            status: 'FAILED',
+            recordsProcessed: 0,
+            recordsFailed: 0,
+            errorMessage,
+            startDate: options?.startDate,
+            endDate: options?.endDate || new Date(),
+            completedAt: new Date(),
           },
         })
       } catch (updateError) {
@@ -461,7 +502,7 @@ export class POSSalesSyncService {
         organizationId: true,
         type: true,
         credentials: true,
-        lastSyncAt: true,
+        lastSalesSyncAt: true,
       },
     })
 
@@ -471,17 +512,32 @@ export class POSSalesSyncService {
 
     for (const integration of integrations) {
       try {
-        const completedCount = await this.prisma.inventoryCount
-          .findFirst({
-            where: {
-              status: 'APPROVED',
-            },
-          })
-          .then((r) => !!r)
-        if (completedCount) {
-          // throw new AppError('Expectation failed', ErrorCode.BAD_REQUEST, 417, {
-          //   message: 'At least one completed Inventory Count required',
-          // })
+        const completedCount = await this.prisma.inventoryCount.findFirst({
+          where: {
+            status: 'APPROVED',
+            organizationId: integration.organizationId,
+          },
+          orderBy: {
+            approvedAt: 'desc',
+          },
+        })
+        if (!completedCount?.approvedAt || completedCount.approvedAt === null) {
+          try {
+            // Create sync log entry
+            await this.prisma.syncLog.create({
+              data: {
+                organizationId: integration.organizationId,
+                syncType: 'SALES',
+                status: 'SUCCESS',
+                recordsProcessed: 0,
+                recordsFailed: 0,
+                errorMessage: 'First Count not run yet',
+                startDate: new Date(),
+                endDate: new Date(),
+                completedAt: new Date(),
+              },
+            })
+          } catch (_error) {}
           results.push({
             integrationId: integration.id,
             integrationName: integration.name,
@@ -492,8 +548,10 @@ export class POSSalesSyncService {
           successCount++
           continue
         }
+
         const result = await this.syncSalesForIntegration(integration.id, {
           forced: options?.forced,
+          lastCountDate: completedCount.approvedAt,
         })
 
         results.push({
