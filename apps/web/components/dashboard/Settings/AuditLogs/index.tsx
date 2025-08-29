@@ -208,24 +208,24 @@ export default function AuditLogsCard() {
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case 'inventory_over_depletion':
-        return <AlertTriangle className='h-4 w-4 text-red-500' />
+        return <AlertTriangle className='size-4 text-red-500' />
       case 'unit_conversion':
-        return <RefreshCw className='h-4 w-4 text-blue-500' />
+        return <RefreshCw className='size-4 text-blue-500' />
       case 'inventory_adjustment':
-        return <Package className='h-4 w-4 text-purple-500' />
+        return <Package className='size-4 text-purple-500' />
       default:
-        return <FileText className='h-4 w-4 text-gray-500' />
+        return <FileText className='size-4 text-gray-500' />
     }
   }
 
   const getSourceIcon = (source?: string) => {
-    if (!source) return <FileText className='h-3 w-3 text-gray-400' />
+    if (!source) return <FileText className='size-3 text-gray-400' />
 
     if (source.includes('webhook'))
-      return <Zap className='h-3 w-3 text-green-500' />
+      return <Zap className='size-3 text-green-500' />
     if (source.includes('cron') || source.includes('sync'))
-      return <Shield className='h-3 w-3 text-blue-500' />
-    return <Package className='h-3 w-3 text-purple-500' />
+      return <Shield className='size-3 text-blue-500' />
+    return <Package className='size-3 text-purple-500' />
   }
 
   const formatEventData = (eventData: Record<string, any>) => {
@@ -256,14 +256,14 @@ export default function AuditLogsCard() {
             onClick={() => setExpanded((prev) => !prev)}
           >
             {expanded ? (
-              <ChevronDown className='h-4 w-4' />
+              <ChevronDown className='size-4' />
             ) : (
-              <ChevronRight className='h-4 w-4' />
+              <ChevronRight className='size-4' />
             )}
           </Button>
           <div>
             <CardTitle className='flex items-center'>
-              <Database className='mr-2 h-5 w-5' />
+              <Database className='mr-2 size-5' />
               Audit Logs
             </CardTitle>
             <CardDescription>
@@ -280,7 +280,7 @@ export default function AuditLogsCard() {
               <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                 <div className='p-4 border rounded-lg'>
                   <div className='flex items-center space-x-2'>
-                    <FileText className='h-4 w-4 text-gray-500' />
+                    <FileText className='size-4 text-gray-500' />
                     <span className='text-sm font-medium'>Total Logs</span>
                   </div>
                   <p className='text-2xl font-bold mt-1'>{stats.totalLogs}</p>
@@ -289,7 +289,7 @@ export default function AuditLogsCard() {
 
                 <div className='p-4 border rounded-lg'>
                   <div className='flex items-center space-x-2'>
-                    <Clock className='h-4 w-4 text-blue-500' />
+                    <Clock className='size-4 text-blue-500' />
                     <span className='text-sm font-medium'>Recent Activity</span>
                   </div>
                   <p className='text-2xl font-bold mt-1'>
@@ -300,7 +300,7 @@ export default function AuditLogsCard() {
 
                 <div className='p-4 border rounded-lg'>
                   <div className='flex items-center space-x-2'>
-                    <AlertTriangle className='h-4 w-4 text-red-500' />
+                    <AlertTriangle className='size-4 text-red-500' />
                     <span className='text-sm font-medium'>Over-Depletion</span>
                   </div>
                   <p className='text-2xl font-bold mt-1'>
@@ -311,7 +311,7 @@ export default function AuditLogsCard() {
 
                 <div className='p-4 border rounded-lg'>
                   <div className='flex items-center space-x-2'>
-                    <RefreshCw className='h-4 w-4 text-blue-500' />
+                    <RefreshCw className='size-4 text-blue-500' />
                     <span className='text-sm font-medium'>Conversions</span>
                   </div>
                   <p className='text-2xl font-bold mt-1'>
@@ -327,12 +327,12 @@ export default function AuditLogsCard() {
             {/* Filters */}
             <div className='space-y-4'>
               <div className='flex items-center space-x-2'>
-                <Filter className='h-4 w-4' />
+                <Filter className='size-4' />
                 <h3 className='font-medium'>Filters</h3>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className='h-4 w-4 text-muted-foreground' />
+                      <HelpCircle className='size-4 text-muted-foreground' />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className='max-w-xs'>
@@ -402,7 +402,7 @@ export default function AuditLogsCard() {
                 <div>
                   <Label>Search</Label>
                   <div className='relative mt-1'>
-                    <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+                    <Search className='absolute left-2 top-2.5 size-4 text-muted-foreground' />
                     <Input
                       placeholder='Product, order ID...'
                       value={searchTerm}
@@ -418,7 +418,7 @@ export default function AuditLogsCard() {
                   Clear Filters
                 </Button>
                 <Button variant='outline' size='sm' onClick={loadAuditLogs}>
-                  <RefreshCw className='mr-2 h-4 w-4' />
+                  <RefreshCw className='mr-2 size-4' />
                   Refresh
                 </Button>
               </div>
@@ -437,7 +437,7 @@ export default function AuditLogsCard() {
                     onClick={handleCleanup}
                     disabled={cleaningUp}
                   >
-                    <Trash2 className='mr-2 h-4 w-4' />
+                    <Trash2 className='mr-2 size-4' />
                     {cleaningUp ? 'Cleaning...' : 'Cleanup Old Logs'}
                   </Button>
                 </div>

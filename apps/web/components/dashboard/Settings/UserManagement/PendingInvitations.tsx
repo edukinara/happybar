@@ -214,7 +214,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
     return (
       <Card>
         <CardContent className='flex items-center justify-center py-8'>
-          <Loader2 className='h-6 w-6 animate-spin mr-2' />
+          <Loader2 className='size-6 animate-spin mr-2' />
           <span>Loading pending invitations...</span>
         </CardContent>
       </Card>
@@ -241,7 +241,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center'>
-            <Clock className='mr-2 h-5 w-5' />
+            <Clock className='mr-2 size-5' />
             Pending Invitations
           </CardTitle>
           <CardDescription>
@@ -264,7 +264,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
       <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
         <div>
           <CardTitle className='flex items-center'>
-            <Clock className='mr-2 h-5 w-5' />
+            <Clock className='mr-2 size-5' />
             Pending Invitations
           </CardTitle>
           <CardDescription>
@@ -272,7 +272,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
           </CardDescription>
         </div>
         <Button variant='outline' size='sm' onClick={fetchInvitations}>
-          <RefreshCw className='h-4 w-4 mr-2' />
+          <RefreshCw className='size-4 mr-2' />
           Refresh
         </Button>
       </CardHeader>
@@ -292,7 +292,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
               <TableRow key={invitation.id}>
                 <TableCell>
                   <div className='flex items-center space-x-2'>
-                    <Mail className='h-4 w-4 text-muted-foreground' />
+                    <Mail className='size-4 text-muted-foreground' />
                     <span className='font-medium'>{invitation.email}</span>
                   </div>
                 </TableCell>
@@ -314,7 +314,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
                           )
                         }
                       >
-                        <RefreshCw className='h-3 w-3 mr-1' />
+                        <RefreshCw className='size-3 mr-1' />
                         Resend
                       </Button>
                     ) : (
@@ -326,10 +326,10 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
                             disabled={cancellingIds.has(invitation.id)}
                           >
                             {cancellingIds.has(invitation.id) ? (
-                              <Loader2 className='h-3 w-3 animate-spin' />
+                              <Loader2 className='size-3 animate-spin' />
                             ) : (
                               <>
-                                <X className='h-3 w-3 mr-1' />
+                                <X className='size-3 mr-1' />
                                 Cancel
                               </>
                             )}
@@ -338,7 +338,7 @@ export function PendingInvitations({ onRefresh }: PendingInvitationsProps) {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle className='flex items-center'>
-                              <UserX className='mr-2 h-5 w-5' />
+                              <UserX className='mr-2 size-5' />
                               Cancel Invitation
                             </AlertDialogTitle>
                             <AlertDialogDescription>

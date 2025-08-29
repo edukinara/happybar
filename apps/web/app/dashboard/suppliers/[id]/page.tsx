@@ -274,7 +274,7 @@ export default function SupplierDetailPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading supplier...</span>
       </div>
     )
@@ -288,7 +288,7 @@ export default function SupplierDetailPage() {
           <h3 className='text-lg font-medium mb-2'>Supplier not found</h3>
           <Button asChild>
             <Link href='/dashboard/suppliers'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
+              <ArrowLeft className='size-4 mr-2' />
               Back to Suppliers
             </Link>
           </Button>
@@ -314,7 +314,7 @@ export default function SupplierDetailPage() {
         <div className='flex items-center gap-4'>
           <Button variant='outline' asChild>
             <Link href='/dashboard/suppliers'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
+              <ArrowLeft className='size-4 mr-2' />
               Back
             </Link>
           </Button>
@@ -336,7 +336,7 @@ export default function SupplierDetailPage() {
           </Badge>
           <Button asChild>
             <Link href={`/dashboard/suppliers/${supplier.id}/edit`}>
-              <Edit className='h-4 w-4 mr-2' />
+              <Edit className='size-4 mr-2' />
               Edit Supplier
             </Link>
           </Button>
@@ -349,26 +349,26 @@ export default function SupplierDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Building2 className='h-5 w-5' />
+                <Building2 className='size-5' />
                 Contact Information
               </CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
               {primaryContact ? (
                 <div className='flex items-center gap-2'>
-                  <Mail className='h-4 w-4 text-muted-foreground' />
+                  <Mail className='size-4 text-muted-foreground' />
                   <span className='text-sm'>{primaryContact.email}</span>
                 </div>
               ) : null}
               {primaryContact ? (
                 <div className='flex items-center gap-2'>
-                  <Phone className='h-4 w-4 text-muted-foreground' />
+                  <Phone className='size-4 text-muted-foreground' />
                   <span className='text-sm'>{primaryContact.phone}</span>
                 </div>
               ) : null}
               {supplier.address ? (
                 <div className='flex items-start gap-2'>
-                  <MapPin className='h-4 w-4 text-muted-foreground mt-0.5' />
+                  <MapPin className='size-4 text-muted-foreground mt-0.5' />
                   <span className='text-sm'>{supplier.address}</span>
                 </div>
               ) : null}
@@ -386,7 +386,7 @@ export default function SupplierDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Clock className='h-5 w-5' />
+                <Clock className='size-5' />
                 Order Schedule
               </CardTitle>
             </CardHeader>
@@ -435,7 +435,7 @@ export default function SupplierDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Package className='h-5 w-5' />
+                <Package className='size-5' />
                 Statistics
               </CardTitle>
             </CardHeader>
@@ -465,7 +465,7 @@ export default function SupplierDetailPage() {
                   </CardDescription>
                 </div>
                 <Button onClick={() => setShowAddProduct(true)}>
-                  <Plus className='h-4 w-4 mr-2' />
+                  <Plus className='size-4 mr-2' />
                   Add Product
                 </Button>
               </div>
@@ -480,7 +480,7 @@ export default function SupplierDetailPage() {
                     ordering
                   </p>
                   <Button onClick={() => setShowAddProduct(true)}>
-                    <Plus className='h-4 w-4 mr-2' />
+                    <Plus className='size-4 mr-2' />
                     Add First Product
                   </Button>
                 </div>
@@ -559,7 +559,7 @@ export default function SupplierDetailPage() {
                               variant='ghost'
                               onClick={() => startEditProduct(productSupplier)}
                             >
-                              <Edit className='h-4 w-4' />
+                              <Edit className='size-4' />
                             </Button>
                             <Button
                               size='sm'
@@ -568,7 +568,7 @@ export default function SupplierDetailPage() {
                                 handleRemoveProduct(productSupplier.productId)
                               }
                             >
-                              <Trash2 className='h-4 w-4' />
+                              <Trash2 className='size-4' />
                             </Button>
                           </div>
                         </TableCell>
@@ -802,7 +802,7 @@ export default function SupplierDetailPage() {
             <Button
               onClick={editingProduct ? handleUpdateProduct : handleAddProduct}
             >
-              <Save className='h-4 w-4 mr-2' />
+              <Save className='size-4 mr-2' />
               {editingProduct ? 'Update' : 'Add'} Product
             </Button>
           </DialogFooter>

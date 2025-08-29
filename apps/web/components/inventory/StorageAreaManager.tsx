@@ -103,7 +103,7 @@ export function StorageAreaManager({
     <Card className={className}>
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
-          <MapPin className='h-5 w-5' />
+          <MapPin className='size-5' />
           Storage Areas
         </CardTitle>
         <CardDescription>
@@ -130,7 +130,7 @@ export function StorageAreaManager({
                       size='sm'
                       onClick={() => moveArea(area.id, 'up')}
                       disabled={index === 0}
-                      className='h-4 w-6 p-0'
+                      className='size-4 p-0'
                     >
                       ▲
                     </Button>
@@ -139,14 +139,14 @@ export function StorageAreaManager({
                       size='sm'
                       onClick={() => moveArea(area.id, 'down')}
                       disabled={index === areas.length - 1}
-                      className='h-4 w-6 p-0'
+                      className='size-4 p-0'
                     >
                       ▼
                     </Button>
                   </div>
 
                   <div className='flex items-center gap-2 flex-1'>
-                    <GripVertical className='h-4 w-4 text-muted-foreground' />
+                    <GripVertical className='size-4 text-muted-foreground' />
                     <Badge
                       variant='outline'
                       className='w-8 h-6 justify-center text-xs'
@@ -160,9 +160,9 @@ export function StorageAreaManager({
                     variant='ghost'
                     size='sm'
                     onClick={() => removeArea(area.id)}
-                    className='h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50'
+                    className='size-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50'
                   >
-                    <X className='h-4 w-4' />
+                    <X className='size-4' />
                   </Button>
                 </div>
               ))}
@@ -185,7 +185,7 @@ export function StorageAreaManager({
                   onClick={() => addDefaultArea(areaName)}
                   className='h-8 text-xs'
                 >
-                  <Plus className='h-3 w-3 mr-1' />
+                  <Plus className='size-3 mr-1' />
                   {areaName}
                 </Button>
               ))}
@@ -214,7 +214,7 @@ export function StorageAreaManager({
               disabled={!customAreaName.trim()}
               size='sm'
             >
-              <Plus className='h-4 w-4 mr-1' />
+              <Plus className='size-4 mr-1' />
               Add
             </Button>
           </div>
@@ -223,7 +223,7 @@ export function StorageAreaManager({
         {/* Help Text */}
         {areas.length === 0 && (
           <div className='text-center py-8 text-muted-foreground'>
-            <MapPin className='h-8 w-8 mx-auto mb-2' />
+            <MapPin className='size-8 mx-auto mb-2' />
             <p className='text-sm'>No areas configured yet</p>
             <p className='text-xs'>
               Add areas where you&apos;ll count inventory

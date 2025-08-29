@@ -125,14 +125,14 @@ export function SyncDialog({
         <div className='space-y-4'>
           {error && (
             <Alert variant='destructive'>
-              <AlertTriangle className='h-4 w-4' />
+              <AlertTriangle className='size-4' />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
           {syncResult ? (
             <Alert>
-              <CheckCircle className='h-4 w-4' />
+              <CheckCircle className='size-4' />
               <AlertDescription>
                 <div className='space-y-1'>
                   <div className='font-medium'>
@@ -182,7 +182,7 @@ export function SyncDialog({
                 }}
                 disabled={isLoading}
               >
-                <RefreshCw className='h-4 w-4 mr-2' />
+                <RefreshCw className='size-4 mr-2' />
                 Sync Again
               </Button>
             )}

@@ -60,7 +60,7 @@ export function SubscriptionStatus() {
           <div className='flex items-center justify-between'>
             <div>
               <CardTitle className='flex items-center gap-2'>
-                <Crown className='h-5 w-5' />
+                <Crown className='size-5' />
                 Current Plan
               </CardTitle>
               <CardDescription>Your subscription details</CardDescription>
@@ -82,7 +82,7 @@ export function SubscriptionStatus() {
               onClick={openBillingPortal}
               className='flex items-center gap-2'
             >
-              <ExternalLink className='h-4 w-4' />
+              <ExternalLink className='size-4' />
               Manage Billing
             </Button>
           </div>
@@ -93,7 +93,7 @@ export function SubscriptionStatus() {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <BarChart3 className='h-5 w-5' />
+            <BarChart3 className='size-5' />
             Feature Usage
           </CardTitle>
           <CardDescription>
@@ -103,7 +103,7 @@ export function SubscriptionStatus() {
         <CardContent className='space-y-6'>
           {/* Products */}
           <FeatureUsageCard
-            icon={<Package className='h-4 w-4' />}
+            icon={<Package className='size-4' />}
             name='Products'
             used={featureSummary.products.used}
             limit={featureSummary.products.limit}
@@ -113,7 +113,7 @@ export function SubscriptionStatus() {
 
           {/* Locations */}
           <FeatureUsageCard
-            icon={<MapPin className='h-4 w-4' />}
+            icon={<MapPin className='size-4' />}
             name='Locations'
             used={featureSummary.locations.used}
             limit={featureSummary.locations.limit}
@@ -123,7 +123,7 @@ export function SubscriptionStatus() {
 
           {/* POS Integrations */}
           <FeatureUsageCard
-            icon={<Smartphone className='h-4 w-4' />}
+            icon={<Smartphone className='size-4' />}
             name='POS Integrations'
             used={featureSummary.posIntegrations.used}
             limit={featureSummary.posIntegrations.limit}
@@ -133,7 +133,7 @@ export function SubscriptionStatus() {
 
           {/* Team Members */}
           <FeatureUsageCard
-            icon={<Users className='h-4 w-4' />}
+            icon={<Users className='size-4' />}
             name='Team Members'
             used={featureSummary.teamMembers.used}
             limit={featureSummary.teamMembers.limit}
@@ -216,7 +216,7 @@ export function SubscriptionStatusCompact() {
 
   return (
     <div className='flex items-center gap-2'>
-      <Crown className='h-4 w-4' />
+      <Crown className='size-4' />
       <span className='font-medium'>{planName}</span>
       {featureSummary && (
         <div className='flex gap-1'>

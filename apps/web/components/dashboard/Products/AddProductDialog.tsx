@@ -264,7 +264,7 @@ export default function AddProductDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className='btn-brand-primary'>
-          <Plus className='mr-2 h-4 w-4' />
+          <Plus className='mr-2 size-4' />
           Add Product
         </Button>
       </DialogTrigger>
@@ -279,7 +279,7 @@ export default function AddProductDialog({
         <ScrollArea className='max-h-[calc(85vh-120px)] pr-4'>
           {loading ? (
             <div className='flex items-center justify-center py-4'>
-              <Loader2 className='h-6 w-6 animate-spin' />
+              <Loader2 className='size-6 animate-spin' />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className='space-y-6 p-2'>
@@ -520,7 +520,7 @@ export default function AddProductDialog({
                     onClick={() => setShowSupplierForm(true)}
                     disabled={suppliers.length === 0}
                   >
-                    <Plus className='h-4 w-4 mr-2' />
+                    <Plus className='size-4 mr-2' />
                     Add Supplier
                   </Button>
                 </div>
@@ -542,7 +542,7 @@ export default function AddProductDialog({
                           >
                             <div className='flex items-center justify-between'>
                               <div className='flex items-center gap-2'>
-                                <Building2 className='h-4 w-4' />
+                                <Building2 className='size-4' />
                                 <span className='font-medium'>
                                   {supplier.supplierName}
                                 </span>
@@ -558,7 +558,7 @@ export default function AddProductDialog({
                                   removeSupplierFromProduct(supplier.supplierId)
                                 }
                               >
-                                <X className='h-4 w-4' />
+                                <X className='size-4' />
                               </Button>
                             </div>
 
@@ -674,7 +674,7 @@ export default function AddProductDialog({
                             size='sm'
                             onClick={() => setShowSupplierForm(false)}
                           >
-                            <X className='h-4 w-4' />
+                            <X className='size-4' />
                           </Button>
                         </div>
                         <Select
@@ -728,7 +728,7 @@ export default function AddProductDialog({
                   Cancel
                 </Button>
                 <Button type='submit' disabled={saving}>
-                  <Save className='h-4 w-4 mr-2' />
+                  <Save className='size-4 mr-2' />
                   {saving ? 'Creating...' : 'Create Product'}
                 </Button>
               </div>

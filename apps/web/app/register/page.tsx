@@ -119,7 +119,7 @@ function RegisterForm() {
                     </div>
                   </div>
                   <Alert className='border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'>
-                    <Mail className='h-4 w-4' />
+                    <Mail className='size-4' />
                     <AlertDescription>
                       Please check your inbox and click the verification link to
                       activate your account. The link will automatically log you
@@ -290,12 +290,12 @@ function RegisterForm() {
                   >
                     {loading ? (
                       <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                        <Loader2 className='mr-2 size-4 animate-spin' />
                         Creating account...
                       </>
                     ) : (
                       <>
-                        <UserPlus className='mr-2 h-4 w-4' />
+                        <UserPlus className='mr-2 size-4' />
                         Create Account
                       </>
                     )}

@@ -166,7 +166,7 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading order...</span>
       </div>
     )
@@ -180,7 +180,7 @@ export default function OrderDetailPage() {
           <h3 className='text-lg font-medium mb-2'>Order not found</h3>
           <Button asChild>
             <Link href='/dashboard/orders'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
+              <ArrowLeft className='size-4 mr-2' />
               Back to Orders
             </Link>
           </Button>
@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
         <div className='flex items-center gap-4'>
           <Button variant='outline' asChild>
             <Link href='/dashboard/orders'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
+              <ArrowLeft className='size-4 mr-2' />
               Back to Orders
             </Link>
           </Button>
@@ -221,7 +221,7 @@ export default function OrderDetailPage() {
               onClick={action.action}
               disabled={updating}
             >
-              <action.icon className='h-4 w-4 mr-2' />
+              <action.icon className='size-4 mr-2' />
               {action.label}
             </Button>
           ))}
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
               <div className='flex items-center justify-between'>
                 <div>
                   <CardTitle className='flex items-center gap-2'>
-                    <FileText className='h-5 w-5' />
+                    <FileText className='size-5' />
                     Notes
                   </CardTitle>
                   <CardDescription>
@@ -303,7 +303,7 @@ export default function OrderDetailPage() {
                     size='sm'
                     onClick={() => setEditing(true)}
                   >
-                    <Edit3 className='h-4 w-4 mr-2' />
+                    <Edit3 className='size-4 mr-2' />
                     Edit
                   </Button>
                 )}
@@ -320,7 +320,7 @@ export default function OrderDetailPage() {
                   />
                   <div className='flex gap-2'>
                     <Button onClick={saveNotes} disabled={updating}>
-                      <Save className='h-4 w-4 mr-2' />
+                      <Save className='size-4 mr-2' />
                       Save
                     </Button>
                     <Button
@@ -353,7 +353,7 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Building2 className='h-5 w-5' />
+                <Building2 className='size-5' />
                 Supplier
               </CardTitle>
             </CardHeader>
@@ -383,7 +383,7 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <DollarSign className='h-5 w-5' />
+                <DollarSign className='size-5' />
                 Order Summary
               </CardTitle>
             </CardHeader>
@@ -413,7 +413,7 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Calendar className='h-5 w-5' />
+                <Calendar className='size-5' />
                 Important Dates
               </CardTitle>
             </CardHeader>

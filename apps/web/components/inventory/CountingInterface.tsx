@@ -109,11 +109,11 @@ export function CountingInterface({
             </div>
             <div className='flex gap-2'>
               <Button variant='outline' onClick={onSave} disabled={saving}>
-                <Save className='h-4 w-4 mr-2' />
+                <Save className='size-4 mr-2' />
                 {saving ? 'Saving...' : 'Save Progress'}
               </Button>
               <Button onClick={onComplete} disabled={saving}>
-                <CheckCircle className='h-4 w-4 mr-2' />
+                <CheckCircle className='size-4 mr-2' />
                 Complete Area
               </Button>
             </div>
@@ -127,7 +127,7 @@ export function CountingInterface({
           <CardContent className='p-4'>
             <div className='flex items-center gap-3'>
               <div className='w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center'>
-                <CheckCircle className='h-4 w-4' />
+                <CheckCircle className='size-4' />
               </div>
               <div>
                 <div className='text-lg font-bold'>
@@ -145,7 +145,7 @@ export function CountingInterface({
           <CardContent className='p-4'>
             <div className='flex items-center gap-3'>
               <div className='w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center'>
-                <CheckCircle className='h-4 w-4' />
+                <CheckCircle className='size-4' />
               </div>
               <div>
                 <div className='text-lg font-bold'>{getCompletedCount()}</div>
@@ -161,7 +161,7 @@ export function CountingInterface({
           <CardContent className='p-4'>
             <div className='flex items-center gap-3'>
               <div className='w-8 h-8 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center'>
-                <AlertTriangle className='h-4 w-4' />
+                <AlertTriangle className='size-4' />
               </div>
               <div>
                 <div className='text-lg font-bold'>{getVarianceCount()}</div>
@@ -179,7 +179,7 @@ export function CountingInterface({
         <CardContent className='p-4'>
           <div className='flex items-center gap-3'>
             <div className='relative flex-1'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground' />
               <Input
                 placeholder='Search products by name or SKU...'
                 value={searchTerm}
@@ -192,7 +192,7 @@ export function CountingInterface({
               onClick={() => setShowBarcode(!showBarcode)}
               className='flex items-center gap-2'
             >
-              <ScanLine className='h-4 w-4' />
+              <ScanLine className='size-4' />
               {showBarcode ? 'Hide' : 'Scan'} Barcode
             </Button>
           </div>
@@ -200,7 +200,7 @@ export function CountingInterface({
           {showBarcode && (
             <div className='mt-4 p-4 border rounded-lg bg-muted/30'>
               <div className='text-center text-muted-foreground'>
-                <ScanLine className='h-8 w-8 mx-auto mb-2' />
+                <ScanLine className='size-8 mx-auto mb-2' />
                 <p className='text-sm'>Barcode scanning coming soon</p>
                 <p className='text-xs'>
                   This will allow quick product identification
@@ -216,7 +216,7 @@ export function CountingInterface({
         {filteredProducts.length === 0 ? (
           <Card>
             <CardContent className='p-8 text-center text-muted-foreground'>
-              <Search className='h-8 w-8 mx-auto mb-2' />
+              <Search className='size-8 mx-auto mb-2' />
               <p>{`No products found matching "${searchTerm}"`}</p>
             </CardContent>
           </Card>

@@ -58,7 +58,7 @@ export function NavUser({
           >
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-                <Avatar className='h-8 w-8 rounded-lg'>
+                <Avatar className='size-8 rounded-lg'>
                   {/* <AvatarImage src={''} alt={user.name} /> */}
                   <AvatarFallback className='rounded-lg'>
                     {user.name
@@ -78,14 +78,14 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
                 <Link href='/dashboard/account'>
-                  <BadgeCheck className='mr-2 h-4 w-4' />
+                  <BadgeCheck className='mr-2 size-4' />
                   Account
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className='mr-2 h-4 w-4' />
+              <LogOut className='mr-2 size-4' />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

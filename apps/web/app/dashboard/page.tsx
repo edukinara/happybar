@@ -164,7 +164,7 @@ export default function DashboardPage() {
           <div className='flex space-x-2'>
             <Button asChild className='btn-brand-primary'>
               <Link href='/dashboard/inventory/counts/new'>
-                <ClipboardList className='mr-2 h-4 w-4' />
+                <ClipboardList className='mr-2 size-4' />
                 Start Count
               </Link>
             </Button>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
           <Card className='brand-card gap-2'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Total Items</CardTitle>
-              <Box className='h-4 w-4 brand-icon-primary' />
+              <Box className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold brand-text-gradient'>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
               <CardTitle className='text-sm font-medium'>
                 Low Stock Items
               </CardTitle>
-              <AlertTriangle className='h-4 w-4 brand-icon-accent' />
+              <AlertTriangle className='size-4 brand-icon-accent' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold text-amber-600'>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
               <CardTitle className='text-sm font-medium'>
                 Inventory Value
               </CardTitle>
-              <DollarSign className='h-4 w-4 brand-icon-primary' />
+              <DollarSign className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold brand-text-gradient'>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
               <CardTitle className='text-sm font-medium'>
                 Pending Orders
               </CardTitle>
-              <ShoppingCart className='h-4 w-4 brand-icon-primary' />
+              <ShoppingCart className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold brand-text-gradient'>0</div>
@@ -357,7 +357,7 @@ export default function DashboardPage() {
                         <Link
                           href={`/dashboard/inventory?location=${selectedLocationId}`}
                         >
-                          <Box className='mr-2 h-4 w-4' />
+                          <Box className='mr-2 size-4' />
                           View Full Inventory
                         </Link>
                       </Button>
@@ -378,7 +378,7 @@ export default function DashboardPage() {
                       <CardContent className='px-4'>
                         <div className='flex items-center justify-between'>
                           <div className='flex items-center gap-3'>
-                            <MapPin className='h-5 w-5 text-muted-foreground' />
+                            <MapPin className='size-5 text-muted-foreground' />
                             <div>
                               <h4 className='font-semibold'>
                                 {stat.location.name}
@@ -436,7 +436,7 @@ export default function DashboardPage() {
                     <p>Create your first location to see inventory data</p>
                     <Button asChild className='mt-4'>
                       <Link href='/dashboard/settings#manageLocations' scroll>
-                        <MapPin className='mr-2 h-4 w-4' />
+                        <MapPin className='mr-2 size-4' />
                         Manage Locations
                       </Link>
                     </Button>
@@ -466,7 +466,7 @@ export default function DashboardPage() {
                   <>
                     <div className='flex items-center space-x-4'>
                       <div className='flex items-center space-x-2'>
-                        <TrendingUp className='h-4 w-4 text-green-500' />
+                        <TrendingUp className='size-4 text-green-500' />
                         <span className='text-sm'>Recent activity</span>
                       </div>
                     </div>
@@ -507,7 +507,7 @@ export default function DashboardPage() {
                 <div className='pt-2'>
                   <Button variant='outline' asChild className='w-full'>
                     <Link href='/dashboard/analytics'>
-                      <BarChart3 className='mr-2 h-4 w-4' />
+                      <BarChart3 className='mr-2 size-4' />
                       View Full Analysis
                     </Link>
                   </Button>
@@ -570,19 +570,19 @@ export default function DashboardPage() {
               <CardContent className='space-y-2'>
                 <Button asChild className='w-full btn-brand-primary'>
                   <Link href='/dashboard/inventory'>
-                    <Box className='mr-2 h-4 w-4' />
+                    <Box className='mr-2 size-4' />
                     View Inventory
                   </Link>
                 </Button>
                 <Button asChild className='w-full btn-brand-primary'>
                   <Link href='/dashboard/orders/new'>
-                    <ShoppingCart className='mr-2 h-4 w-4' />
+                    <ShoppingCart className='mr-2 size-4' />
                     Create Order
                   </Link>
                 </Button>
                 <Button asChild className='w-full btn-brand-primary'>
                   <Link href='/dashboard/orders/suggestions'>
-                    <TrendingUp className='mr-2 h-4 w-4' />
+                    <TrendingUp className='mr-2 size-4' />
                     Reorder Suggestions
                   </Link>
                 </Button>

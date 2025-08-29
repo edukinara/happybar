@@ -237,7 +237,7 @@ export function ToastIntegrationForm({
                   Partner Integration
                 </Badge>
                 {!isStandardMode && (
-                  <CheckCircle className='h-4 w-4 text-primary' />
+                  <CheckCircle className='size-4 text-primary' />
                 )}
               </div>
               <p className='text-sm text-muted-foreground'>
@@ -263,7 +263,7 @@ export function ToastIntegrationForm({
                   Standard API Access
                 </Badge>
                 {isStandardMode && (
-                  <CheckCircle className='h-4 w-4 text-primary' />
+                  <CheckCircle className='size-4 text-primary' />
                 )}
               </div>
               <p className='text-sm text-muted-foreground'>
@@ -307,7 +307,7 @@ export function ToastIntegrationForm({
               : 'Partner Integration Setup'}
           </CardTitle>
           <CardDescription className='flex items-start space-x-2'>
-            <Info className='h-4 w-4 mt-0.5 shrink-0' />
+            <Info className='size-4 mt-0.5 shrink-0' />
             <span>
               {isStandardMode
                 ? 'Get these credentials from your Toast Management Console under Integrations → API Access'
@@ -321,7 +321,7 @@ export function ToastIntegrationForm({
             <div className='space-y-4'>
               <div className='p-4 bg-blue-50 dark:bg-blue-950 rounded-lg'>
                 <div className='flex items-start space-x-2'>
-                  <Info className='h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5' />
+                  <Info className='size-4 text-blue-600 dark:text-blue-400 mt-0.5' />
                   <div className='text-sm text-blue-800 dark:text-blue-200'>
                     <p className='font-medium mb-2'>Setup Instructions:</p>
                     <ol className='list-decimal list-inside space-y-1'>
@@ -364,7 +364,7 @@ export function ToastIntegrationForm({
                     Your Location Code
                     {generatingCode && (
                       <span className='ml-2 text-sm text-muted-foreground'>
-                        <Loader2 className='inline h-3 w-3 animate-spin mr-1' />
+                        <Loader2 className='inline size-3 animate-spin mr-1' />
                         Generating...
                       </span>
                     )}
@@ -396,7 +396,7 @@ export function ToastIntegrationForm({
                       }}
                       title='Copy to clipboard'
                     >
-                      <Copy className='h-4 w-4' />
+                      <Copy className='size-4' />
                     </Button>
                   )}
                 </div>
@@ -422,7 +422,7 @@ export function ToastIntegrationForm({
               </div>
 
               <div className='flex items-center space-x-2 text-sm'>
-                <ExternalLink className='h-4 w-4' />
+                <ExternalLink className='size-4' />
                 <a
                   href='https://www.toasttab.com/login'
                   target='_blank'
@@ -530,7 +530,7 @@ export function ToastIntegrationForm({
             {connectionTestResult.success ? (
               <div className='space-y-2'>
                 <div className='flex items-center space-x-2 text-green-600'>
-                  <CheckCircle className='h-5 w-5' />
+                  <CheckCircle className='size-5' />
                   <span>Connection test successful!</span>
                 </div>
                 {connectionTestResult.restaurantCount !== undefined && (
@@ -544,7 +544,7 @@ export function ToastIntegrationForm({
             ) : (
               <div className='space-y-2'>
                 <div className='flex items-center space-x-2 text-red-600'>
-                  <AlertTriangle className='h-5 w-5' />
+                  <AlertTriangle className='size-5' />
                   <span>Connection test failed</span>
                 </div>
                 {connectionTestResult.error && (
@@ -569,7 +569,7 @@ export function ToastIntegrationForm({
         <Card className='border-red-200 bg-red-50 dark:bg-red-950'>
           <CardContent className='pt-6'>
             <div className='flex items-start space-x-2'>
-              <AlertTriangle className='h-5 w-5 text-red-600 dark:text-red-400 mt-0.5' />
+              <AlertTriangle className='size-5 text-red-600 dark:text-red-400 mt-0.5' />
               <p className='text-sm text-red-800 dark:text-red-200'>{error}</p>
             </div>
           </CardContent>
@@ -586,7 +586,7 @@ export function ToastIntegrationForm({
         >
           {testingConnection ? (
             <>
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+              <Loader2 className='mr-2 size-4 animate-spin' />
               Testing Connection...
             </>
           ) : (
@@ -601,7 +601,7 @@ export function ToastIntegrationForm({
           <Button type='submit' disabled={loading || testingConnection}>
             {loading ? (
               <>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                <Loader2 className='mr-2 size-4 animate-spin' />
                 Creating...
               </>
             ) : (

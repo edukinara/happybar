@@ -126,7 +126,7 @@ export default function InventoryAlertsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading alerts...</span>
       </div>
     )
@@ -150,7 +150,7 @@ export default function InventoryAlertsPage() {
           />
           <Button asChild variant='outline'>
             <Link href='/dashboard/settings'>
-              <Settings className='h-4 w-4 mr-2' />
+              <Settings className='size-4 mr-2' />
               Configure
             </Link>
           </Button>
@@ -162,7 +162,7 @@ export default function InventoryAlertsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Out of Stock</CardTitle>
-            <AlertTriangle className='h-4 w-4 text-red-500' />
+            <AlertTriangle className='size-4 text-red-500' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-red-600'>
@@ -179,7 +179,7 @@ export default function InventoryAlertsPage() {
             <CardTitle className='text-sm font-medium'>
               Critical Low Stock
             </CardTitle>
-            <TrendingDown className='h-4 w-4 text-orange-500' />
+            <TrendingDown className='size-4 text-orange-500' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-orange-600'>
@@ -196,7 +196,7 @@ export default function InventoryAlertsPage() {
             <CardTitle className='text-sm font-medium'>
               Variance Alerts
             </CardTitle>
-            <Zap className='h-4 w-4 text-blue-500' />
+            <Zap className='size-4 text-blue-500' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-blue-600'>
@@ -211,7 +211,7 @@ export default function InventoryAlertsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Alerts</CardTitle>
-            <Bell className='h-4 w-4 text-muted-foreground' />
+            <Bell className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -226,11 +226,11 @@ export default function InventoryAlertsPage() {
       <Tabs defaultValue='low-stock' className='space-y-4'>
         <TabsList>
           <TabsTrigger value='low-stock' className='flex items-center gap-2'>
-            <Package className='h-4 w-4' />
+            <Package className='size-4' />
             Low Stock ({lowStockItems.length})
           </TabsTrigger>
           <TabsTrigger value='variance' className='flex items-center gap-2'>
-            <Zap className='h-4 w-4' />
+            <Zap className='size-4' />
             Variance Alerts ({alertSummary?.activeAlerts || 0})
           </TabsTrigger>
         </TabsList>
@@ -269,7 +269,7 @@ export default function InventoryAlertsPage() {
                         className='flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50'
                       >
                         <div className='flex items-center gap-3'>
-                          <Package className='h-5 w-5 text-muted-foreground' />
+                          <Package className='size-5 text-muted-foreground' />
                           <div>
                             <div className='flex items-center gap-2 mb-1'>
                               <Badge className={getSeverityColor(severity)}>
@@ -303,7 +303,7 @@ export default function InventoryAlertsPage() {
                             <Link
                               href={`/dashboard/inventory?product=${item.productId}&location=${item.locationId}`}
                             >
-                              <Eye className='h-4 w-4 mr-1' />
+                              <Eye className='size-4 mr-1' />
                               View
                             </Link>
                           </Button>
@@ -333,9 +333,9 @@ export default function InventoryAlertsPage() {
                   disabled={evaluating}
                 >
                   {evaluating ? (
-                    <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                    <RefreshCw className='size-4 mr-2 animate-spin' />
                   ) : (
-                    <RefreshCw className='h-4 w-4 mr-2' />
+                    <RefreshCw className='size-4 mr-2' />
                   )}
                   Re-evaluate
                 </Button>
@@ -357,9 +357,9 @@ export default function InventoryAlertsPage() {
                     disabled={evaluating}
                   >
                     {evaluating ? (
-                      <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                      <RefreshCw className='size-4 mr-2 animate-spin' />
                     ) : (
-                      <RefreshCw className='h-4 w-4 mr-2' />
+                      <RefreshCw className='size-4 mr-2' />
                     )}
                     Check for Issues
                   </Button>
@@ -372,7 +372,7 @@ export default function InventoryAlertsPage() {
                       className='flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50'
                     >
                       <div className='flex items-center gap-3'>
-                        <Zap className='h-5 w-5 text-orange-500' />
+                        <Zap className='size-5 text-orange-500' />
                         <div>
                           <div className='flex items-center gap-2 mb-1'>
                             <Badge className={getSeverityColor(alert.severity)}>
@@ -402,7 +402,7 @@ export default function InventoryAlertsPage() {
                         )}
                         <Button size='sm' variant='outline' asChild>
                           <Link href='/dashboard/alerts'>
-                            <Eye className='h-4 w-4 mr-1' />
+                            <Eye className='size-4 mr-1' />
                             Details
                           </Link>
                         </Button>

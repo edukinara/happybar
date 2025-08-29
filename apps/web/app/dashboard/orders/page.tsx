@@ -150,7 +150,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading orders...</span>
       </div>
     )
@@ -179,13 +179,13 @@ export default function OrdersPage() {
           <div className='flex gap-2'>
             <Button asChild variant='outline'>
               <Link href='/dashboard/orders/suggestions'>
-                <TrendingUp className='h-4 w-4 mr-2 brand-icon-primary' />
+                <TrendingUp className='size-4 mr-2 brand-icon-primary' />
                 Reorder Suggestions
               </Link>
             </Button>
             <Button asChild className='btn-brand-primary'>
               <Link href='/dashboard/orders/new'>
-                <Plus className='h-4 w-4 mr-2' />
+                <Plus className='size-4 mr-2' />
                 New Order
               </Link>
             </Button>
@@ -199,7 +199,7 @@ export default function OrdersPage() {
               <CardTitle className='text-sm font-medium'>
                 Total Orders
               </CardTitle>
-              <Package className='h-4 w-4 brand-icon-primary' />
+              <Package className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>{stats.totalOrders}</div>
@@ -210,7 +210,7 @@ export default function OrdersPage() {
           <Card className='brand-card gap-2'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Total Spend</CardTitle>
-              <DollarSign className='h-4 w-4 brand-icon-accent' />
+              <DollarSign className='size-4 brand-icon-accent' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>
@@ -230,7 +230,7 @@ export default function OrdersPage() {
               <CardTitle className='text-sm font-medium'>
                 Pending Orders
               </CardTitle>
-              <Clock className='h-4 w-4 brand-icon-accent' />
+              <Clock className='size-4 brand-icon-accent' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold text-orange-600'>
@@ -245,7 +245,7 @@ export default function OrdersPage() {
               <CardTitle className='text-sm font-medium'>
                 Draft Orders
               </CardTitle>
-              <AlertCircle className='h-4 w-4 brand-icon-primary' />
+              <AlertCircle className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold text-blue-600'>
@@ -267,7 +267,7 @@ export default function OrdersPage() {
           <CardContent>
             <div className='flex items-center gap-4 mb-6'>
               <div className='relative flex-1 max-w-sm'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground' />
                 <Input
                   placeholder='Search orders...'
                   value={searchTerm}
@@ -283,7 +283,7 @@ export default function OrdersPage() {
                 }
               >
                 <SelectTrigger className='w-48'>
-                  <Filter className='h-4 w-4 mr-2' />
+                  <Filter className='size-4 mr-2' />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,7 +312,7 @@ export default function OrdersPage() {
                 {!searchTerm && statusFilter === 'ALL' && (
                   <Button asChild className='btn-brand-primary'>
                     <Link href='/dashboard/orders/new'>
-                      <Plus className='h-4 w-4 mr-2' />
+                      <Plus className='size-4 mr-2' />
                       Create First Order
                     </Link>
                   </Button>
@@ -364,7 +364,7 @@ export default function OrdersPage() {
                         <div className='flex items-center gap-2'>
                           <Button size='sm' variant='outline' asChild>
                             <Link href={`/dashboard/orders/${order.id}`}>
-                              <Eye className='h-4 w-4 mr-1' />
+                              <Eye className='size-4 mr-1' />
                               View
                             </Link>
                           </Button>
@@ -377,7 +377,7 @@ export default function OrdersPage() {
                               }
                               className='btn-brand-primary'
                             >
-                              <Send className='h-4 w-4 mr-1' />
+                              <Send className='size-4 mr-1' />
                               Send
                             </Button>
                           )}
@@ -404,7 +404,7 @@ export default function OrdersPage() {
                                 handleStatusChange(order.id, 'RECEIVED')
                               }
                             >
-                              <Package className='h-4 w-4 mr-1' />
+                              <Package className='size-4 mr-1' />
                               Receive
                             </Button>
                           )}

@@ -208,7 +208,7 @@ export function PricingModal({
             <div className='flex items-center gap-3'>
               {featureName && (
                 <div className='w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center'>
-                  <Crown className='h-5 w-5 text-primary' />
+                  <Crown className='size-5 text-primary' />
                 </div>
               )}
               <div>
@@ -230,7 +230,7 @@ export function PricingModal({
               onClick={() => onOpenChange(false)}
               className='shrink-0'
             >
-              <X className='h-4 w-4' />
+              <X className='size-4' />
             </Button>
           </div>
         </DialogHeader>
@@ -257,7 +257,7 @@ export function PricingModal({
           {/* Loading State */}
           {loading && (
             <div className='flex items-center justify-center py-12'>
-              <Loader2 className='h-8 w-8 animate-spin mr-2' />
+              <Loader2 className='size-8 animate-spin mr-2' />
               <span>Loading pricing plans...</span>
             </div>
           )}
@@ -344,7 +344,7 @@ export function PricingModal({
                               key={item.feature_id}
                               className='flex items-start gap-2 text-sm'
                             >
-                              <Check className='h-4 w-4 text-green-500 flex-shrink-0 mt-0.5' />
+                              <Check className='size-4 text-green-500 flex-shrink-0 mt-0.5' />
                               <span className='break-words'>
                                 {item.feature?.name}
                               </span>
@@ -371,7 +371,7 @@ export function PricingModal({
                       >
                         {subscribing === product.id ? (
                           <>
-                            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                            <Loader2 className='mr-2 size-4 animate-spin' />
                             Processing...
                           </>
                         ) : isCurrentPlan ? (
@@ -384,7 +384,7 @@ export function PricingModal({
                               ? `Start ${product.free_trial.length}-Day Free Trial`
                               : 'Select Plan'}
                             {!isCurrentPlan && (
-                              <ArrowRight className='ml-2 h-4 w-4' />
+                              <ArrowRight className='ml-2 size-4' />
                             )}
                           </>
                         )}
@@ -408,7 +408,7 @@ export function PricingModal({
           {!hasBillingAccess && (
             <Card className='border-amber-200 bg-amber-50'>
               <CardContent className='flex items-center gap-3 p-4'>
-                <Sparkles className='h-5 w-5 text-amber-600' />
+                <Sparkles className='size-5 text-amber-600' />
                 <div>
                   <p className='font-medium text-amber-800'>
                     Billing access required
@@ -435,15 +435,15 @@ export function PricingModal({
           {/* Trust indicators */}
           <div className='flex items-center justify-center gap-6 text-sm text-muted-foreground border-t pt-6'>
             <div className='flex items-center gap-2'>
-              <Check className='h-4 w-4 text-green-500' />
+              <Check className='size-4 text-green-500' />
               <span>30-day money-back guarantee</span>
             </div>
             <div className='flex items-center gap-2'>
-              <Zap className='h-4 w-4 text-blue-500' />
+              <Zap className='size-4 text-blue-500' />
               <span>Instant activation</span>
             </div>
             <div className='flex items-center gap-2'>
-              <Crown className='h-4 w-4 text-purple-500' />
+              <Crown className='size-4 text-purple-500' />
               <span>Premium support included</span>
             </div>
           </div>

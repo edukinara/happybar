@@ -589,7 +589,7 @@ export default function ProductMappingsPage() {
           <div className='flex flex-row gap-2 flex-wrap justify-end'>
             <Button variant='outline' asChild>
               <a href='/dashboard/products'>
-                <ExternalLink className='h-4 w-4 mr-2' />
+                <ExternalLink className='size-4 mr-2' />
                 Back to Products
               </a>
             </Button>
@@ -600,7 +600,7 @@ export default function ProductMappingsPage() {
             >
               <DialogTrigger asChild>
                 <Button variant='outline'>
-                  <Download className='h-4 w-4 mr-2' />
+                  <Download className='size-4 mr-2' />
                   Import POS Products
                 </Button>
               </DialogTrigger>
@@ -847,11 +847,11 @@ export default function ProductMappingsPage() {
           >
             <TabsList className='grid w-full grid-cols-2'>
               <TabsTrigger value='direct' className='flex items-center gap-2'>
-                <Package className='h-4 w-4' />
+                <Package className='size-4' />
                 Direct Product Mapping
               </TabsTrigger>
               <TabsTrigger value='recipe' className='flex items-center gap-2'>
-                <ChefHat className='h-4 w-4' />
+                <ChefHat className='size-4' />
                 Recipe Mapping
               </TabsTrigger>
             </TabsList>
@@ -874,7 +874,7 @@ export default function ProductMappingsPage() {
                   <div className='flex flex-wrap gap-4'>
                     <div className='flex-1 min-w-[200px]'>
                       <div className='relative'>
-                        <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+                        <Search className='absolute left-2 top-2.5 size-4 text-muted-foreground' />
                         <Input
                           placeholder='Search mappings...'
                           value={mappingSearch}
@@ -949,7 +949,7 @@ export default function ProductMappingsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className='flex items-center gap-2'>
-                      <Zap className='h-5 w-5' />
+                      <Zap className='size-5' />
                       Auto-Mapping Suggestions
                     </CardTitle>
                     <CardDescription>
@@ -997,7 +997,7 @@ export default function ProductMappingsPage() {
                               size='sm'
                               onClick={() => handleAcceptSuggestion(suggestion)}
                             >
-                              <CheckCircle className='h-4 w-4' />
+                              <CheckCircle className='size-4' />
                             </Button>
                           </div>
                         </div>
@@ -1023,7 +1023,7 @@ export default function ProductMappingsPage() {
                 >
                   <DialogTrigger asChild>
                     <Button>
-                      <Plus className='h-4 w-4 mr-2' />
+                      <Plus className='size-4 mr-2' />
                       Create {mappingType === 'direct'
                         ? 'Product'
                         : 'Recipe'}{' '}
@@ -1302,12 +1302,12 @@ export default function ProductMappingsPage() {
                               >
                                 {mapping.isConfirmed ? (
                                   <>
-                                    <CheckCircle className='h-3 w-3 mr-1' />
+                                    <CheckCircle className='size-3 mr-1' />
                                     Confirmed
                                   </>
                                 ) : (
                                   <>
-                                    <AlertCircle className='h-3 w-3 mr-1' />
+                                    <AlertCircle className='size-3 mr-1' />
                                     Auto-mapped
                                   </>
                                 )}
@@ -1321,7 +1321,7 @@ export default function ProductMappingsPage() {
                                   onClick={() => handleEditMapping(mapping)}
                                   title='Edit mapping'
                                 >
-                                  <Edit className='h-4 w-4' />
+                                  <Edit className='size-4' />
                                 </Button>
                                 <Button
                                   size='sm'
@@ -1331,7 +1331,7 @@ export default function ProductMappingsPage() {
                                   }
                                   title='Delete mapping'
                                 >
-                                  <Trash2 className='h-4 w-4' />
+                                  <Trash2 className='size-4' />
                                 </Button>
                               </div>
                             </TableCell>
@@ -1362,7 +1362,7 @@ export default function ProductMappingsPage() {
                   <div className='flex flex-wrap gap-4'>
                     <div className='flex-1 min-w-[200px]'>
                       <div className='relative'>
-                        <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+                        <Search className='absolute left-2 top-2.5 size-4 text-muted-foreground' />
                         <Input
                           placeholder='Search recipe mappings...'
                           value={mappingSearch}
@@ -1397,7 +1397,7 @@ export default function ProductMappingsPage() {
                 >
                   <DialogTrigger asChild>
                     <Button>
-                      <Plus className='h-4 w-4 mr-2' />
+                      <Plus className='size-4 mr-2' />
                       Create Recipe Mapping
                     </Button>
                   </DialogTrigger>
@@ -1537,7 +1537,7 @@ export default function ProductMappingsPage() {
                                   }
                                   title='Edit mapping'
                                 >
-                                  <Edit className='h-4 w-4' />
+                                  <Edit className='size-4' />
                                 </Button>
                                 <Button
                                   size='sm'
@@ -1547,7 +1547,7 @@ export default function ProductMappingsPage() {
                                   }
                                   title='Delete mapping'
                                 >
-                                  <Trash2 className='h-4 w-4' />
+                                  <Trash2 className='size-4' />
                                 </Button>
                               </div>
                             </TableCell>
@@ -1570,7 +1570,7 @@ export default function ProductMappingsPage() {
                 yet
               </CardDescription>
               <div className='relative flex-1 max-w-sm min-w-2xs'>
-                <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+                <Search className='absolute left-2 top-2.5 size-4 text-muted-foreground' />
                 <Input
                   placeholder='Search POS products...'
                   value={search}

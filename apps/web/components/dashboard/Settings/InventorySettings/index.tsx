@@ -170,7 +170,7 @@ export default function InventorySettingsCard() {
       {policy.allowOverDepletion && (
         <div className='ml-6 pt-2 border-t'>
           <div className='flex items-center space-x-2 text-sm text-muted-foreground mb-2'>
-            <AlertTriangle className='h-3 w-3' />
+            <AlertTriangle className='size-3' />
             <span>Over-depletion will be logged for audit purposes</span>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function InventorySettingsCard() {
     <Card>
       <CardHeader>
         <CardTitle className='flex items-center'>
-          <Package className='mr-2 h-5 w-5' />
+          <Package className='mr-2 size-5' />
           Inventory Settings
         </CardTitle>
         <CardDescription>
@@ -226,7 +226,7 @@ export default function InventorySettingsCard() {
       <CardContent className='space-y-6'>
         {loading ? (
           <div className='flex items-center justify-center py-8'>
-            <Loader2 className='h-6 w-6 animate-spin' />
+            <Loader2 className='size-6 animate-spin' />
             <span className='ml-2'>Loading inventory settings...</span>
           </div>
         ) : !settings ? (
@@ -234,7 +234,7 @@ export default function InventorySettingsCard() {
             <AlertTriangle className='h-12 w-12 mx-auto mb-4 text-red-300' />
             <p>Failed to load inventory settings</p>
             <Button variant='outline' onClick={loadSettings} className='mt-4'>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -247,7 +247,7 @@ export default function InventorySettingsCard() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className='h-4 w-4 text-muted-foreground' />
+                      <HelpCircle className='size-4 text-muted-foreground' />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className='max-w-xs'>
@@ -266,7 +266,7 @@ export default function InventorySettingsCard() {
                 <PolicySection
                   title='Real-time POS Sales (Webhooks)'
                   description='Live sales from POS systems via webhooks'
-                  icon={<Zap className='h-4 w-4 text-green-500' />}
+                  icon={<Zap className='size-4 text-green-500' />}
                   policyType='webhookPolicy'
                   policy={settings.webhookPolicy}
                 />
@@ -274,7 +274,7 @@ export default function InventorySettingsCard() {
                 <PolicySection
                   title='Scheduled POS Sync (Cron)'
                   description='Batch import of sales data via scheduled sync'
-                  icon={<Shield className='h-4 w-4 text-blue-500' />}
+                  icon={<Shield className='size-4 text-blue-500' />}
                   policyType='cronSyncPolicy'
                   policy={settings.cronSyncPolicy}
                 />
@@ -282,7 +282,7 @@ export default function InventorySettingsCard() {
                 <PolicySection
                   title='Manual Operations'
                   description='Manual inventory adjustments and counts'
-                  icon={<Package className='h-4 w-4 text-purple-500' />}
+                  icon={<Package className='size-4 text-purple-500' />}
                   policyType='manualPolicy'
                   policy={settings.manualPolicy}
                 />
@@ -435,14 +435,14 @@ export default function InventorySettingsCard() {
                 onClick={handleReset}
                 disabled={saving || loading}
               >
-                <RefreshCw className='mr-2 h-4 w-4' />
+                <RefreshCw className='mr-2 size-4' />
                 Reset to Defaults
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={saving || loading || !settings}
               >
-                <Save className='mr-2 h-4 w-4' />
+                <Save className='mr-2 size-4' />
                 {saving ? 'Saving...' : 'Save Settings'}
               </Button>
             </div>

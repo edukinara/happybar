@@ -270,7 +270,7 @@ export default function InventoryReportsPage() {
             </div>
             <div className='flex items-end py-1'>
               <Button onClick={fetchReportData} className='w-full'>
-                <FileText className='mr-2 h-4 w-4' />
+                <FileText className='mr-2 size-4' />
                 Refresh Reports
               </Button>
             </div>
@@ -300,7 +300,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Inventory Value
                 </CardTitle>
-                <DollarSign className='h-4 w-4 text-muted-foreground' />
+                <DollarSign className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -320,7 +320,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Average Variance
                 </CardTitle>
-                <TrendingUp className='h-4 w-4 text-muted-foreground' />
+                <TrendingUp className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -339,7 +339,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Movements
                 </CardTitle>
-                <Package className='h-4 w-4 text-muted-foreground' />
+                <Package className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -357,7 +357,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Completed Counts
                 </CardTitle>
-                <Users className='h-4 w-4 text-muted-foreground' />
+                <Users className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -460,7 +460,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Overall Efficiency
                 </CardTitle>
-                <BarChart3 className='h-4 w-4 text-muted-foreground' />
+                <BarChart3 className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div
@@ -480,9 +480,9 @@ export default function InventoryReportsPage() {
                   Cost Impact
                 </CardTitle>
                 {(usageData?.summary.totalCostImpact || 0) >= 0 ? (
-                  <TrendingUp className='h-4 w-4 text-green-600' />
+                  <TrendingUp className='size-4 text-green-600' />
                 ) : (
-                  <TrendingDown className='h-4 w-4 text-red-600' />
+                  <TrendingDown className='size-4 text-red-600' />
                 )}
               </CardHeader>
               <CardContent>
@@ -506,7 +506,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Products Analyzed
                 </CardTitle>
-                <Package className='h-4 w-4 text-muted-foreground' />
+                <Package className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -524,7 +524,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Usage Variance
                 </CardTitle>
-                <AlertTriangle className='h-4 w-4 text-muted-foreground' />
+                <AlertTriangle className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div
@@ -697,9 +697,9 @@ export default function InventoryReportsPage() {
                   Total Cost Impact
                 </CardTitle>
                 {(varianceData?.summary.totalCostImpact || 0) >= 0 ? (
-                  <TrendingUp className='h-4 w-4 text-green-600' />
+                  <TrendingUp className='size-4 text-green-600' />
                 ) : (
-                  <TrendingDown className='h-4 w-4 text-red-600' />
+                  <TrendingDown className='size-4 text-red-600' />
                 )}
               </CardHeader>
               <CardContent>
@@ -725,7 +725,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Variance Rate
                 </CardTitle>
-                <AlertTriangle className='h-4 w-4 text-muted-foreground' />
+                <AlertTriangle className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -744,7 +744,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Items with Variance
                 </CardTitle>
-                <Package className='h-4 w-4 text-muted-foreground' />
+                <Package className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -881,7 +881,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Inventory Value
                 </CardTitle>
-                <DollarSign className='h-4 w-4 text-muted-foreground' />
+                <DollarSign className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -901,7 +901,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Average Turnover
                 </CardTitle>
-                <TrendingUp className='h-4 w-4 text-muted-foreground' />
+                <TrendingUp className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -918,7 +918,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Slow Moving Items
                 </CardTitle>
-                <AlertTriangle className='h-4 w-4 text-orange-500' />
+                <AlertTriangle className='size-4 text-orange-500' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold text-orange-600'>
@@ -1042,7 +1042,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Movements
                 </CardTitle>
-                <Package className='h-4 w-4 text-muted-foreground' />
+                <Package className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -1059,7 +1059,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Movement Value
                 </CardTitle>
-                <DollarSign className='h-4 w-4 text-muted-foreground' />
+                <DollarSign className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -1079,7 +1079,7 @@ export default function InventoryReportsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Transfers vs Adjustments
                 </CardTitle>
-                <BarChart3 className='h-4 w-4 text-muted-foreground' />
+                <BarChart3 className='size-4 text-muted-foreground' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
@@ -1124,13 +1124,13 @@ export default function InventoryReportsPage() {
                       <TableCell className='font-medium'>
                         <div className='flex items-center space-x-2'>
                           {movement.type === 'TRANSFER' && (
-                            <Package className='h-4 w-4 text-blue-600' />
+                            <Package className='size-4 text-blue-600' />
                           )}
                           {movement.type === 'ADJUSTMENT_IN' && (
-                            <TrendingUp className='h-4 w-4 text-green-600' />
+                            <TrendingUp className='size-4 text-green-600' />
                           )}
                           {movement.type === 'ADJUSTMENT_OUT' && (
-                            <TrendingDown className='h-4 w-4 text-red-600' />
+                            <TrendingDown className='size-4 text-red-600' />
                           )}
                           <span className='capitalize'>
                             {movement.type.toLowerCase().replace('_', ' ')}
@@ -1183,7 +1183,7 @@ export default function InventoryReportsPage() {
                   className='w-full'
                   onClick={() => toast.info('Export feature coming soon')}
                 >
-                  <Download className='h-4 w-4 mr-2' />
+                  <Download className='size-4 mr-2' />
                   Export Variance Analysis (CSV)
                 </Button>
                 <Button
@@ -1191,7 +1191,7 @@ export default function InventoryReportsPage() {
                   className='w-full'
                   onClick={() => toast.info('Export feature coming soon')}
                 >
-                  <Download className='h-4 w-4 mr-2' />
+                  <Download className='size-4 mr-2' />
                   Export Inventory Valuation (PDF)
                 </Button>
                 <Button
@@ -1199,7 +1199,7 @@ export default function InventoryReportsPage() {
                   className='w-full'
                   onClick={() => toast.info('Export feature coming soon')}
                 >
-                  <Download className='h-4 w-4 mr-2' />
+                  <Download className='size-4 mr-2' />
                   Export Movement History (CSV)
                 </Button>
                 <Button
@@ -1207,7 +1207,7 @@ export default function InventoryReportsPage() {
                   className='w-full'
                   onClick={() => toast.info('Export feature coming soon')}
                 >
-                  <Download className='h-4 w-4 mr-2' />
+                  <Download className='size-4 mr-2' />
                   Export Count Summary (PDF)
                 </Button>
               </div>

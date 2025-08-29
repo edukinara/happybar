@@ -318,7 +318,7 @@ export default function EditProductPage() {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
+          <div className='animate-spin rounded-full size-8 border-b-2 border-primary mx-auto mb-4'></div>
           <p>Loading product...</p>
         </div>
       </div>
@@ -348,7 +348,7 @@ export default function EditProductPage() {
       <div className='flex items-center gap-4'>
         <Button variant='ghost' size='sm' asChild>
           <Link href='/dashboard/products'>
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className='size-4 mr-2' />
             Back to Products
           </Link>
         </Button>
@@ -366,7 +366,7 @@ export default function EditProductPage() {
         <Card className='border-yellow-200 bg-yellow-50'>
           <CardContent className='p-4'>
             <div className='flex items-start gap-3'>
-              <AlertTriangle className='h-5 w-5 text-yellow-600 mt-0.5' />
+              <AlertTriangle className='size-5 text-yellow-600 mt-0.5' />
               <div>
                 <h3 className='font-medium text-yellow-800'>
                   POS-Linked Product
@@ -656,7 +656,7 @@ export default function EditProductPage() {
                   onClick={() => setShowSupplierForm(true)}
                   disabled={suppliers.length === 0}
                 >
-                  <Plus className='h-4 w-4 mr-2' />
+                  <Plus className='size-4 mr-2' />
                   Add Supplier
                 </Button>
               </div>
@@ -679,7 +679,7 @@ export default function EditProductPage() {
                         >
                           <div className='flex items-center justify-between'>
                             <div className='flex items-center gap-2'>
-                              <Building2 className='h-4 w-4' />
+                              <Building2 className='size-4' />
                               <span className='font-medium'>
                                 {supplier.supplierName}
                               </span>
@@ -695,7 +695,7 @@ export default function EditProductPage() {
                                 removeSupplierFromProduct(supplier.id)
                               }
                             >
-                              <X className='h-4 w-4' />
+                              <X className='size-4' />
                             </Button>
                           </div>
 
@@ -863,7 +863,7 @@ export default function EditProductPage() {
                           size='sm'
                           onClick={() => setShowSupplierForm(false)}
                         >
-                          <X className='h-4 w-4' />
+                          <X className='size-4' />
                         </Button>
                       </div>
                       <Select
@@ -912,7 +912,7 @@ export default function EditProductPage() {
             <Link href='/dashboard/products'>Cancel</Link>
           </Button>
           <Button type='submit' disabled={saving}>
-            <Save className='h-4 w-4 mr-2' />
+            <Save className='size-4 mr-2' />
             {saving ? 'Updating...' : 'Update Product'}
           </Button>
         </div>

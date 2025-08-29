@@ -90,13 +90,13 @@ export default function InventoryCountsPage() {
   const getCountTypeIcon = (type: CountType) => {
     switch (type) {
       case CountType.FULL:
-        return <ClipboardCheck className='h-4 w-4' />
+        return <ClipboardCheck className='size-4' />
       case CountType.SPOT:
-        return <BarChart3 className='h-4 w-4' />
+        return <BarChart3 className='size-4' />
       case CountType.CYCLE:
-        return <Calendar className='h-4 w-4' />
+        return <Calendar className='size-4' />
       default:
-        return <ClipboardCheck className='h-4 w-4' />
+        return <ClipboardCheck className='size-4' />
     }
   }
 
@@ -189,7 +189,7 @@ export default function InventoryCountsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Counts</CardTitle>
-            <ClipboardCheck className='h-4 w-4 text-muted-foreground' />
+            <ClipboardCheck className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{totalCounts}</div>
@@ -199,7 +199,7 @@ export default function InventoryCountsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>In Progress</CardTitle>
-            <BarChart3 className='h-4 w-4 text-muted-foreground' />
+            <BarChart3 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{inProgressCounts.length}</div>
@@ -209,7 +209,7 @@ export default function InventoryCountsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Completed</CardTitle>
-            <Calendar className='h-4 w-4 text-muted-foreground' />
+            <Calendar className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{completedCounts.length}</div>
@@ -219,7 +219,7 @@ export default function InventoryCountsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Avg Variance</CardTitle>
-            <BarChart3 className='h-4 w-4 text-muted-foreground' />
+            <BarChart3 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -272,7 +272,7 @@ export default function InventoryCountsPage() {
       <div className='grid gap-4'>
         {loading ? (
           <div className='flex justify-center py-8'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
+            <div className='animate-spin rounded-full size-8 border-b-2 border-primary'></div>
           </div>
         ) : counts.length === 0 ? (
           <Card>
@@ -286,7 +286,7 @@ export default function InventoryCountsPage() {
               </p>
               <Button asChild>
                 <Link href='/dashboard/inventory/counts/new'>
-                  <Plus className='h-4 w-4 mr-2' />
+                  <Plus className='size-4 mr-2' />
                   New Count
                 </Link>
               </Button>
@@ -328,18 +328,18 @@ export default function InventoryCountsPage() {
 
                       <div className='flex flex-wrap items-center gap-4 text-sm text-muted-foreground'>
                         <div className='flex items-center gap-1'>
-                          <MapPin className='h-4 w-4' />
+                          <MapPin className='size-4' />
                           {count.location?.name}
                         </div>
                         <div className='flex items-center gap-1'>
-                          <Calendar className='h-4 w-4' />
+                          <Calendar className='size-4' />
                           Started{' '}
                           {formatDistanceToNow(new Date(count.startedAt), {
                             addSuffix: true,
                           })}
                         </div>
                         <div className='flex items-center gap-1'>
-                          <ClipboardCheck className='h-4 w-4' />
+                          <ClipboardCheck className='size-4' />
                           {getCountTypeLabel(count.type)}
                         </div>
                       </div>

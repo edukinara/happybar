@@ -175,7 +175,7 @@ export function UserManagementCard() {
     return (
       <Card>
         <CardContent className='flex items-center justify-center py-8'>
-          <Loader2 className='h-6 w-6 animate-spin mr-2' />
+          <Loader2 className='size-6 animate-spin mr-2' />
           <span>Loading user management...</span>
         </CardContent>
       </Card>
@@ -200,7 +200,7 @@ export function UserManagementCard() {
       <TeamMembersGate
         fallback={
           <Button disabled>
-            <Plus className='mr-2 h-4 w-4' />
+            <Plus className='mr-2 size-4' />
             Upgrade to add more users
           </Button>
         }
@@ -209,7 +209,7 @@ export function UserManagementCard() {
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
             <div>
               <CardTitle className='flex items-center'>
-                <Users className='mr-2 h-5 w-5' />
+                <Users className='mr-2 size-5' />
                 User Management
               </CardTitle>
               <CardDescription>
@@ -217,7 +217,7 @@ export function UserManagementCard() {
               </CardDescription>
             </div>
             <Button onClick={() => setShowInviteModal(true)}>
-              <Plus className='mr-2 h-4 w-4' />
+              <Plus className='mr-2 size-4' />
               Invite Member
             </Button>
           </CardHeader>
@@ -232,7 +232,7 @@ export function UserManagementCard() {
                   Invite team members to get started with collaboration.
                 </p>
                 <Button onClick={() => setShowInviteModal(true)}>
-                  <Plus className='mr-2 h-4 w-4' />
+                  <Plus className='mr-2 size-4' />
                   Invite Your First Member
                 </Button>
               </div>
@@ -267,14 +267,14 @@ export function UserManagementCard() {
                           <div className='flex items-center space-x-2'>
                             {getRoleBadge(member.role)}
                             {isRestricted && (
-                              <Shield className='h-4 w-4 text-amber-500' />
+                              <Shield className='size-4 text-amber-500' />
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
                           {isRestricted ? (
                             <div className='flex items-center space-x-2'>
-                              <MapPin className='h-4 w-4 text-muted-foreground' />
+                              <MapPin className='size-4 text-muted-foreground' />
                               <span className={locationSummary.color}>
                                 {locationSummary.text}
                               </span>
@@ -314,7 +314,7 @@ export function UserManagementCard() {
                             </div>
                           ) : (
                             <div className='flex items-center space-x-2 text-muted-foreground'>
-                              <Shield className='h-4 w-4' />
+                              <Shield className='size-4' />
                               <span>Full access (all locations)</span>
                             </div>
                           )}
@@ -330,7 +330,7 @@ export function UserManagementCard() {
                               onClick={() => handleManageLocations(member)}
                               title='Manage location access'
                             >
-                              <Edit className='h-3 w-3 mr-1' />
+                              <Edit className='size-3 mr-1' />
                               Locations
                             </Button>
                           )}

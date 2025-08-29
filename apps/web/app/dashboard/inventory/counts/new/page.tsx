@@ -1,5 +1,6 @@
 'use client'
 
+import { StorageAreaManager } from '@/components/inventory/StorageAreaManager'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,9 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { StorageAreaManager } from '@/components/inventory/StorageAreaManager'
-import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
 import { inventoryApi } from '@/lib/api/inventory'
+import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
 import { CountType } from '@happy-bar/types'
 import { ArrowLeft, Calendar, FileText, MapPin } from 'lucide-react'
 import Link from 'next/link'
@@ -31,11 +31,13 @@ export default function NewInventoryCountPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [locations, setLocations] = useState<LocationsResponse>([])
-  const [storageAreas, setStorageAreas] = useState<Array<{
-    id: string
-    name: string
-    order: number
-  }>>([])
+  const [storageAreas, setStorageAreas] = useState<
+    Array<{
+      id: string
+      name: string
+      order: number
+    }>
+  >([])
   const [formData, setFormData] = useState({
     name: '',
     locationId: '',
@@ -91,7 +93,10 @@ export default function NewInventoryCountPage() {
         name: formData.name,
         type: formData.type,
         notes: formData.notes || undefined,
-        areas: storageAreas.map(area => ({ name: area.name, order: area.order }))
+        areas: storageAreas.map((area) => ({
+          name: area.name,
+          order: area.order,
+        })),
       })
 
       router.push(`/dashboard/inventory/counts/${newCount.id}`)
@@ -127,7 +132,7 @@ export default function NewInventoryCountPage() {
       <div className='flex items-center gap-4'>
         <Button variant='ghost' size='sm' asChild>
           <Link href='/dashboard/inventory/counts'>
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className='size-4 mr-2' />
             Back to Counts
           </Link>
         </Button>
@@ -184,7 +189,7 @@ export default function NewInventoryCountPage() {
                       {locations.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
                           <div className='flex items-center gap-2'>
-                            <MapPin className='h-4 w-4' />
+                            <MapPin className='size-4' />
                             {location.name}
                           </div>
                         </SelectItem>
@@ -263,7 +268,7 @@ export default function NewInventoryCountPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <FileText className='h-5 w-5' />
+                <FileText className='size-5' />
                 Count Types
               </CardTitle>
             </CardHeader>
@@ -282,7 +287,7 @@ export default function NewInventoryCountPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Calendar className='h-5 w-5' />
+                <Calendar className='size-5' />
                 Next Steps
               </CardTitle>
             </CardHeader>

@@ -136,7 +136,7 @@ export default function InventoryCountDetailPage() {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
+          <div className='animate-spin rounded-full size-8 border-b-2 border-primary mx-auto mb-4'></div>
           <p>Loading inventory count...</p>
         </div>
       </div>
@@ -188,7 +188,7 @@ export default function InventoryCountDetailPage() {
         <div className='flex items-center gap-4'>
           <Button variant='ghost' size='sm' asChild>
             <Link href='/dashboard/inventory/counts'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
+              <ArrowLeft className='size-4 mr-2' />
               Back to Counts
             </Link>
           </Button>
@@ -196,11 +196,11 @@ export default function InventoryCountDetailPage() {
             <h1 className='text-3xl font-bold tracking-tight'>{count.name}</h1>
             <div className='flex items-center gap-4 text-muted-foreground'>
               <div className='flex items-center gap-1'>
-                <MapPin className='h-4 w-4' />
+                <MapPin className='size-4' />
                 {count.location?.name}
               </div>
               <div className='flex items-center gap-1'>
-                <Calendar className='h-4 w-4' />
+                <Calendar className='size-4' />
                 Started{' '}
                 {formatDistanceToNow(new Date(count.startedAt), {
                   addSuffix: true,
@@ -217,7 +217,7 @@ export default function InventoryCountDetailPage() {
           {count.status === InventoryCountStatus.DRAFT && (
             <Button asChild>
               <Link href={`/dashboard/inventory/counts/${count.id}/count`}>
-                <Play className='h-4 w-4 mr-2' />
+                <Play className='size-4 mr-2' />
                 Start Counting
               </Link>
             </Button>
@@ -231,7 +231,7 @@ export default function InventoryCountDetailPage() {
           )}
           {count.status === InventoryCountStatus.COMPLETED && (
             <Button onClick={handleApproveCount} disabled={approving}>
-              <CheckCircle className='h-4 w-4 mr-2' />
+              <CheckCircle className='size-4 mr-2' />
               {approving ? 'Approving...' : 'Approve Count'}
             </Button>
           )}
@@ -241,7 +241,7 @@ export default function InventoryCountDetailPage() {
               disabled={applying}
               variant='outline'
             >
-              <BarChart3 className='h-4 w-4 mr-2' />
+              <BarChart3 className='size-4 mr-2' />
               {applying ? 'Applying...' : 'Apply to Inventory'}
             </Button>
           )}
@@ -253,7 +253,7 @@ export default function InventoryCountDetailPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Progress</CardTitle>
-            <BarChart3 className='h-4 w-4 text-muted-foreground' />
+            <BarChart3 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -270,7 +270,7 @@ export default function InventoryCountDetailPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Items Counted</CardTitle>
-            <ClipboardCheck className='h-4 w-4 text-muted-foreground' />
+            <ClipboardCheck className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{count.itemsCounted}</div>
@@ -283,7 +283,7 @@ export default function InventoryCountDetailPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Value</CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -301,7 +301,7 @@ export default function InventoryCountDetailPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Variance</CardTitle>
-            <BarChart3 className='h-4 w-4 text-muted-foreground' />
+            <BarChart3 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>N/A</div>
@@ -350,7 +350,7 @@ export default function InventoryCountDetailPage() {
               </div>
             ) : (
               <div className='text-center py-8 text-muted-foreground'>
-                <ClipboardCheck className='h-8 w-8 mx-auto mb-2' />
+                <ClipboardCheck className='size-8 mx-auto mb-2' />
                 <p>No areas configured yet</p>
               </div>
             )}

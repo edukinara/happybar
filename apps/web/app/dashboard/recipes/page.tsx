@@ -306,7 +306,7 @@ export default function RecipesPage() {
           >
             <DialogTrigger asChild>
               <Button className='btn-brand-primary'>
-                <Plus className='mr-2 h-4 w-4' />
+                <Plus className='mr-2 size-4' />
                 New Recipe
               </Button>
             </DialogTrigger>
@@ -427,7 +427,7 @@ export default function RecipesPage() {
                         )}
                     </div>
                     <Button type='button' onClick={addIngredient} size='sm'>
-                      <Plus className='h-4 w-4' />
+                      <Plus className='size-4' />
                     </Button>
                   </div>
                 </div>
@@ -456,7 +456,7 @@ export default function RecipesPage() {
                             size='sm'
                             onClick={() => removeIngredient(item.productId)}
                           >
-                            <X className='h-4 w-4' />
+                            <X className='size-4' />
                           </Button>
                         </div>
                       ))}
@@ -490,7 +490,7 @@ export default function RecipesPage() {
         <Card className='brand-card'>
           <CardContent className='pt-0'>
             <div className='flex items-center space-x-2'>
-              <Search className='h-4 w-4 brand-icon-primary' />
+              <Search className='size-4 brand-icon-primary' />
               <Input
                 placeholder='Search recipes...'
                 value={searchTerm}
@@ -505,7 +505,7 @@ export default function RecipesPage() {
         <Card className='brand-card'>
           <CardHeader>
             <CardTitle className='flex items-center'>
-              <ChefHat className='mr-2 h-5 w-5 brand-icon-accent' />
+              <ChefHat className='mr-2 size-5 brand-icon-accent' />
               Recipes ({recipes.length})
             </CardTitle>
             <CardDescription>
@@ -527,7 +527,7 @@ export default function RecipesPage() {
                   onClick={() => setShowCreateDialog(true)}
                   className='btn-brand-primary'
                 >
-                  <Plus className='mr-2 h-4 w-4' />
+                  <Plus className='mr-2 size-4' />
                   Create First Recipe
                 </Button>
               </div>
@@ -554,13 +554,13 @@ export default function RecipesPage() {
                       <TableCell>{recipe.yield}</TableCell>
                       <TableCell>
                         <div className='flex items-center'>
-                          <DollarSign className='h-4 w-4 mr-1 brand-icon-accent' />
+                          <DollarSign className='size-4 mr-1 brand-icon-accent' />
                           {recipe.totalCost?.toFixed(2) || '0.00'}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className='flex items-center'>
-                          <DollarSign className='h-4 w-4 mr-1 brand-icon-accent' />
+                          <DollarSign className='size-4 mr-1 brand-icon-accent' />
                           {recipe.costPerServing?.toFixed(2) || '0.00'}
                         </div>
                       </TableCell>
@@ -582,7 +582,7 @@ export default function RecipesPage() {
                             size='sm'
                             onClick={() => handleEditRecipe(recipe)}
                           >
-                            <Edit className='h-4 w-4' />
+                            <Edit className='size-4' />
                           </Button>
                           <Button
                             variant='ghost'
@@ -590,7 +590,7 @@ export default function RecipesPage() {
                             onClick={() => handleDeleteRecipe(recipe)}
                             className='text-red-600 hover:text-red-700'
                           >
-                            <Trash2 className='h-4 w-4' />
+                            <Trash2 className='size-4' />
                           </Button>
                         </div>
                       </TableCell>

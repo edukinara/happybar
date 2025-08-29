@@ -119,7 +119,7 @@ export function UsageAlertsIntegration({
           <CardContent className='pt-6'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
-                <AlertTriangle className='h-6 w-6 text-orange-600' />
+                <AlertTriangle className='size-6 text-orange-600' />
                 <div>
                   <h3 className='font-semibold text-orange-900'>
                     {summary.activeAlerts} Active Variance Alert
@@ -144,15 +144,15 @@ export function UsageAlertsIntegration({
                   className='border-orange-200 text-orange-700 hover:bg-orange-100'
                 >
                   {evaluating ? (
-                    <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                    <RefreshCw className='size-4 mr-2 animate-spin' />
                   ) : (
-                    <RefreshCw className='h-4 w-4 mr-2' />
+                    <RefreshCw className='size-4 mr-2' />
                   )}
                   Re-evaluate
                 </Button>
                 <Button size='sm' asChild>
                   <Link href='/dashboard/alerts'>
-                    <Eye className='h-4 w-4 mr-2' />
+                    <Eye className='size-4 mr-2' />
                     View All
                   </Link>
                 </Button>
@@ -167,7 +167,7 @@ export function UsageAlertsIntegration({
         <CardHeader>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
-              <Bell className='h-5 w-5' />
+              <Bell className='size-5' />
               <CardTitle>Variance Alerts</CardTitle>
               {summary && (
                 <Badge variant='secondary' className='ml-2'>
@@ -183,15 +183,15 @@ export function UsageAlertsIntegration({
                 disabled={evaluating}
               >
                 {evaluating ? (
-                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                  <RefreshCw className='size-4 mr-2 animate-spin' />
                 ) : (
-                  <RefreshCw className='h-4 w-4 mr-2' />
+                  <RefreshCw className='size-4 mr-2' />
                 )}
                 Evaluate Now
               </Button>
               <Button variant='outline' size='sm' asChild>
                 <Link href='/dashboard/settings'>
-                  <Settings className='h-4 w-4 mr-2' />
+                  <Settings className='size-4 mr-2' />
                   Configure
                 </Link>
               </Button>
@@ -201,7 +201,7 @@ export function UsageAlertsIntegration({
         <CardContent>
           {loading ? (
             <div className='flex items-center justify-center py-8 text-muted-foreground'>
-              <RefreshCw className='h-4 w-4 animate-spin mr-2' />
+              <RefreshCw className='size-4 animate-spin mr-2' />
               Loading alerts...
             </div>
           ) : alerts.length === 0 ? (
@@ -217,9 +217,9 @@ export function UsageAlertsIntegration({
                 disabled={evaluating}
               >
                 {evaluating ? (
-                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                  <RefreshCw className='size-4 mr-2 animate-spin' />
                 ) : (
-                  <RefreshCw className='h-4 w-4 mr-2' />
+                  <RefreshCw className='size-4 mr-2' />
                 )}
                 Check for Issues
               </Button>
@@ -257,7 +257,7 @@ export function UsageAlertsIntegration({
                   </div>
                   <Button variant='ghost' size='sm' asChild>
                     <Link href='/dashboard/alerts'>
-                      <Eye className='h-4 w-4' />
+                      <Eye className='size-4' />
                     </Link>
                   </Button>
                 </div>
@@ -282,7 +282,7 @@ export function UsageAlertsIntegration({
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
-              <AlertTriangle className='h-5 w-5 text-orange-500' />
+              <AlertTriangle className='size-5 text-orange-500' />
               Alert Insights from Usage Data
             </CardTitle>
           </CardHeader>
@@ -353,7 +353,7 @@ export function UsageAlertsIntegration({
 
             <div className='mt-4 p-3 bg-blue-50 rounded-lg'>
               <div className='flex items-start gap-2'>
-                <AlertTriangle className='h-4 w-4 text-blue-600 mt-0.5' />
+                <AlertTriangle className='size-4 text-blue-600 mt-0.5' />
                 <div className='text-sm text-blue-800'>
                   <strong>Pro Tip:</strong> Configure automated alerts in
                   settings to catch these issues as they happen. Current

@@ -252,14 +252,14 @@ export default function ProductsPage() {
           <div className='flex flex-row gap-2 flex-wrap justify-end'>
             <Button asChild variant='outline'>
               <Link href='/dashboard/products/mappings'>
-                <Link2 className='mr-2 h-4 w-4' />
+                <Link2 className='mr-2 size-4' />
                 Product Mapping
               </Link>
             </Button>
             <ProductsGate
               fallback={
                 <Button disabled>
-                  <Plus className='mr-2 h-4 w-4' />
+                  <Plus className='mr-2 size-4' />
                   Upgrade to manage more products
                 </Button>
               }
@@ -279,7 +279,7 @@ export default function ProductsPage() {
               <CardTitle className='text-sm font-medium'>
                 Total Products
               </CardTitle>
-              <Package className='h-4 w-4 brand-icon-primary' />
+              <Package className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold brand-text-gradient'>
@@ -296,7 +296,7 @@ export default function ProductsPage() {
           <Card className='brand-card'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Categories</CardTitle>
-              <AlertTriangle className='h-4 w-4 brand-icon-accent' />
+              <AlertTriangle className='size-4 brand-icon-accent' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold brand-text-gradient'>
@@ -311,7 +311,7 @@ export default function ProductsPage() {
           <Card className='brand-card'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Avg Cost</CardTitle>
-              <DollarSign className='h-4 w-4 brand-icon-primary' />
+              <DollarSign className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold brand-text-gradient'>
@@ -345,7 +345,7 @@ export default function ProductsPage() {
           <CardContent>
             <div className='flex items-center justify-between mb-4'>
               <div className='flex items-center space-x-2'>
-                <Search className='h-4 w-4 text-muted-foreground' />
+                <Search className='size-4 text-muted-foreground' />
                 <Input
                   placeholder='Search by product name, SKU, UPC, or category...'
                   value={searchTerm}
@@ -361,16 +361,16 @@ export default function ProductsPage() {
                         variant='outline'
                         disabled={selectedProducts.size === 0}
                       >
-                        <ListPlus className='h-4 w-4 mr-2' />
+                        <ListPlus className='size-4 mr-2' />
                         Bulk Actions ({selectedProducts.size})
-                        <ChevronDown className='h-4 w-4 ml-2' />
+                        <ChevronDown className='size-4 ml-2' />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
                       <DropdownMenuItem
                         onClick={() => setShowBulkSupplierDialog(true)}
                       >
-                        <Building2 className='h-4 w-4 mr-2' />
+                        <Building2 className='size-4 mr-2' />
                         Assign to Supplier
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -387,7 +387,7 @@ export default function ProductsPage() {
                         }}
                         className='text-destructive'
                       >
-                        <Trash2 className='h-4 w-4 mr-2' />
+                        <Trash2 className='size-4 mr-2' />
                         Delete Selected
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -495,7 +495,7 @@ export default function ProductsPage() {
                           <TableCell className='w-[50px]'>
                             {product.alcoholContent ? (
                               <div className='flex items-center'>
-                                <Percent className='h-3 w-3 mr-1' />
+                                <Percent className='size-3 mr-1' />
                                 {product.alcoholContent}%
                               </div>
                             ) : (
@@ -506,7 +506,7 @@ export default function ProductsPage() {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant='ghost' size='sm'>
-                                  <MoreHorizontal className='h-4 w-4' />
+                                  <MoreHorizontal className='size-4' />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align='end'>
@@ -514,7 +514,7 @@ export default function ProductsPage() {
                                   <Link
                                     href={`/dashboard/products/${product.id}/edit`}
                                   >
-                                    <Edit className='mr-2 h-4 w-4' />
+                                    <Edit className='mr-2 size-4' />
                                     Edit
                                   </Link>
                                 </DropdownMenuItem>
@@ -524,7 +524,7 @@ export default function ProductsPage() {
                                   }
                                   className='text-red-600'
                                 >
-                                  <Trash2 className='mr-2 h-4 w-4' />
+                                  <Trash2 className='mr-2 size-4' />
                                   Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>

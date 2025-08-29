@@ -142,7 +142,7 @@ export function StockTransferDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant='outline' size='sm'>
-            <ArrowRight className='h-4 w-4 mr-2' />
+            <ArrowRight className='size-4 mr-2' />
             Transfer Stock
           </Button>
         )}
@@ -178,7 +178,7 @@ export function StockTransferDialog({
                       {products.map((product) => (
                         <SelectItem key={product.id} value={product.id}>
                           <div className='flex items-center gap-2'>
-                            <Package className='h-4 w-4' />
+                            <Package className='size-4' />
                             <span>{product.name}</span>
                             {product.sku && (
                               <Badge variant='outline' className='ml-2'>
@@ -217,7 +217,7 @@ export function StockTransferDialog({
                         {locations.map((location) => (
                           <SelectItem key={location.id} value={location.id}>
                             <div className='flex items-center gap-2'>
-                              <MapPin className='h-4 w-4' />
+                              <MapPin className='size-4' />
                               <span>{location.name}</span>
                               {location.code && (
                                 <Badge variant='outline'>{location.code}</Badge>
@@ -234,7 +234,7 @@ export function StockTransferDialog({
 
               {/* Arrow */}
               <div className='flex justify-center pb-2'>
-                <ArrowRight className='h-5 w-5 text-muted-foreground' />
+                <ArrowRight className='size-5 text-muted-foreground' />
               </div>
 
               {/* To Location */}
@@ -259,7 +259,7 @@ export function StockTransferDialog({
                           .map((location) => (
                             <SelectItem key={location.id} value={location.id}>
                               <div className='flex items-center gap-2'>
-                                <MapPin className='h-4 w-4' />
+                                <MapPin className='size-4' />
                                 <span>{location.name}</span>
                                 {location.code && (
                                   <Badge variant='outline'>
@@ -350,7 +350,7 @@ export function StockTransferDialog({
                   </FormControl>
                   {isInsufficientStock && (
                     <div className='flex items-center gap-2 text-sm text-destructive'>
-                      <AlertTriangle className='h-4 w-4' />
+                      <AlertTriangle className='size-4' />
                       <span>
                         Insufficient stock. Available: {availableQuantity}
                       </span>
@@ -408,12 +408,12 @@ export function StockTransferDialog({
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                    <Loader2 className='size-4 mr-2 animate-spin' />
                     Transferring...
                   </>
                 ) : (
                   <>
-                    <ArrowRight className='h-4 w-4 mr-2' />
+                    <ArrowRight className='size-4 mr-2' />
                     Transfer Stock
                   </>
                 )}

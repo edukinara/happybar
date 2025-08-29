@@ -78,7 +78,7 @@ function DefaultErrorFallback({
       <Card className='w-full max-w-lg'>
         <CardHeader className='text-center'>
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100'>
-            <AlertTriangle className='h-6 w-6 text-red-600' />
+            <AlertTriangle className='size-6 text-red-600' />
           </div>
           <CardTitle className='text-xl text-red-600'>
             Something went wrong
@@ -95,7 +95,7 @@ function DefaultErrorFallback({
           </div>
           <div className='flex justify-center space-x-2'>
             <Button onClick={retry} variant='outline'>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Try Again
             </Button>
             <Button onClick={() => window.location.reload()} variant='default'>

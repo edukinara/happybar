@@ -103,7 +103,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   }
                   className='w-full'
                 >
-                  <RefreshCw className='mr-2 h-4 w-4' />
+                  <RefreshCw className='mr-2 size-4' />
                   Try Again
                 </Button>
                 <Button
@@ -111,7 +111,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   variant='outline'
                   className='w-full'
                 >
-                  <Home className='mr-2 h-4 w-4' />
+                  <Home className='mr-2 size-4' />
                   Go to Dashboard
                 </Button>
               </div>
@@ -158,7 +158,7 @@ export function PermissionErrorBoundary({ children }: { children: ReactNode }) {
             A permission-related error occurred while loading this component.
           </p>
           <Button onClick={() => window.location.reload()} variant='outline'>
-            <RefreshCw className='mr-2 h-4 w-4' />
+            <RefreshCw className='mr-2 size-4' />
             Reload Page
           </Button>
         </CardContent>

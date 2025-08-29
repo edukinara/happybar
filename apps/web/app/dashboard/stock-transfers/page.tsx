@@ -109,13 +109,13 @@ export default function StockTransfersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return <CheckCircle className='h-4 w-4 text-green-500' />
+        return <CheckCircle className='size-4 text-green-500' />
       case 'PENDING':
-        return <Clock className='h-4 w-4 text-yellow-500' />
+        return <Clock className='size-4 text-yellow-500' />
       case 'IN_TRANSIT':
-        return <ArrowRight className='h-4 w-4 text-blue-500' />
+        return <ArrowRight className='size-4 text-blue-500' />
       default:
-        return <AlertTriangle className='h-4 w-4 text-gray-500' />
+        return <AlertTriangle className='size-4 text-gray-500' />
     }
   }
 
@@ -177,7 +177,7 @@ export default function StockTransfersPage() {
   if (!user) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin' />
+        <RefreshCw className='size-8 animate-spin' />
         <span className='ml-2'>Loading...</span>
       </div>
     )
@@ -186,7 +186,7 @@ export default function StockTransfersPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin' />
+        <RefreshCw className='size-8 animate-spin' />
         <span className='ml-2'>Loading stock transfers...</span>
       </div>
     )
@@ -211,14 +211,14 @@ export default function StockTransfersPage() {
             disabled={refreshing}
           >
             <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`}
+              className={`size-4 mr-2 ${refreshing ? 'animate-spin' : ''}`}
             />
             Refresh
           </Button>
           <StockTransferDialog
             trigger={
               <Button>
-                <Plus className='h-4 w-4 mr-2' />
+                <Plus className='size-4 mr-2' />
                 New Transfer
               </Button>
             }
@@ -237,7 +237,7 @@ export default function StockTransfersPage() {
             <CardTitle className='text-sm font-medium'>
               Total Transfers
             </CardTitle>
-            <History className='h-4 w-4 text-muted-foreground' />
+            <History className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{totalItems}</div>
@@ -250,7 +250,7 @@ export default function StockTransfersPage() {
             <CardTitle className='text-sm font-medium'>
               Active Locations
             </CardTitle>
-            <MapPin className='h-4 w-4 text-muted-foreground' />
+            <MapPin className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -265,7 +265,7 @@ export default function StockTransfersPage() {
             <CardTitle className='text-sm font-medium'>
               Products Tracked
             </CardTitle>
-            <Package className='h-4 w-4 text-muted-foreground' />
+            <Package className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{products.length}</div>
@@ -278,7 +278,7 @@ export default function StockTransfersPage() {
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Current Page</CardTitle>
-            <ArrowRight className='h-4 w-4 text-muted-foreground' />
+            <ArrowRight className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{filteredMovements.length}</div>
@@ -326,7 +326,7 @@ export default function StockTransfersPage() {
               <StockTransferDialog
                 trigger={
                   <Button>
-                    <Plus className='h-4 w-4 mr-2' />
+                    <Plus className='size-4 mr-2' />
                     Create First Transfer
                   </Button>
                 }
@@ -372,7 +372,7 @@ export default function StockTransfersPage() {
                         Product:
                       </span>
                       <div className='flex items-center gap-2'>
-                        <Package className='h-4 w-4' />
+                        <Package className='size-4' />
                         <span className='font-medium'>
                           {movement.product.name}
                         </span>
@@ -392,7 +392,7 @@ export default function StockTransfersPage() {
                         <span className='font-medium'>
                           {movement.fromLocation.name}
                         </span>
-                        <ArrowRight className='h-4 w-4 text-muted-foreground' />
+                        <ArrowRight className='size-4 text-muted-foreground' />
                         <span className='font-medium'>
                           {movement.toLocation.name}
                         </span>

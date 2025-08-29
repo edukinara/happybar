@@ -200,7 +200,7 @@ export default function InventoryAdjustmentsPage() {
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button>
-              <PlusCircle className='mr-2 h-4 w-4' />
+              <PlusCircle className='mr-2 size-4' />
               New Adjustment
             </Button>
           </DialogTrigger>
@@ -337,7 +337,7 @@ export default function InventoryAdjustmentsPage() {
             <CardTitle className='text-sm font-medium'>
               Total Adjustments
             </CardTitle>
-            <Settings className='h-4 w-4 text-muted-foreground' />
+            <Settings className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{stats.total}</div>
@@ -353,9 +353,9 @@ export default function InventoryAdjustmentsPage() {
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Net Impact</CardTitle>
             {stats.netImpact >= 0 ? (
-              <TrendingUp className='h-4 w-4 text-green-600' />
+              <TrendingUp className='size-4 text-green-600' />
             ) : (
-              <TrendingDown className='h-4 w-4 text-red-600' />
+              <TrendingDown className='size-4 text-red-600' />
             )}
           </CardHeader>
           <CardContent>
@@ -374,7 +374,7 @@ export default function InventoryAdjustmentsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Common Reason</CardTitle>
-            <AlertTriangle className='h-4 w-4 text-muted-foreground' />
+            <AlertTriangle className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{stats.commonReason}</div>
@@ -415,7 +415,7 @@ export default function InventoryAdjustmentsPage() {
                   : 'No inventory adjustments have been made yet.'}
               </p>
               <Button onClick={() => setShowCreateDialog(true)}>
-                <PlusCircle className='mr-2 h-4 w-4' />
+                <PlusCircle className='mr-2 size-4' />
                 Create First Adjustment
               </Button>
             </div>
@@ -444,7 +444,7 @@ export default function InventoryAdjustmentsPage() {
                     <TableRow key={adjustment.id}>
                       <TableCell>
                         <div className='flex items-center space-x-2'>
-                          <CalendarDays className='h-4 w-4 text-muted-foreground' />
+                          <CalendarDays className='size-4 text-muted-foreground' />
                           <span className='text-sm'>
                             {new Date(
                               adjustment.createdAt
@@ -472,9 +472,9 @@ export default function InventoryAdjustmentsPage() {
                       <TableCell>
                         <div className='flex items-center space-x-2'>
                           {isIncrease ? (
-                            <PlusCircle className='h-4 w-4 text-green-600' />
+                            <PlusCircle className='size-4 text-green-600' />
                           ) : (
-                            <MinusCircle className='h-4 w-4 text-red-600' />
+                            <MinusCircle className='size-4 text-red-600' />
                           )}
                           <span
                             className={
@@ -508,7 +508,7 @@ export default function InventoryAdjustmentsPage() {
                       </TableCell>
                       <TableCell>
                         <div className='flex items-center space-x-2'>
-                          <User className='h-4 w-4 text-muted-foreground' />
+                          <User className='size-4 text-muted-foreground' />
                           <span className='text-sm'>
                             {adjustment.user?.name || adjustment.user?.email}
                           </span>

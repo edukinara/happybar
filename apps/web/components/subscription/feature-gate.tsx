@@ -68,12 +68,12 @@ export function FeatureGate({
     <Card className='border-dashed border-2'>
       <CardHeader className='text-center'>
         <div className='mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4'>
-          <Lock className='h-6 w-6 text-primary' />
+          <Lock className='size-6 text-primary' />
         </div>
         <CardTitle className='flex items-center gap-2 justify-center'>
           {featureName}
           <Badge variant='secondary'>
-            <Crown className='h-3 w-3 mr-1' />
+            <Crown className='size-3 mr-1' />
             {requiredPlan} Feature
           </Badge>
         </CardTitle>
@@ -84,7 +84,7 @@ export function FeatureGate({
       </CardHeader>
       <CardContent className='text-center'>
         <Button onClick={handleUpgrade} className='w-full'>
-          <Zap className='h-4 w-4 mr-2' />
+          <Zap className='size-4 mr-2' />
           {hasBillingAccess ? `Upgrade to ${requiredPlan}` : 'View Pricing'}
         </Button>
         <p className='text-xs text-muted-foreground mt-2'>
@@ -218,7 +218,7 @@ export function ProductLimitGate({
     <Card className='border-dashed border-2'>
       <CardHeader className='text-center'>
         <div className='mx-auto w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4'>
-          <Lock className='h-6 w-6 text-orange-600' />
+          <Lock className='size-6 text-orange-600' />
         </div>
         <CardTitle>Product Limit Reached</CardTitle>
         <CardDescription>
@@ -228,7 +228,7 @@ export function ProductLimitGate({
       </CardHeader>
       <CardContent className='text-center'>
         <Button onClick={() => setShowPricingModal(true)} className='w-full'>
-          <Crown className='h-4 w-4 mr-2' />
+          <Crown className='size-4 mr-2' />
           {hasBillingAccess ? 'Upgrade Plan' : 'View Pricing'}
         </Button>
         {!hasBillingAccess && (

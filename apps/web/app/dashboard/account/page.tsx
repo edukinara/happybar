@@ -42,7 +42,7 @@ export default function AccountPage() {
         </div>
         <Button variant='outline' asChild>
           <Link href='/dashboard/settings'>
-            <Settings className='mr-2 h-4 w-4' />
+            <Settings className='mr-2 size-4' />
             Settings
           </Link>
         </Button>
@@ -52,7 +52,7 @@ export default function AccountPage() {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center'>
-            <User className='mr-2 h-5 w-5' />
+            <User className='mr-2 size-5' />
             Profile Information
           </CardTitle>
           <CardDescription>
@@ -65,7 +65,7 @@ export default function AccountPage() {
               <div className='space-y-2'>
                 <Label htmlFor='email'>Email</Label>
                 <div className='flex items-center gap-2'>
-                  <Mail className='h-4 w-4 text-muted-foreground' />
+                  <Mail className='size-4 text-muted-foreground' />
                   <Input
                     id='email'
                     type='email'

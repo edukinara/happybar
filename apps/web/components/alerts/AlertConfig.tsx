@@ -78,7 +78,7 @@ export function AlertConfigSettings() {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <AlertTriangle className='h-5 w-5' />
+            <AlertTriangle className='size-5' />
             Variance Alert Configuration
           </CardTitle>
         </CardHeader>
@@ -101,7 +101,7 @@ export function AlertConfigSettings() {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <AlertTriangle className='h-5 w-5' />
+            <AlertTriangle className='size-5' />
             Variance Alert Configuration
           </CardTitle>
         </CardHeader>
@@ -120,7 +120,7 @@ export function AlertConfigSettings() {
         <div className='flex items-center justify-between'>
           <div>
             <CardTitle className='flex items-center gap-2'>
-              <AlertTriangle className='h-5 w-5' />
+              <AlertTriangle className='size-5' />
               Variance Alert Configuration
             </CardTitle>
             <p className='text-sm text-muted-foreground mt-1'>
@@ -134,17 +134,17 @@ export function AlertConfigSettings() {
               disabled={evaluating}
             >
               {evaluating ? (
-                <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                <RefreshCw className='size-4 mr-2 animate-spin' />
               ) : (
-                <RefreshCw className='h-4 w-4 mr-2' />
+                <RefreshCw className='size-4 mr-2' />
               )}
               Run Evaluation
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? (
-                <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                <RefreshCw className='size-4 mr-2 animate-spin' />
               ) : (
-                <Save className='h-4 w-4 mr-2' />
+                <Save className='size-4 mr-2' />
               )}
               Save Changes
             </Button>
@@ -340,7 +340,7 @@ export function AlertConfigSettings() {
         {/* Information Box */}
         <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
           <div className='flex items-start gap-3'>
-            <AlertTriangle className='h-5 w-5 text-blue-600 mt-0.5' />
+            <AlertTriangle className='size-5 text-blue-600 mt-0.5' />
             <div className='space-y-1'>
               <h4 className='text-sm font-medium text-blue-900'>
                 How Variance Alerts Work

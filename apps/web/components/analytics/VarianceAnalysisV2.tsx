@@ -142,7 +142,7 @@ export function VarianceAnalysis({
             <CardTitle className='text-sm font-medium'>
               Total Variance
             </CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -159,7 +159,7 @@ export function VarianceAnalysis({
             <CardTitle className='text-sm font-medium'>
               Items Investigated
             </CardTitle>
-            <CheckCircle className='h-4 w-4 text-muted-foreground' />
+            <CheckCircle className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -176,7 +176,7 @@ export function VarianceAnalysis({
             <CardTitle className='text-sm font-medium'>
               Major Variances
             </CardTitle>
-            <AlertTriangle className='h-4 w-4 text-muted-foreground' />
+            <AlertTriangle className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -191,7 +191,7 @@ export function VarianceAnalysis({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Trend</CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>

@@ -34,12 +34,12 @@ export default function NotFound() {
           </p>
           <div className='flex flex-col sm:flex-row gap-2 justify-center'>
             <Button variant='outline' onClick={handleGoBack}>
-              <ArrowLeft className='mr-2 h-4 w-4' />
+              <ArrowLeft className='mr-2 size-4' />
               Go Back
             </Button>
             <Button asChild>
               <Link href='/dashboard'>
-                <Home className='mr-2 h-4 w-4' />
+                <Home className='mr-2 size-4' />
                 Dashboard
               </Link>
             </Button>

@@ -81,15 +81,15 @@ export function MenuEngineeringV2({
   const getClassificationIcon = (classification: string) => {
     switch (classification) {
       case 'STAR':
-        return <Star className='h-4 w-4' />
+        return <Star className='size-4' />
       case 'PLOW_HORSE':
-        return <Target className='h-4 w-4' />
+        return <Target className='size-4' />
       case 'PUZZLE':
-        return <AlertTriangle className='h-4 w-4' />
+        return <AlertTriangle className='size-4' />
       case 'DOG':
-        return <TrendingDown className='h-4 w-4' />
+        return <TrendingDown className='size-4' />
       default:
-        return <BarChart3 className='h-4 w-4' />
+        return <BarChart3 className='size-4' />
     }
   }
 
@@ -122,7 +122,7 @@ export function MenuEngineeringV2({
             <h2 className='text-xl font-semibold mb-2'>Error Loading Data</h2>
             <p className='text-muted-foreground mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -142,7 +142,7 @@ export function MenuEngineeringV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Revenue</CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -157,7 +157,7 @@ export function MenuEngineeringV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Costs</CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -177,7 +177,7 @@ export function MenuEngineeringV2({
             <CardTitle className='text-sm font-medium'>
               Top Performers
             </CardTitle>
-            <Star className='h-4 w-4 text-muted-foreground' />
+            <Star className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -194,7 +194,7 @@ export function MenuEngineeringV2({
             <CardTitle className='text-sm font-medium'>
               Poor Performers
             </CardTitle>
-            <AlertTriangle className='h-4 w-4 text-muted-foreground' />
+            <AlertTriangle className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -220,7 +220,7 @@ export function MenuEngineeringV2({
             <div className='space-y-3'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center space-x-2'>
-                  <Star className='h-4 w-4 text-green-600' />
+                  <Star className='size-4 text-green-600' />
                   <span className='text-sm font-medium'>Stars</span>
                   <span className='text-sm text-muted-foreground'>
                     (High popularity, High profit)
@@ -236,7 +236,7 @@ export function MenuEngineeringV2({
             <div className='space-y-3'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center space-x-2'>
-                  <Target className='h-4 w-4 text-blue-600' />
+                  <Target className='size-4 text-blue-600' />
                   <span className='text-sm font-medium'>Plow Horses</span>
                   <span className='text-sm text-muted-foreground'>
                     (High popularity, Low profit)
@@ -255,7 +255,7 @@ export function MenuEngineeringV2({
             <div className='space-y-3'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center space-x-2'>
-                  <AlertTriangle className='h-4 w-4 text-yellow-600' />
+                  <AlertTriangle className='size-4 text-yellow-600' />
                   <span className='text-sm font-medium'>Puzzles</span>
                   <span className='text-sm text-muted-foreground'>
                     (Low popularity, High profit)
@@ -271,7 +271,7 @@ export function MenuEngineeringV2({
             <div className='space-y-3'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center space-x-2'>
-                  <TrendingDown className='h-4 w-4 text-red-600' />
+                  <TrendingDown className='size-4 text-red-600' />
                   <span className='text-sm font-medium'>Dogs</span>
                   <span className='text-sm text-muted-foreground'>
                     (Low popularity, Low profit)

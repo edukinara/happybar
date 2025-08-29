@@ -395,7 +395,7 @@ export default function NewOrderPage() {
               {getOrdersBySupplier().size > 1 && (
                 <div className='p-3 bg-blue-50 border border-blue-200 rounded-lg'>
                   <div className='flex items-center gap-2 text-blue-800'>
-                    <Users className='h-4 w-4' />
+                    <Users className='size-4' />
                     <span className='font-medium'>Order Splitting Active</span>
                   </div>
                   <p className='text-sm text-blue-700 mt-1'>
@@ -461,7 +461,7 @@ export default function NewOrderPage() {
                   </SelectContent>
                 </Select>
                 <Button onClick={addOrderItem} disabled={!selectedProductId}>
-                  <Plus className='h-4 w-4 mr-2' />
+                  <Plus className='size-4 mr-2' />
                   Add
                 </Button>
               </div>
@@ -507,7 +507,7 @@ export default function NewOrderPage() {
                         </TableCell>
                         <TableCell>
                           <div className='flex items-center gap-2'>
-                            <Building2 className='h-4 w-4 text-muted-foreground' />
+                            <Building2 className='size-4 text-muted-foreground' />
                             <span className='font-medium'>
                               {item.supplierName}
                             </span>
@@ -578,7 +578,7 @@ export default function NewOrderPage() {
                             variant='ghost'
                             onClick={() => removeOrderItem(index)}
                           >
-                            <Trash2 className='h-4 w-4' />
+                            <Trash2 className='size-4' />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -595,7 +595,7 @@ export default function NewOrderPage() {
           <Card className='sticky top-6'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Calculator className='h-5 w-5' />
+                <Calculator className='size-5' />
                 Order Summary
               </CardTitle>
             </CardHeader>
@@ -627,7 +627,7 @@ export default function NewOrderPage() {
                   onClick={() => saveOrders(false)}
                   disabled={saving || orderItems.length === 0}
                 >
-                  <Save className='h-4 w-4 mr-2' />
+                  <Save className='size-4 mr-2' />
                   {saving
                     ? 'Saving...'
                     : getOrdersBySupplier().size > 1
@@ -641,7 +641,7 @@ export default function NewOrderPage() {
                   onClick={() => saveOrders(true)}
                   disabled={saving || orderItems.length === 0}
                 >
-                  <Send className='h-4 w-4 mr-2' />
+                  <Send className='size-4 mr-2' />
                   {saving
                     ? 'Saving...'
                     : getOrdersBySupplier().size > 1
@@ -693,7 +693,7 @@ export default function NewOrderPage() {
                       <div className='flex items-center justify-between'>
                         <div className='flex-1'>
                           <div className='flex items-center gap-2'>
-                            <Building2 className='h-4 w-4 text-muted-foreground' />
+                            <Building2 className='size-4 text-muted-foreground' />
                             <span className='font-medium'>
                               {supplier.supplierName}
                             </span>
@@ -755,7 +755,7 @@ export default function NewOrderPage() {
                   }}
                   className='flex-1'
                 >
-                  <X className='h-4 w-4 mr-2' />
+                  <X className='size-4 mr-2' />
                   Cancel
                 </Button>
                 <Button
@@ -781,7 +781,7 @@ export default function NewOrderPage() {
                   }}
                   className='flex-1'
                 >
-                  <Plus className='h-4 w-4 mr-2' />
+                  <Plus className='size-4 mr-2' />
                   Add All Suppliers
                 </Button>
               </div>

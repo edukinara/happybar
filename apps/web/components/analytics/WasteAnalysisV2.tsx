@@ -85,13 +85,13 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'IMPROVING':
-        return <TrendingDown className='h-4 w-4 text-green-500' />
+        return <TrendingDown className='size-4 text-green-500' />
       case 'WORSENING':
-        return <TrendingUp className='h-4 w-4 text-red-500' />
+        return <TrendingUp className='size-4 text-red-500' />
       case 'STABLE':
-        return <Target className='h-4 w-4 text-gray-500' />
+        return <Target className='size-4 text-gray-500' />
       default:
-        return <Target className='h-4 w-4 text-gray-500' />
+        return <Target className='size-4 text-gray-500' />
     }
   }
 
@@ -122,7 +122,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
             <h2 className='text-xl font-semibold mb-2'>Error Loading Data</h2>
             <p className='text-muted-foreground mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -144,7 +144,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
             <CardTitle className='text-sm font-medium'>
               Total Waste Value
             </CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -159,7 +159,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Monthly Trend</CardTitle>
-            <TrendingDown className='h-4 w-4 text-muted-foreground' />
+            <TrendingDown className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -178,7 +178,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
             <CardTitle className='text-sm font-medium'>
               Target vs Actual
             </CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -196,7 +196,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
             <CardTitle className='text-sm font-medium'>
               Savings Opportunity
             </CardTitle>
-            <CheckCircle className='h-4 w-4 text-muted-foreground' />
+            <CheckCircle className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -323,7 +323,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
           <div className='space-y-4'>
             <div className='p-4 border rounded-lg bg-blue-50 border-blue-200'>
               <div className='flex items-start space-x-3'>
-                <CheckCircle className='h-5 w-5 text-blue-600 mt-0.5' />
+                <CheckCircle className='size-5 text-blue-600 mt-0.5' />
                 <div>
                   <h4 className='font-medium text-blue-900'>
                     Inventory Management
@@ -338,7 +338,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
 
             <div className='p-4 border rounded-lg bg-green-50 border-green-200'>
               <div className='flex items-start space-x-3'>
-                <Target className='h-5 w-5 text-green-600 mt-0.5' />
+                <Target className='size-5 text-green-600 mt-0.5' />
                 <div>
                   <h4 className='font-medium text-green-900'>
                     Portion Control
@@ -353,7 +353,7 @@ export function WasteAnalysisV2({ locationId, dateRange }: WasteAnalysisProps) {
 
             <div className='p-4 border rounded-lg bg-yellow-50 border-yellow-200'>
               <div className='flex items-start space-x-3'>
-                <Clock className='h-5 w-5 text-yellow-600 mt-0.5' />
+                <Clock className='size-5 text-yellow-600 mt-0.5' />
                 <div>
                   <h4 className='font-medium text-yellow-900'>
                     Staff Training

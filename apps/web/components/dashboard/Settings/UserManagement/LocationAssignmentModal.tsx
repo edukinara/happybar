@@ -268,7 +268,7 @@ export function LocationAssignmentModal({
       <DialogContent className='max-w-2xl max-h-[80vh] flex flex-col'>
         <DialogHeader>
           <DialogTitle className='flex items-center'>
-            <MapPin className='mr-2 h-5 w-5' />
+            <MapPin className='mr-2 size-5' />
             Manage Location Access - {user.name}
           </DialogTitle>
           <DialogDescription>
@@ -280,7 +280,7 @@ export function LocationAssignmentModal({
 
         {loading ? (
           <div className='flex items-center justify-center py-8'>
-            <Loader2 className='h-6 w-6 animate-spin mr-2' />
+            <Loader2 className='size-6 animate-spin mr-2' />
             <span>Loading current assignments...</span>
           </div>
         ) : (
@@ -354,7 +354,7 @@ export function LocationAssignmentModal({
                                   )
                                 }
                               />
-                              <Eye className='h-4 w-4 text-muted-foreground' />
+                              <Eye className='size-4 text-muted-foreground' />
                               <Label className='text-sm'>
                                 Read - View inventory and data
                               </Label>
@@ -370,7 +370,7 @@ export function LocationAssignmentModal({
                                   )
                                 }
                               />
-                              <Edit className='h-4 w-4 text-muted-foreground' />
+                              <Edit className='size-4 text-muted-foreground' />
                               <Label className='text-sm'>
                                 Write - Modify inventory and perform transfers
                               </Label>
@@ -386,7 +386,7 @@ export function LocationAssignmentModal({
                                   )
                                 }
                               />
-                              <Shield className='h-4 w-4 text-muted-foreground' />
+                              <Shield className='size-4 text-muted-foreground' />
                               <Label className='text-sm'>
                                 Manage - Full control including settings
                               </Label>
@@ -411,7 +411,7 @@ export function LocationAssignmentModal({
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={loading || saving}>
-            {saving && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+            {saving && <Loader2 className='mr-2 size-4 animate-spin' />}
             Save Changes
           </Button>
         </DialogFooter>

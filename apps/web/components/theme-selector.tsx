@@ -74,7 +74,7 @@ export function ThemeSelector() {
                 className={`h-20 rounded-md border mb-3 flex items-center justify-center ${themeOption.preview}`}
               >
                 <Icon
-                  className={`h-6 w-6 ${
+                  className={`size-6 ${
                     themeOption.value === 'dark'
                       ? 'text-gray-100'
                       : themeOption.value === 'light'
@@ -92,9 +92,7 @@ export function ThemeSelector() {
                   <span className='font-medium text-sm'>
                     {themeOption.name}
                   </span>
-                  {isSelected && (
-                    <Check className='h-4 w-4 ml-2 text-primary' />
-                  )}
+                  {isSelected && <Check className='size-4 ml-2 text-primary' />}
                 </div>
                 <p className='text-xs text-muted-foreground'>
                   {themeOption.description}

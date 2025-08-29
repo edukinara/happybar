@@ -209,11 +209,11 @@ export default function LocationsCard({
   const getTemperatureIcon = (temperature: string | null) => {
     switch (temperature) {
       case 'refrigerated':
-        return <Thermometer className='h-3 w-3 text-blue-500' />
+        return <Thermometer className='size-3 text-blue-500' />
       case 'frozen':
-        return <Thermometer className='h-3 w-3 text-cyan-500' />
+        return <Thermometer className='size-3 text-cyan-500' />
       case 'ambient':
-        return <Thermometer className='h-3 w-3 text-orange-500' />
+        return <Thermometer className='size-3 text-orange-500' />
       default:
         return null
     }
@@ -222,7 +222,7 @@ export default function LocationsCard({
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
+        <div className='animate-spin rounded-full size-8 border-b-2 border-primary'></div>
         <span className='ml-2'>Loading locations...</span>
       </div>
     )
@@ -233,7 +233,7 @@ export default function LocationsCard({
       <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
         <div>
           <CardTitle className='flex items-center'>
-            <MapPin className='mr-2 h-5 w-5' />
+            <MapPin className='mr-2 size-5' />
             Locations
           </CardTitle>
           <CardDescription>
@@ -243,7 +243,7 @@ export default function LocationsCard({
         <LocationsGate
           fallback={
             <Button disabled>
-              <Plus className='mr-2 h-4 w-4' />
+              <Plus className='mr-2 size-4' />
               Upgrade to add more locations
             </Button>
           }
@@ -255,7 +255,7 @@ export default function LocationsCard({
             >
               <DialogTrigger asChild>
                 <Button variant='outline'>
-                  <Zap className='mr-2 h-4 w-4' />
+                  <Zap className='mr-2 size-4' />
                   Quick Setup
                 </Button>
               </DialogTrigger>
@@ -275,7 +275,7 @@ export default function LocationsCard({
                       onClick={() => handleQuickSetup('BAR')}
                     >
                       <div className='flex items-center gap-2 mb-2'>
-                        <Building2 className='h-5 w-5' />
+                        <Building2 className='size-5' />
                         <span className='font-medium'>Bar Setup</span>
                       </div>
                       <p className='text-sm text-muted-foreground text-left'>
@@ -289,7 +289,7 @@ export default function LocationsCard({
                       onClick={() => handleQuickSetup('KITCHEN')}
                     >
                       <div className='flex items-center gap-2 mb-2'>
-                        <Building2 className='h-5 w-5' />
+                        <Building2 className='size-5' />
                         <span className='font-medium'>Kitchen Setup</span>
                       </div>
                       <p className='text-sm text-muted-foreground text-left'>
@@ -303,7 +303,7 @@ export default function LocationsCard({
                       onClick={() => handleQuickSetup('STORAGE')}
                     >
                       <div className='flex items-center gap-2 mb-2'>
-                        <Building2 className='h-5 w-5' />
+                        <Building2 className='size-5' />
                         <span className='font-medium'>Storage Setup</span>
                       </div>
                       <p className='text-sm text-muted-foreground text-left'>
@@ -322,7 +322,7 @@ export default function LocationsCard({
             >
               <DialogTrigger asChild>
                 <Button>
-                  <Plus className='mr-2 h-4 w-4' />
+                  <Plus className='mr-2 size-4' />
                   Add Location
                 </Button>
               </DialogTrigger>
@@ -432,14 +432,14 @@ export default function LocationsCard({
               </p>
               <div className='flex gap-2'>
                 <Button onClick={() => setIsQuickSetupDialogOpen(true)}>
-                  <Zap className='mr-2 h-4 w-4' />
+                  <Zap className='mr-2 size-4' />
                   Quick Setup
                 </Button>
                 <Button
                   variant='outline'
                   onClick={() => setIsCreateDialogOpen(true)}
                 >
-                  <Plus className='mr-2 h-4 w-4' />
+                  <Plus className='mr-2 size-4' />
                   Add Location
                 </Button>
               </div>
@@ -458,14 +458,14 @@ export default function LocationsCard({
                         onClick={() => toggleLocationExpansion(location.id)}
                       >
                         {expandedLocations.has(location.id) ? (
-                          <ChevronDown className='h-4 w-4' />
+                          <ChevronDown className='size-4' />
                         ) : (
-                          <ChevronRight className='h-4 w-4' />
+                          <ChevronRight className='size-4' />
                         )}
                       </Button>
                       <div>
                         <CardTitle className='flex items-center gap-2'>
-                          <MapPin className='h-5 w-5' />
+                          <MapPin className='size-5' />
                           {location.name}
                           {location.code && (
                             <Badge variant='outline'>{location.code}</Badge>
@@ -486,7 +486,7 @@ export default function LocationsCard({
                       </Badge>
                       {location._count && (
                         <Badge variant='secondary'>
-                          <Package className='mr-1 h-3 w-3' />
+                          <Package className='mr-1 size-3' />
                           {location._count.inventoryItems} items
                         </Badge>
                       )}
@@ -498,7 +498,7 @@ export default function LocationsCard({
                           setIsZoneDialogOpen(true)
                         }}
                       >
-                        <Plus className='h-4 w-4 mr-1' />
+                        <Plus className='size-4 mr-1' />
                         Add Zone
                       </Button>
                       <Button
@@ -506,7 +506,7 @@ export default function LocationsCard({
                         size='sm'
                         onClick={() => handleDeleteLocation(location.id)}
                       >
-                        <Trash2 className='h-4 w-4' />
+                        <Trash2 className='size-4' />
                       </Button>
                     </div>
                   </div>
@@ -551,7 +551,7 @@ export default function LocationsCard({
                               </TableCell>
                               <TableCell>
                                 <Button variant='ghost' size='sm'>
-                                  <Settings className='h-4 w-4' />
+                                  <Settings className='size-4' />
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -560,7 +560,7 @@ export default function LocationsCard({
                       </Table>
                     ) : (
                       <div className='text-center py-8 text-muted-foreground'>
-                        <Building2 className='h-8 w-8 mx-auto mb-2 opacity-50' />
+                        <Building2 className='size-8 mx-auto mb-2 opacity-50' />
                         <p>No zones configured for this location</p>
                         <Button
                           variant='outline'
@@ -571,7 +571,7 @@ export default function LocationsCard({
                             setIsZoneDialogOpen(true)
                           }}
                         >
-                          <Plus className='h-4 w-4 mr-1' />
+                          <Plus className='size-4 mr-1' />
                           Add First Zone
                         </Button>
                       </div>

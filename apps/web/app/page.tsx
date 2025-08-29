@@ -135,7 +135,7 @@ export default function LandingPage() {
               </Link>
               <Link href='/register'>
                 <Button className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg'>
-                  <Sparkles className='h-4 w-4 mr-2' />
+                  <Sparkles className='size-4 mr-2' />
                   Get Started
                 </Button>
               </Link>
@@ -165,7 +165,7 @@ export default function LandingPage() {
               className='text-lg px-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg transition-all transform hover:scale-[1.02]'
             >
               Start Free Trial
-              <ArrowRight className='ml-2 h-5 w-5' />
+              <ArrowRight className='ml-2 size-5' />
             </Button>
             <Button
               size='lg'
@@ -238,7 +238,7 @@ export default function LandingPage() {
               >
                 <CardHeader>
                   <div className='h-12 w-12 rounded-lg bg-gradient-to-br from-purple-100 to-amber-100 dark:from-purple-900/30 dark:to-amber-900/30 flex items-center justify-center mb-4'>
-                    <feature.icon className='h-6 w-6 text-purple-600 dark:text-purple-400' />
+                    <feature.icon className='size-6 text-purple-600 dark:text-purple-400' />
                   </div>
                   <CardTitle>{feature.title}</CardTitle>
                 </CardHeader>
@@ -267,7 +267,7 @@ export default function LandingPage() {
               <ul className='space-y-4'>
                 {benefits.map((benefit, index) => (
                   <li key={index} className='flex items-start gap-3'>
-                    <CheckCircle className='h-5 w-5 text-primary mt-0.5 shrink-0' />
+                    <CheckCircle className='size-5 text-primary mt-0.5 shrink-0' />
                     <span>{benefit}</span>
                   </li>
                 ))}
@@ -277,7 +277,7 @@ export default function LandingPage() {
               <Card className='border-primary/20'>
                 <CardHeader className='pb-3'>
                   <div className='flex items-center gap-3'>
-                    <Clock className='h-8 w-8 text-primary' />
+                    <Clock className='size-8 text-primary' />
                     <div>
                       <CardTitle className='text-lg'>
                         Real-time Tracking
@@ -292,7 +292,7 @@ export default function LandingPage() {
               <Card className='border-primary/20'>
                 <CardHeader className='pb-3'>
                   <div className='flex items-center gap-3'>
-                    <DollarSign className='h-8 w-8 text-primary' />
+                    <DollarSign className='size-8 text-primary' />
                     <div>
                       <CardTitle className='text-lg'>Cost Analytics</CardTitle>
                       <CardDescription>
@@ -305,7 +305,7 @@ export default function LandingPage() {
               <Card className='border-primary/20'>
                 <CardHeader className='pb-3'>
                   <div className='flex items-center gap-3'>
-                    <Zap className='h-8 w-8 text-primary' />
+                    <Zap className='size-8 text-primary' />
                     <div>
                       <CardTitle className='text-lg'>POS Integration</CardTitle>
                       <CardDescription>
@@ -339,7 +339,7 @@ export default function LandingPage() {
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <svg
                         key={i}
-                        className='h-5 w-5 text-yellow-500 fill-current'
+                        className='size-5 text-yellow-500 fill-current'
                         viewBox='0 0 20 20'
                       >
                         <path d='M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z' />
@@ -381,7 +381,7 @@ export default function LandingPage() {
                 className='text-lg px-8'
               >
                 Start Your Free Trial
-                <ChevronRight className='ml-2 h-5 w-5' />
+                <ChevronRight className='ml-2 size-5' />
               </Button>
               <Button
                 size='lg'

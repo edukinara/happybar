@@ -236,7 +236,7 @@ export default function EditSupplierPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading supplier...</span>
       </div>
     )
@@ -260,7 +260,7 @@ export default function EditSupplierPage() {
         <div className='flex items-center gap-4'>
           <Button variant='ghost' size='icon' asChild>
             <Link href={`/dashboard/suppliers/${supplierId}`}>
-              <ArrowLeft className='h-4 w-4' />
+              <ArrowLeft className='size-4' />
             </Link>
           </Button>
           <div>
@@ -278,7 +278,7 @@ export default function EditSupplierPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Building2 className='h-5 w-5' />
+                <Building2 className='size-5' />
                 Basic Information
               </CardTitle>
               <CardDescription>
@@ -358,12 +358,12 @@ export default function EditSupplierPage() {
           </Card>
 
           {/* Contacts */}
-          <Card>
+          <Card className='gap-2'>
             <CardHeader>
               <div className='flex items-center justify-between'>
                 <div>
                   <CardTitle className='flex items-center gap-2'>
-                    <User className='h-5 w-5' />
+                    <User className='size-5' />
                     Contacts
                   </CardTitle>
                   <CardDescription>
@@ -376,15 +376,15 @@ export default function EditSupplierPage() {
                   size='sm'
                   onClick={addContact}
                 >
-                  <UserPlus className='h-4 w-4 mr-2' />
+                  <UserPlus className='size-4 mr-2' />
                   Add Contact
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               {contacts.length === 0 ? (
-                <div className='text-center py-8 text-muted-foreground'>
-                  <User className='h-12 w-12 mx-auto mb-2 opacity-50' />
+                <div className='text-center py-4 text-muted-foreground'>
+                  <User className='size-12 mx-auto mb-2 opacity-50' />
                   <p>No contacts added yet</p>
                   <Button
                     type='button'
@@ -393,7 +393,7 @@ export default function EditSupplierPage() {
                     className='mt-2'
                     onClick={addContact}
                   >
-                    <UserPlus className='h-4 w-4 mr-2' />
+                    <UserPlus className='size-4 mr-2' />
                     Add First Contact
                   </Button>
                 </div>
@@ -423,7 +423,7 @@ export default function EditSupplierPage() {
                           size='sm'
                           onClick={() => removeContact(index)}
                         >
-                          <Trash2 className='h-4 w-4' />
+                          <Trash2 className='size-4' />
                         </Button>
                       </div>
 
@@ -454,7 +454,7 @@ export default function EditSupplierPage() {
                       <div className='grid gap-4 md:grid-cols-2'>
                         <div className='space-y-2'>
                           <Label className='flex items-center gap-2'>
-                            <Mail className='h-4 w-4' />
+                            <Mail className='size-4' />
                             Email
                           </Label>
                           <Input
@@ -468,7 +468,7 @@ export default function EditSupplierPage() {
                         </div>
                         <div className='space-y-2'>
                           <Label className='flex items-center gap-2'>
-                            <Phone className='h-4 w-4' />
+                            <Phone className='size-4' />
                             Phone
                           </Label>
                           <Input
@@ -492,7 +492,7 @@ export default function EditSupplierPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Clock className='h-5 w-5' />
+                <Clock className='size-5' />
                 Order Settings
               </CardTitle>
               <CardDescription>
@@ -546,7 +546,7 @@ export default function EditSupplierPage() {
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
-                <Truck className='h-5 w-5' />
+                <Truck className='size-5' />
                 Delivery Settings
               </CardTitle>
               <CardDescription>
@@ -661,12 +661,12 @@ export default function EditSupplierPage() {
             >
               {saving ? (
                 <>
-                  <RefreshCw className='h-4 w-4 animate-spin' />
+                  <RefreshCw className='size-4 animate-spin' />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save className='h-4 w-4' />
+                  <Save className='size-4' />
                   Save Changes
                 </>
               )}

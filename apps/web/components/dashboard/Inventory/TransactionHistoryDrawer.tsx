@@ -74,21 +74,21 @@ export function TransactionHistoryDrawer({
   ) => {
     switch (type) {
       case 'count':
-        return <ClipboardList className='h-4 w-4' />
+        return <ClipboardList className='size-4' />
       case 'adjustment':
-        return <Package className='h-4 w-4' />
+        return <Package className='size-4' />
       case 'sale':
-        return <ShoppingCart className='h-4 w-4' />
+        return <ShoppingCart className='size-4' />
       case 'transfer':
         return quantity && quantity > 0 ? (
-          <ArrowDownRight className='h-4 w-4' />
+          <ArrowDownRight className='size-4' />
         ) : (
-          <ArrowUpRight className='h-4 w-4' />
+          <ArrowUpRight className='size-4' />
         )
       case 'receipt':
-        return <ArrowDownRight className='h-4 w-4' />
+        return <ArrowDownRight className='size-4' />
       default:
-        return <History className='h-4 w-4' />
+        return <History className='size-4' />
     }
   }
 
@@ -126,7 +126,7 @@ export function TransactionHistoryDrawer({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant='ghost' size='sm' title='View transaction history'>
-          <History className='h-4 w-4' />
+          <History className='size-4' />
         </Button>
       </SheetTrigger>
       <SheetContent className='w-[500px] sm:w-[540px] p-2 gap-2'>
@@ -151,7 +151,7 @@ export function TransactionHistoryDrawer({
 
         {loading ? (
           <div className='flex items-center justify-center py-8'>
-            <Loader2 className='h-8 w-8 animate-spin' />
+            <Loader2 className='size-8 animate-spin' />
           </div>
         ) : (
           <div className='mt-6'>
@@ -205,7 +205,7 @@ export function TransactionHistoryDrawer({
                                     )}
                                   </div>
                                   <div className='text-xs text-muted-foreground flex items-center gap-1'>
-                                    <Calendar className='h-3 w-3' />
+                                    <Calendar className='size-3' />
                                     {date} at {time}
                                   </div>
                                 </div>

@@ -109,7 +109,7 @@ export function FinancialMetricsV2({
             <h2 className='text-xl font-semibold mb-2'>Error Loading Data</h2>
             <p className='text-muted-foreground mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -140,7 +140,7 @@ export function FinancialMetricsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Revenue</CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -155,7 +155,7 @@ export function FinancialMetricsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Gross Profit</CardTitle>
-            <TrendingUp className='h-4 w-4 text-muted-foreground' />
+            <TrendingUp className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -170,7 +170,7 @@ export function FinancialMetricsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Net Profit</CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -185,7 +185,7 @@ export function FinancialMetricsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Food Cost %</CardTitle>
-            <PieChart className='h-4 w-4 text-muted-foreground' />
+            <PieChart className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>

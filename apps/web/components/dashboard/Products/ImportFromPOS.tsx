@@ -377,7 +377,7 @@ const ImportFromPOS = ({ onComplete }: { onComplete: () => void }) => {
           disabled={loading}
           loading={loading}
         >
-          <Plus className='h-4 w-4 mr-2' />
+          <Plus className='size-4 mr-2' />
           Import from POS
         </Button>
       </DialogTrigger>
@@ -390,12 +390,12 @@ const ImportFromPOS = ({ onComplete }: { onComplete: () => void }) => {
           </DialogDescription>
           {checkingLimits ? (
             <div className='flex items-center gap-2 p-3 bg-muted rounded-lg'>
-              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-primary'></div>
+              <div className='animate-spin rounded-full size-4 border-b-2 border-primary'></div>
               <span className='text-sm'>Checking plan limits...</span>
             </div>
           ) : unlimitedProducts ? null : availableProductSlots === 0 ? (
             <div className='flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg'>
-              <AlertTriangle className='h-4 w-4 text-red-500' />
+              <AlertTriangle className='size-4 text-red-500' />
               <div className='flex-1'>
                 <p className='text-sm font-medium text-red-800'>
                   Plan Limit Reached

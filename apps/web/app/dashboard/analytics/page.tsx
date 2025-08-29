@@ -187,12 +187,12 @@ export default function AnalyticsPage() {
             disabled={refreshing}
           >
             <RefreshCw
-              className={cn('mr-2 h-4 w-4', refreshing && 'animate-spin')}
+              className={cn('mr-2 size-4', refreshing && 'animate-spin')}
             />
             Refresh
           </Button>
           <Button variant='outline'>
-            <Download className='mr-2 h-4 w-4' />
+            <Download className='mr-2 size-4' />
             Export
           </Button>
         </div> */}
@@ -232,7 +232,7 @@ export default function AnalyticsPage() {
                 loading={updating}
               >
                 <RefreshCw
-                  className={cn('mr-2 h-4 w-4', updating && 'animate-spin')}
+                  className={cn('mr-2 size-4', updating && 'animate-spin')}
                 />
                 Update
               </Button>
@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Revenue
                 </CardTitle>
-                <DollarSign className='h-4 w-4 brand-icon-accent' />
+                <DollarSign className='size-4 brand-icon-accent' />
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
@@ -261,7 +261,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   {React.createElement(getChangeIcon(summary.revenueChange), {
-                    className: 'h-3 w-3 mr-1',
+                    className: 'size-3 mr-1',
                   })}
                   {summary.revenueChange > 0 ? '+' : ''}
                   {summary.revenueChange}%
@@ -274,7 +274,7 @@ export default function AnalyticsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Total Costs
                 </CardTitle>
-                <ShoppingCart className='h-4 w-4 brand-icon-primary' />
+                <ShoppingCart className='size-4 brand-icon-primary' />
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
@@ -287,7 +287,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   {React.createElement(getChangeIcon(-summary.costsChange), {
-                    className: 'h-3 w-3 mr-1',
+                    className: 'size-3 mr-1',
                   })}
                   {summary.costsChange > 0 ? '+' : ''}
                   {summary.costsChange}%
@@ -300,7 +300,7 @@ export default function AnalyticsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Gross Margin
                 </CardTitle>
-                <Target className='h-4 w-4 brand-icon-accent' />
+                <Target className='size-4 brand-icon-accent' />
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
@@ -313,7 +313,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   {React.createElement(getChangeIcon(summary.marginChange), {
-                    className: 'h-3 w-3 mr-1',
+                    className: 'size-3 mr-1',
                   })}
                   {summary.marginChange > 0 ? '+' : ''}
                   {summary.marginChange}pp
@@ -326,7 +326,7 @@ export default function AnalyticsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Inventory Turns
                 </CardTitle>
-                <RefreshCw className='h-4 w-4 brand-icon-primary' />
+                <RefreshCw className='size-4 brand-icon-primary' />
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
@@ -339,7 +339,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   {React.createElement(getChangeIcon(summary.turnsChange), {
-                    className: 'h-3 w-3 mr-1',
+                    className: 'size-3 mr-1',
                   })}
                   {summary.turnsChange > 0 ? '+' : ''}
                   {summary.turnsChange}
@@ -352,7 +352,7 @@ export default function AnalyticsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Forecast Accuracy
                 </CardTitle>
-                <Zap className='h-4 w-4 brand-icon-accent' />
+                <Zap className='size-4 brand-icon-accent' />
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
@@ -365,7 +365,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   {React.createElement(getChangeIcon(summary.accuracyChange), {
-                    className: 'h-3 w-3 mr-1',
+                    className: 'size-3 mr-1',
                   })}
                   {summary.accuracyChange > 0 ? '+' : ''}
                   {summary.accuracyChange}pp
@@ -378,7 +378,7 @@ export default function AnalyticsPage() {
                 <CardTitle className='text-sm font-medium'>
                   Food Waste
                 </CardTitle>
-                <Trash2 className='h-4 w-4 brand-icon-primary' />
+                <Trash2 className='size-4 brand-icon-primary' />
               </CardHeader>
               <CardContent>
                 <div className='text-xl font-bold'>
@@ -391,7 +391,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   {React.createElement(getChangeIcon(-summary.wasteChange), {
-                    className: 'h-3 w-3 mr-1',
+                    className: 'size-3 mr-1',
                   })}
                   {summary.wasteChange > 0 ? '+' : ''}
                   {summary.wasteChange}pp
@@ -406,34 +406,34 @@ export default function AnalyticsPage() {
           <TabsList className='max-w-full'>
             <div className='flex flex-row items-center overflow-x-auto'>
               <TabsTrigger value='forecasting' className='flex items-center'>
-                <TrendingUp className='h-4 w-4 mr-1 brand-icon-primary' />
+                <TrendingUp className='size-4 mr-1 brand-icon-primary' />
                 Forecasting
               </TabsTrigger>
               <TabsTrigger value='variance' className='flex items-center'>
-                <BarChart3 className='h-4 w-4 mr-1 brand-icon-accent' />
+                <BarChart3 className='size-4 mr-1 brand-icon-accent' />
                 Variance
               </TabsTrigger>
               <TabsTrigger
                 value='menu-engineering'
                 className='flex items-center'
               >
-                <PieChart className='h-4 w-4 mr-1 brand-icon-primary' />
+                <PieChart className='size-4 mr-1 brand-icon-primary' />
                 Menu
               </TabsTrigger>
               <TabsTrigger value='waste' className='flex items-center'>
-                <Trash2 className='h-4 w-4 mr-1' />
+                <Trash2 className='size-4 mr-1' />
                 Waste
               </TabsTrigger>
               <TabsTrigger value='purchasing' className='flex items-center'>
-                <ShoppingCart className='h-4 w-4 mr-1' />
+                <ShoppingCart className='size-4 mr-1' />
                 Purchasing
               </TabsTrigger>
               <TabsTrigger value='financial' className='flex items-center'>
-                <DollarSign className='h-4 w-4 mr-1' />
+                <DollarSign className='size-4 mr-1' />
                 Financial
               </TabsTrigger>
               <TabsTrigger value='operations' className='flex items-center'>
-                <Activity className='h-4 w-4 mr-1' />
+                <Activity className='size-4 mr-1' />
                 Operations
               </TabsTrigger>
             </div>

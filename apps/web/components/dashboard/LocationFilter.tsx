@@ -54,10 +54,10 @@ export function LocationFilter({
       <DropdownMenuTrigger asChild>
         <Button variant='outline' className='justify-between'>
           <div className='flex items-center'>
-            <MapPin className='mr-2 h-4 w-4' />
+            <MapPin className='mr-2 size-4' />
             {selectedLocation ? selectedLocation.name : placeholder}
           </div>
-          <ChevronDown className='ml-2 h-4 w-4' />
+          <ChevronDown className='ml-2 size-4' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='start' className='w-56'>
@@ -68,7 +68,7 @@ export function LocationFilter({
           <DropdownMenuItem onClick={() => onLocationChange(undefined)}>
             <div className='flex items-center justify-between w-full'>
               <span>All Locations</span>
-              {!selectedLocationId && <Check className='h-4 w-4' />}
+              {!selectedLocationId && <Check className='size-4' />}
             </div>
           </DropdownMenuItem>
         )}
@@ -93,7 +93,7 @@ export function LocationFilter({
                   </div>
                 </div>
                 {selectedLocationId === location.id && (
-                  <Check className='h-4 w-4' />
+                  <Check className='size-4' />
                 )}
               </div>
             </DropdownMenuItem>

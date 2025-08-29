@@ -123,7 +123,7 @@ export default function SuppliersPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading suppliers...</span>
       </div>
     )
@@ -151,7 +151,7 @@ export default function SuppliersPage() {
           </div>
           <Button asChild className='btn-brand-primary'>
             <Link href='/dashboard/suppliers/new'>
-              <Plus className='h-4 w-4 mr-2' />
+              <Plus className='size-4 mr-2' />
               Add Supplier
             </Link>
           </Button>
@@ -164,7 +164,7 @@ export default function SuppliersPage() {
               <CardTitle className='text-sm font-medium'>
                 Total Suppliers
               </CardTitle>
-              <Building2 className='h-4 w-4 brand-icon-primary' />
+              <Building2 className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>{suppliers.length}</div>
@@ -177,7 +177,7 @@ export default function SuppliersPage() {
               <CardTitle className='text-sm font-medium'>
                 Active Suppliers
               </CardTitle>
-              <Building2 className='h-4 w-4 brand-icon-accent' />
+              <Building2 className='size-4 brand-icon-accent' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold text-green-600'>
@@ -192,7 +192,7 @@ export default function SuppliersPage() {
               <CardTitle className='text-sm font-medium'>
                 Total Products
               </CardTitle>
-              <Package className='h-4 w-4 brand-icon-primary' />
+              <Package className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>
@@ -212,7 +212,7 @@ export default function SuppliersPage() {
               <CardTitle className='text-sm font-medium'>
                 Total Orders
               </CardTitle>
-              <Truck className='h-4 w-4 brand-icon-accent' />
+              <Truck className='size-4 brand-icon-accent' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>
@@ -235,7 +235,7 @@ export default function SuppliersPage() {
             {/* Filters */}
             <div className='flex items-center gap-4 mb-6'>
               <div className='relative flex-1 max-w-sm'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground' />
                 <Input
                   placeholder='Search suppliers...'
                   value={searchTerm}
@@ -277,7 +277,7 @@ export default function SuppliersPage() {
                 {!searchTerm && statusFilter === 'ALL' && (
                   <Button asChild className='btn-brand-primary'>
                     <Link href='/dashboard/suppliers/new'>
-                      <Plus className='h-4 w-4 mr-2' />
+                      <Plus className='size-4 mr-2' />
                       Add First Supplier
                     </Link>
                   </Button>
@@ -318,11 +318,11 @@ export default function SuppliersPage() {
                           {primaryContact ? (
                             <div className='space-y-1'>
                               <div className='flex items-center gap-1 text-sm'>
-                                <Mail className='h-3 w-3 text-muted-foreground' />
+                                <Mail className='size-3 text-muted-foreground' />
                                 <span>{primaryContact.email}</span>
                               </div>
                               <div className='flex items-center gap-1 text-sm'>
-                                <Phone className='h-3 w-3 text-muted-foreground' />
+                                <Phone className='size-3 text-muted-foreground' />
                                 <span>{primaryContact.phone}</span>
                               </div>
                             </div>
@@ -333,7 +333,7 @@ export default function SuppliersPage() {
                         <TableCell>
                           <div className='text-sm'>
                             <div className='flex items-center gap-1'>
-                              <Clock className='h-3 w-3 text-muted-foreground' />
+                              <Clock className='size-3 text-muted-foreground' />
                               <span>{formatOrderCutoff(supplier)}</span>
                             </div>
                           </div>
@@ -366,7 +366,7 @@ export default function SuppliersPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant='ghost' size='sm'>
-                                <MoreHorizontal className='h-4 w-4' />
+                                <MoreHorizontal className='size-4' />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
@@ -374,7 +374,7 @@ export default function SuppliersPage() {
                                 <Link
                                   href={`/dashboard/suppliers/${supplier.id}`}
                                 >
-                                  <Eye className='h-4 w-4 mr-1' />
+                                  <Eye className='size-4 mr-1' />
                                   View
                                 </Link>
                               </DropdownMenuItem>
@@ -382,7 +382,7 @@ export default function SuppliersPage() {
                                 <Link
                                   href={`/dashboard/suppliers/${supplier.id}/edit`}
                                 >
-                                  <Edit className='h-4 w-4 mr-1' />
+                                  <Edit className='size-4 mr-1' />
                                   Edit
                                 </Link>
                               </DropdownMenuItem>
@@ -401,7 +401,7 @@ export default function SuppliersPage() {
                               >
                                 <Trash2
                                   className={cn(
-                                    'mr-2 h-4 w-4',
+                                    'mr-2 size-4',
                                     supplier.isActive ? 'text-destructive' : ''
                                   )}
                                 />

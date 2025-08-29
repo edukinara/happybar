@@ -338,7 +338,7 @@ export default function OrderSuggestionsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='h-8 w-8 animate-spin mr-2' />
+        <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading reorder suggestions...</span>
       </div>
     )
@@ -367,12 +367,12 @@ export default function OrderSuggestionsPage() {
             onClick={loadSuggestions}
             disabled={loading}
           >
-            <RefreshCw className='h-4 w-4 mr-2' />
+            <RefreshCw className='size-4 mr-2' />
             Refresh
           </Button>
           <Button variant='outline' asChild>
             <Link href='/dashboard/orders'>
-              <Eye className='h-4 w-4 mr-2' />
+              <Eye className='size-4 mr-2' />
               View Orders
             </Link>
           </Button>
@@ -385,7 +385,7 @@ export default function OrderSuggestionsPage() {
           <CardContent className='pt-6'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-4'>
-                <ShoppingCart className='h-6 w-6 text-green-600' />
+                <ShoppingCart className='size-6 text-green-600' />
                 <div>
                   <h3 className='font-semibold text-green-900'>
                     {Object.keys(selectedSuggestions).length} supplier
@@ -401,7 +401,7 @@ export default function OrderSuggestionsPage() {
                 </div>
               </div>
               <Button onClick={createSelectedOrders} disabled={creating}>
-                <Send className='h-4 w-4 mr-2' />
+                <Send className='size-4 mr-2' />
                 {creating ? 'Creating...' : 'Create Orders'}
               </Button>
             </div>
@@ -423,7 +423,7 @@ export default function OrderSuggestionsPage() {
               </p>
               <Button asChild variant='outline'>
                 <Link href='/dashboard/inventory'>
-                  <Package className='h-4 w-4 mr-2' />
+                  <Package className='size-4 mr-2' />
                   View Inventory
                 </Link>
               </Button>
@@ -471,7 +471,7 @@ export default function OrderSuggestionsPage() {
                     </div>
 
                     <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                      <DollarSign className='h-4 w-4' />
+                      <DollarSign className='size-4' />
                       <span>${suggestion.totalEstimatedCost.toFixed(2)}</span>
                     </div>
                   </div>
@@ -541,7 +541,7 @@ export default function OrderSuggestionsPage() {
                             </TableCell>
                             <TableCell>
                               <div className='flex items-center gap-1'>
-                                <MapPin className='h-3 w-3 text-muted-foreground' />
+                                <MapPin className='size-3 text-muted-foreground' />
                                 <span className='text-sm'>
                                   {item.location.name}
                                 </span>

@@ -23,8 +23,8 @@ export function ThemeToggle() {
   if (!mounted) {
     // Return a placeholder with the same dimensions to prevent layout shift
     return (
-      <Button variant='outline' size='icon' className='h-9 w-9'>
-        <Sun className='h-4 w-4' />
+      <Button variant='outline' size='icon' className='size-9'>
+        <Sun className='size-4' />
         <span className='sr-only'>Toggle theme</span>
       </Button>
     )
@@ -41,8 +41,8 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline' size='icon' className='h-9 w-9'>
-          <CurrentIcon className='h-4 w-4' />
+        <Button variant='outline' size='icon' className='size-9'>
+          <CurrentIcon className='size-4' />
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -58,10 +58,10 @@ export function ThemeToggle() {
               className='flex items-center justify-between cursor-pointer'
             >
               <div className='flex items-center'>
-                <Icon className='h-4 w-4 mr-2' />
+                <Icon className='size-4 mr-2' />
                 {themeOption.name}
               </div>
-              {isSelected && <Check className='h-4 w-4 text-primary' />}
+              {isSelected && <Check className='size-4 text-primary' />}
             </DropdownMenuItem>
           )
         })}

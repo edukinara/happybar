@@ -5,47 +5,51 @@ This guide shows how to implement proper feature gating for Autumn subscription 
 ## Available Feature Gates
 
 ### 1. ProductsGate
+
 Controls access to product management features based on the subscription's product limits.
 
 ```tsx
 import { ProductsGate } from '@/components/subscription/feature-gate'
 
-<ProductsGate>
+;<ProductsGate>
   <Button asChild>
-    <Link href="/dashboard/products/new">Add Product</Link>
+    <Link href='/dashboard/products/new'>Add Product</Link>
   </Button>
 </ProductsGate>
 ```
 
-### 2. POSIntegrationsGate  
+### 2. POSIntegrationsGate
+
 Controls access to POS integration features.
 
 ```tsx
 import { POSIntegrationsGate } from '@/components/subscription/feature-gate'
 
-<POSIntegrationsGate>
+;<POSIntegrationsGate>
   <Button onClick={createIntegration}>Add Integration</Button>
 </POSIntegrationsGate>
 ```
 
 ### 3. LocationsGate
+
 Controls access to additional location management.
 
 ```tsx
 import { LocationsGate } from '@/components/subscription/feature-gate'
 
-<LocationsGate>
+;<LocationsGate>
   <Button onClick={addLocation}>Add Location</Button>
 </LocationsGate>
 ```
 
 ### 4. TeamMembersGate
+
 Controls access to team member invitations.
 
 ```tsx
 import { TeamMembersGate } from '@/components/subscription/feature-gate'
 
-<TeamMembersGate>
+;<TeamMembersGate>
   <Button onClick={inviteTeamMember}>Invite Team Member</Button>
 </TeamMembersGate>
 ```
@@ -55,15 +59,18 @@ import { TeamMembersGate } from '@/components/subscription/feature-gate'
 Track feature usage to update Autumn subscription balances:
 
 ```tsx
-import { ProductUsageTracker, POSIntegrationUsageTracker } from '@/components/subscription/usage-tracker'
+import {
+  ProductUsageTracker,
+  POSIntegrationUsageTracker,
+} from '@/components/subscription/usage-tracker'
 
 function ProductsPage() {
   const [products, setProducts] = useState([])
-  
+
   return (
     <div>
       {/* Your products UI */}
-      
+
       {/* Track current product count */}
       <ProductUsageTracker productCount={products.length} />
     </div>
@@ -74,41 +81,49 @@ function ProductsPage() {
 ## Implementation Examples
 
 ### 1. Products Page (`/dashboard/products`)
+
 - ✅ **Implemented**: Add Product button is gated
 - ✅ **Implemented**: Usage tracking for product count
 
-### 2. Settings Page (`/dashboard/settings`)  
+### 2. Settings Page (`/dashboard/settings`)
+
 - ✅ **Implemented**: Add Integration button is gated
 - ✅ **Implemented**: Usage tracking for integration count
 
 ### 3. Areas That Need Implementation
 
 #### Team Management
+
 ```tsx
 // In team management page
-<TeamMembersGate>
+;<TeamMembersGate>
   <Button onClick={inviteUser}>
-    <UserPlus className="mr-2 h-4 w-4" />
+    <UserPlus className='mr-2 size-4' />
     Invite Team Member
   </Button>
 </TeamMembersGate>
 
-{/* Track team member count */}
-<TeamMemberUsageTracker memberCount={teamMembers.length} />
+{
+  /* Track team member count */
+}
+;<TeamMemberUsageTracker memberCount={teamMembers.length} />
 ```
 
 #### Location Management
+
 ```tsx
 // In locations/inventory management
-<LocationsGate>
+;<LocationsGate>
   <Button onClick={createLocation}>
-    <MapPin className="mr-2 h-4 w-4" />
+    <MapPin className='mr-2 size-4' />
     Add Location
   </Button>
 </LocationsGate>
 
-{/* Track location count */}
-<LocationUsageTracker locationCount={locations.length} />
+{
+  /* Track location count */
+}
+;<LocationUsageTracker locationCount={locations.length} />
 ```
 
 ## Programmatic Usage Tracking
@@ -120,11 +135,11 @@ import { useFeatureTracker } from '@/components/subscription/usage-tracker'
 
 function CreateProductForm() {
   const { trackProductCreation } = useFeatureTracker()
-  
+
   const handleSubmit = async (data) => {
     // Create the product
     await createProduct(data)
-    
+
     // Track usage in Autumn
     trackProductCreation()
   }
@@ -134,10 +149,11 @@ function CreateProductForm() {
 ## Advanced Feature Gating
 
 ### Custom Fallback Components
+
 ```tsx
 <ProductsGate
   fallback={
-    <div className="text-center p-4 border-2 border-dashed rounded">
+    <div className='text-center p-4 border-2 border-dashed rounded'>
       <h3>Product Limit Reached</h3>
       <p>Upgrade to add more products</p>
       <Button onClick={upgradeToProPlan}>Upgrade Plan</Button>
@@ -149,6 +165,7 @@ function CreateProductForm() {
 ```
 
 ### Conditional Rendering
+
 ```tsx
 const { hasAccess } = useFeatureAccess('products', 1)
 
@@ -157,7 +174,7 @@ return (
     {hasAccess ? (
       <FullProductFeatures />
     ) : (
-      <UpgradePrompt featureName="Product Management" />
+      <UpgradePrompt featureName='Product Management' />
     )}
   </div>
 )
@@ -173,12 +190,12 @@ return (
 
 ## Subscription Features Map
 
-| Feature | Free Plan | Pro Plan | Business Plan |
-|---------|-----------|----------|---------------|
-| Products | 50 | 300 | Unlimited |
-| POS Integrations | 1 | 3 | Unlimited |
-| Locations | 1 | 2 | 5 |
-| Team Members | 1 | 3 | 10 |
+| Feature          | Free Plan | Pro Plan | Business Plan |
+| ---------------- | --------- | -------- | ------------- |
+| Products         | 50        | 300      | Unlimited     |
+| POS Integrations | 1         | 3        | Unlimited     |
+| Locations        | 1         | 2        | 5             |
+| Team Members     | 1         | 3        | 10            |
 
 ## Testing Feature Gates
 

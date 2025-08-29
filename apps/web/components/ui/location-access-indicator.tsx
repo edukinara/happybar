@@ -23,7 +23,7 @@ export function LocationAccessIndicator({
   if (!isRestricted) {
     return showDetails ? (
       <div className={`flex items-center space-x-2 ${className}`}>
-        <Shield className='h-4 w-4 text-green-600' />
+        <Shield className='size-4 text-green-600' />
         <span className='text-sm text-green-600'>Full location access</span>
       </div>
     ) : null
@@ -31,9 +31,9 @@ export function LocationAccessIndicator({
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <AlertTriangle className='h-4 w-4 text-amber-500' />
+      <AlertTriangle className='size-4 text-amber-500' />
       <Badge variant='outline' className='text-amber-700 border-amber-300'>
-        <MapPin className='h-3 w-3 mr-1' />
+        <MapPin className='size-3 mr-1' />
         Location-restricted view
       </Badge>
       {showDetails && (
@@ -65,7 +65,7 @@ export function LocationAccessAlert({
       className={`bg-amber-50 border border-amber-200 rounded-lg p-3 ${className}`}
     >
       <div className='flex items-start space-x-2'>
-        <AlertTriangle className='h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0' />
+        <AlertTriangle className='size-4 text-amber-500 mt-0.5 flex-shrink-0' />
         <div className='text-sm'>
           <p className='text-amber-800 font-medium'>Location Access Notice</p>
           <p className='text-amber-700 mt-1'>

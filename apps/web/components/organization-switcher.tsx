@@ -223,20 +223,20 @@ export function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
                 >
                   <div className='flex items-center gap-2 flex-1'>
                     {org.logo ? (
-                      <Avatar className='h-6 w-6'>
+                      <Avatar className='size-6'>
                         <AvatarImage src={org.logo} alt={org.name} />
                         <AvatarFallback>
-                          <Building2 className='h-3 w-3' />
+                          <Building2 className='size-3' />
                         </AvatarFallback>
                       </Avatar>
                     ) : (
-                      <Building2 className='h-4 w-4' />
+                      <Building2 className='size-4' />
                     )}
                     <div className='flex flex-col flex-1'>
                       <div className='flex items-center gap-2'>
                         <span className='text-sm font-medium'>{org.name}</span>
                         {currentOrg?.id === org.id && (
-                          <Check className='h-3 w-3 text-primary' />
+                          <Check className='size-3 text-primary' />
                         )}
                       </div>
                       <Badge
@@ -261,7 +261,7 @@ export function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
                   toast.info('Contact support to create a new organization')
                 }}
               >
-                <Plus className='mr-2 h-4 w-4' />
+                <Plus className='mr-2 size-4' />
                 Create New Organization
               </CommandItem>
             </CommandGroup> */}

@@ -72,7 +72,7 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
       <Card className={className}>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <Bell className='h-5 w-5' />
+            <Bell className='size-5' />
             Alerts
           </CardTitle>
         </CardHeader>
@@ -90,13 +90,13 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
       <Card className={className}>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <Bell className='h-5 w-5' />
+            <Bell className='size-5' />
             Alerts
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-center text-red-600 py-4'>
-            <AlertTriangle className='h-8 w-8 mx-auto mb-2' />
+            <AlertTriangle className='size-8 mx-auto mb-2' />
             <p className='text-sm'>{error}</p>
             <Button
               variant='outline'
@@ -117,14 +117,14 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
       <CardHeader>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
-            <Bell className='h-5 w-5' />
+            <Bell className='size-5' />
             <CardTitle>
               {locationId ? 'Location Alerts' : 'Alert Summary'}
             </CardTitle>
           </div>
           <Button variant='ghost' size='sm' asChild>
             <Link href='/dashboard/alerts'>
-              <Settings className='h-4 w-4' />
+              <Settings className='size-4' />
             </Link>
           </Button>
         </div>
@@ -212,7 +212,7 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
             <div className='pt-2'>
               <Button variant='outline' asChild className='w-full'>
                 <Link href='/dashboard/alerts'>
-                  <AlertTriangle className='mr-2 h-4 w-4' />
+                  <AlertTriangle className='mr-2 size-4' />
                   View All Alerts
                 </Link>
               </Button>

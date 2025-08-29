@@ -263,15 +263,15 @@ export default function SettingsPage() {
   const getSyncIcon = (status: POSIntegration['syncStatus']) => {
     switch (status) {
       case 'SUCCESS':
-        return <CheckCircle className='h-4 w-4 text-green-500' />
+        return <CheckCircle className='size-4 text-green-500' />
       case 'FAILED':
-        return <XCircle className='h-4 w-4 text-red-500' />
+        return <XCircle className='size-4 text-red-500' />
       case 'SYNCING':
-        return <Loader2 className='h-4 w-4 animate-spin text-blue-500' />
+        return <Loader2 className='size-4 animate-spin text-blue-500' />
       case 'PARTIAL_SUCCESS':
-        return <AlertTriangle className='h-4 w-4 text-yellow-500' />
+        return <AlertTriangle className='size-4 text-yellow-500' />
       default:
-        return <Clock className='h-4 w-4 text-gray-400' />
+        return <Clock className='size-4 text-gray-400' />
     }
   }
 
@@ -330,29 +330,29 @@ export default function SettingsPage() {
                 value='integrations'
                 className='flex items-center gap-2'
               >
-                <Zap className='h-4 w-4 brand-icon-primary' />
+                <Zap className='size-4 brand-icon-primary' />
                 Integrations
               </TabsTrigger>
               <TabsTrigger
                 value='organization'
                 className='flex items-center gap-2'
               >
-                <Building2 className='h-4 w-4 brand-icon-accent' />
+                <Building2 className='size-4 brand-icon-accent' />
                 Organization
               </TabsTrigger>
               <TabsTrigger
                 value='inventory'
                 className='flex items-center gap-2'
               >
-                <Package className='h-4 w-4 brand-icon-primary' />
+                <Package className='size-4 brand-icon-primary' />
                 Inventory
               </TabsTrigger>
               <TabsTrigger value='billing' className='flex items-center gap-2'>
-                <Crown className='h-4 w-4 brand-icon-accent' />
+                <Crown className='size-4 brand-icon-accent' />
                 Billing
               </TabsTrigger>
               <TabsTrigger value='system' className='flex items-center gap-2'>
-                <FileText className='h-4 w-4 brand-icon-primary' />
+                <FileText className='size-4 brand-icon-primary' />
                 System
               </TabsTrigger>
             </TabsList>
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                   <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
                     <div>
                       <CardTitle className='flex items-center'>
-                        <Settings className='mr-2 h-5 w-5 brand-icon-primary' />
+                        <Settings className='mr-2 size-5 brand-icon-primary' />
                         POS Integrations
                       </CardTitle>
                       <CardDescription>
@@ -396,7 +396,7 @@ export default function SettingsPage() {
                         <POSIntegrationsGate
                           fallback={
                             // <Button disabled>
-                            //   <Plus className='mr-2 h-4 w-4' />
+                            //   <Plus className='mr-2 size-4' />
                             //   Add Integration (Upgrade Required)
                             // </Button>
                             <div className='grid items-start gap-0'>
@@ -423,7 +423,7 @@ export default function SettingsPage() {
                             onClick={() => setShowNewIntegrationDialog(true)}
                             className='btn-brand-primary'
                           >
-                            <Plus className='mr-2 h-4 w-4' />
+                            <Plus className='mr-2 size-4' />
                             Add Integration
                           </Button>
                         </POSIntegrationsGate>
@@ -464,7 +464,7 @@ export default function SettingsPage() {
                         <POSIntegrationsGate
                           fallback={
                             <Button disabled>
-                              <Plus className='mr-2 h-4 w-4' />
+                              <Plus className='mr-2 size-4' />
                               Add Integration (Upgrade Required)
                             </Button>
                           }
@@ -473,7 +473,7 @@ export default function SettingsPage() {
                             onClick={() => setShowNewIntegrationDialog(true)}
                             className='btn-brand-primary'
                           >
-                            <Plus className='mr-2 h-4 w-4' />
+                            <Plus className='mr-2 size-4' />
                             Add Your First Integration
                           </Button>
                         </POSIntegrationsGate>
@@ -543,9 +543,9 @@ export default function SettingsPage() {
                                     title='Test Connection'
                                   >
                                     {testingConnections.has(integration.id) ? (
-                                      <Loader2 className='h-3 w-3 animate-spin' />
+                                      <Loader2 className='size-3 animate-spin' />
                                     ) : (
-                                      <TestTube className='h-3 w-3' />
+                                      <TestTube className='size-3' />
                                     )}
                                   </Button>
                                   <Button
@@ -558,9 +558,9 @@ export default function SettingsPage() {
                                     title='Sync Data'
                                   >
                                     {integration.syncStatus === 'SYNCING' ? (
-                                      <Loader2 className='h-3 w-3 animate-spin' />
+                                      <Loader2 className='size-3 animate-spin' />
                                     ) : (
-                                      <RefreshCw className='h-3 w-3' />
+                                      <RefreshCw className='size-3' />
                                     )}
                                   </Button>
                                   <Button
@@ -571,7 +571,7 @@ export default function SettingsPage() {
                                     }
                                     title='Delete Integration'
                                   >
-                                    <Trash2 className='h-3 w-3 text-red-500' />
+                                    <Trash2 className='size-3 text-red-500' />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -710,7 +710,7 @@ export default function SettingsPage() {
                       <Card className='brand-card gap-2'>
                         <CardHeader>
                           <CardTitle className='flex items-center'>
-                            <Crown className='mr-2 h-5 w-5 brand-icon-accent' />
+                            <Crown className='mr-2 size-5 brand-icon-accent' />
                             Subscription & Billing
                           </CardTitle>
                           <CardDescription>
@@ -757,7 +757,7 @@ export default function SettingsPage() {
                                       >
                                         <div className='flex items-start gap-2'>
                                           <AlertCircleIcon
-                                            className={`h-5 w-5 mt-0.5 ${isDowngrade ? 'text-orange-600' : 'text-blue-600'}`}
+                                            className={`size-5 mt-0.5 ${isDowngrade ? 'text-orange-600' : 'text-blue-600'}`}
                                           />
                                           <div className='flex-1'>
                                             <p
@@ -884,14 +884,14 @@ export default function SettingsPage() {
                                               }}
                                               loading={changingPlans}
                                             >
-                                              <X className='mr-2 h-4 w-4' />
+                                              <X className='mr-2 size-4' />
                                               Cancel Scheduled Change
                                             </Button>
                                             <Button
                                               onClick={openBillingPortal}
                                               className='btn-brand-primary'
                                             >
-                                              <CreditCard className='mr-2 h-4 w-4' />
+                                              <CreditCard className='mr-2 size-4' />
                                               Manage Billing
                                             </Button>
                                           </>
@@ -910,7 +910,7 @@ export default function SettingsPage() {
                                             }
                                             className='btn-brand-primary'
                                           >
-                                            <ArrowUpCircle className='mr-2 h-4 w-4' />
+                                            <ArrowUpCircle className='mr-2 size-4' />
                                             Upgrade Plan
                                           </Button>
                                         )
@@ -924,14 +924,14 @@ export default function SettingsPage() {
                                               setShowPricingModal(true)
                                             }
                                           >
-                                            <ArrowUpCircle className='mr-2 h-4 w-4' />
+                                            <ArrowUpCircle className='mr-2 size-4' />
                                             Change Plan
                                           </Button>
                                           <Button
                                             onClick={openBillingPortal}
                                             className='btn-brand-primary'
                                           >
-                                            <CreditCard className='mr-2 h-4 w-4' />
+                                            <CreditCard className='mr-2 size-4' />
                                             Manage Billing
                                           </Button>
                                         </>
@@ -1036,7 +1036,7 @@ export default function SettingsPage() {
                                 onClick={() => setShowPricingModal(true)}
                                 className='btn-brand-primary'
                               >
-                                <ArrowUpCircle className='mr-2 h-4 w-4' />
+                                <ArrowUpCircle className='mr-2 size-4' />
                                 View Plans
                               </Button>
                             </div>

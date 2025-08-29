@@ -105,7 +105,7 @@ export function OperationalMetricsV2({
             <h2 className='text-xl font-semibold mb-2'>Error Loading Data</h2>
             <p className='text-muted-foreground mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -127,7 +127,7 @@ export function OperationalMetricsV2({
             <CardTitle className='text-sm font-medium'>
               Inventory Value
             </CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -142,7 +142,7 @@ export function OperationalMetricsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Turnover Rate</CardTitle>
-            <Activity className='h-4 w-4 text-muted-foreground' />
+            <Activity className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -159,7 +159,7 @@ export function OperationalMetricsV2({
             <CardTitle className='text-sm font-medium'>
               Stock Accuracy
             </CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -172,7 +172,7 @@ export function OperationalMetricsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Fill Rate</CardTitle>
-            <CheckCircle className='h-4 w-4 text-muted-foreground' />
+            <CheckCircle className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -190,7 +190,7 @@ export function OperationalMetricsV2({
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center space-x-2'>
-              <AlertTriangle className='h-5 w-5 text-red-500' />
+              <AlertTriangle className='size-5 text-red-500' />
               <span>Stock Issues</span>
             </CardTitle>
             <CardDescription>
@@ -233,7 +233,7 @@ export function OperationalMetricsV2({
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center space-x-2'>
-              <BarChart3 className='h-5 w-5 text-blue-500' />
+              <BarChart3 className='size-5 text-blue-500' />
               <span>Efficiency Metrics</span>
             </CardTitle>
             <CardDescription>
@@ -271,7 +271,7 @@ export function OperationalMetricsV2({
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center space-x-2'>
-              <DollarSign className='h-5 w-5 text-green-500' />
+              <DollarSign className='size-5 text-green-500' />
               <span>Financial Impact</span>
             </CardTitle>
             <CardDescription>Cost optimization opportunities</CardDescription>
@@ -418,7 +418,7 @@ export function OperationalMetricsV2({
           <div className='space-y-4'>
             <div className='p-4 border rounded-lg bg-blue-50 border-blue-200'>
               <div className='flex items-start space-x-3'>
-                <Target className='h-5 w-5 text-blue-600 mt-0.5' />
+                <Target className='size-5 text-blue-600 mt-0.5' />
                 <div>
                   <h4 className='font-medium text-blue-900'>
                     Optimize Reorder Points
@@ -433,7 +433,7 @@ export function OperationalMetricsV2({
 
             <div className='p-4 border rounded-lg bg-green-50 border-green-200'>
               <div className='flex items-start space-x-3'>
-                <CheckCircle className='h-5 w-5 text-green-600 mt-0.5' />
+                <CheckCircle className='size-5 text-green-600 mt-0.5' />
                 <div>
                   <h4 className='font-medium text-green-900'>
                     Reduce Excess Inventory
@@ -448,7 +448,7 @@ export function OperationalMetricsV2({
 
             <div className='p-4 border rounded-lg bg-yellow-50 border-yellow-200'>
               <div className='flex items-start space-x-3'>
-                <Clock className='h-5 w-5 text-yellow-600 mt-0.5' />
+                <Clock className='size-5 text-yellow-600 mt-0.5' />
                 <div>
                   <h4 className='font-medium text-yellow-900'>
                     Improve Turnover

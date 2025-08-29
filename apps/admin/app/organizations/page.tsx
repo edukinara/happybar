@@ -78,7 +78,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}
     >
-      <Icon className='h-3 w-3' />
+      <Icon className='size-3' />
       {status}
     </span>
   )
@@ -165,7 +165,7 @@ export default function OrganizationsPage() {
           {/* Filters */}
           <div className='flex gap-4 mb-6'>
             <div className='flex-1 relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground' />
               <input
                 type='text'
                 placeholder='Search by name or email...'
@@ -202,7 +202,11 @@ export default function OrganizationsPage() {
             <div className='bg-card p-4 rounded-lg border'>
               <p className='text-sm text-muted-foreground'>Active</p>
               <p className='text-2xl font-bold text-green-600'>
-                {filteredOrgs.filter((o: Organization) => o.status === 'active').length}
+                {
+                  filteredOrgs.filter(
+                    (o: Organization) => o.status === 'active'
+                  ).length
+                }
               </p>
             </div>
             <div className='bg-card p-4 rounded-lg border'>
@@ -210,7 +214,11 @@ export default function OrganizationsPage() {
               <p className='text-2xl font-bold'>
                 $
                 {filteredOrgs
-                  .reduce((sum: number, o: Organization) => sum + (o.stats?.monthlyRevenue || 0), 0)
+                  .reduce(
+                    (sum: number, o: Organization) =>
+                      sum + (o.stats?.monthlyRevenue || 0),
+                    0
+                  )
                   .toLocaleString()}
               </p>
             </div>
@@ -244,7 +252,7 @@ export default function OrganizationsPage() {
                   <tr>
                     <td colSpan={7} className='text-center p-8'>
                       <div className='flex items-center justify-center gap-2'>
-                        <Clock className='h-4 w-4 animate-spin' />
+                        <Clock className='size-4 animate-spin' />
                         Loading organizations...
                       </div>
                     </td>
@@ -278,15 +286,15 @@ export default function OrganizationsPage() {
                       <td className='p-4'>
                         <div className='flex gap-4 text-sm'>
                           <span className='flex items-center gap-1'>
-                            <Users className='h-3 w-3' />
+                            <Users className='size-3' />
                             {org.stats?.users || org._count.members || 0}
                           </span>
                           <span className='flex items-center gap-1'>
-                            <Building2 className='h-3 w-3' />
+                            <Building2 className='size-3' />
                             {org.stats?.locations || 1}
                           </span>
                           <span className='flex items-center gap-1'>
-                            <Package className='h-3 w-3' />
+                            <Package className='size-3' />
                             {org.stats?.products || org._count.products || 0}
                           </span>
                         </div>
@@ -309,19 +317,19 @@ export default function OrganizationsPage() {
                             className='p-1 hover:bg-muted rounded'
                             title='View Details'
                           >
-                            <Eye className='h-4 w-4' />
+                            <Eye className='size-4' />
                           </button>
                           <button
                             className='p-1 hover:bg-muted rounded'
                             title='Impersonate'
                           >
-                            <UserCog className='h-4 w-4' />
+                            <UserCog className='size-4' />
                           </button>
                           <button
                             className='p-1 hover:bg-muted rounded'
                             title='Settings'
                           >
-                            <Settings className='h-4 w-4' />
+                            <Settings className='size-4' />
                           </button>
                         </div>
                       </td>
@@ -346,7 +354,7 @@ export default function OrganizationsPage() {
                   disabled={page === 1}
                   className='p-2 border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <ChevronLeft className='h-4 w-4' />
+                  <ChevronLeft className='size-4' />
                 </button>
                 <div className='flex gap-1'>
                   {Array.from(
@@ -391,7 +399,7 @@ export default function OrganizationsPage() {
                   disabled={page === data.pagination.pages}
                   className='p-2 border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <ChevronRight className='h-4 w-4' />
+                  <ChevronRight className='size-4' />
                 </button>
               </div>
             </div>

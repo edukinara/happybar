@@ -212,9 +212,9 @@ export function BottleSlider({
               size='sm'
               onClick={decrementFullUnits}
               disabled={fullUnits === 0}
-              className='h-8 w-8 p-0'
+              className='size-8 p-0'
             >
-              <Minus className='h-3 w-3' />
+              <Minus className='size-3' />
             </Button>
             <div className='flex-1 text-center'>
               {isEditingFullUnits ? (
@@ -259,9 +259,9 @@ export function BottleSlider({
               variant='outline'
               size='sm'
               onClick={incrementFullUnits}
-              className='h-8 w-8 p-0'
+              className='size-8 p-0'
             >
-              <Plus className='h-3 w-3' />
+              <Plus className='size-3' />
             </Button>
           </div>
         </div>
@@ -274,7 +274,7 @@ export function BottleSlider({
             onClick={() => setShowPartial(true)}
             className='w-full text-xs h-8'
           >
-            <Plus className='h-3 w-3 mr-1' />
+            <Plus className='size-3 mr-1' />
             Add Partial {productContainer}
           </Button>
         ) : (
@@ -299,9 +299,9 @@ export function BottleSlider({
                     onQuantityChange(fullUnits, 0)
                     setShowPartial(false)
                   }}
-                  className='h-6 w-6 p-0 text-muted-foreground hover:text-red-500'
+                  className='size-6 p-0 text-muted-foreground hover:text-red-500'
                 >
-                  <X className='h-3 w-3' />
+                  <X className='size-3' />
                 </Button>
               </div>
             </div>
@@ -324,7 +324,7 @@ export function BottleSlider({
                   disabled={constrainedPartialUnit === 0}
                   className='h-8 text-xs'
                 >
-                  <Minus className='h-3 w-3 mr-1' />
+                  <Minus className='size-3 mr-1' />
                   -0.1
                 </Button>
                 <Button
@@ -334,7 +334,7 @@ export function BottleSlider({
                   disabled={constrainedPartialUnit >= 0.9}
                   className='h-8 text-xs'
                 >
-                  <Plus className='h-3 w-3 mr-1' />
+                  <Plus className='size-3 mr-1' />
                   +0.1
                 </Button>
               </div>

@@ -96,7 +96,7 @@ export function AccountLinking() {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center'>
-            <Link2 className='mr-2 h-5 w-5' />
+            <Link2 className='mr-2 size-5' />
             Connected Accounts
           </CardTitle>
           <CardDescription>
@@ -116,7 +116,7 @@ export function AccountLinking() {
     <Card>
       <CardHeader>
         <CardTitle className='flex items-center'>
-          <Link2 className='mr-2 h-5 w-5' />
+          <Link2 className='mr-2 size-5' />
           Connected Accounts
         </CardTitle>
         <CardDescription>
@@ -174,9 +174,9 @@ export function AccountLinking() {
                   disabled={unlinking === account.id}
                 >
                   {unlinking === account.id ? (
-                    <Loader2 className='h-4 w-4 animate-spin' />
+                    <Loader2 className='size-4 animate-spin' />
                   ) : (
-                    <Unlink className='h-4 w-4' />
+                    <Unlink className='size-4' />
                   )}
                 </Button>
               </div>
@@ -225,7 +225,7 @@ export function AccountLinking() {
                 loading={linking}
               >
                 <>
-                  <Link2 className='mr-2 h-4 w-4' />
+                  <Link2 className='mr-2 size-4' />
                   Link Account
                 </>
               </Button>
@@ -234,7 +234,7 @@ export function AccountLinking() {
         )}
 
         <Alert>
-          <Link2 className='h-4 w-4' />
+          <Link2 className='size-4' />
           <AlertDescription>
             Linking social accounts allows you to sign in using those providers
             while maintaining your current account and all associated data.

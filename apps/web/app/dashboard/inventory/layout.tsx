@@ -99,7 +99,7 @@ export default function InventoryLayout({
           pathname !== '/dashboard/inventory/counts/new' ? (
             <Button asChild className='btn-brand-primary'>
               <Link href='/dashboard/inventory/counts/new'>
-                <Plus className='h-4 w-4 mr-2' />
+                <Plus className='size-4 mr-2' />
                 New Count
               </Link>
             </Button>
@@ -131,7 +131,7 @@ export default function InventoryLayout({
                   >
                     <Icon
                       className={cn(
-                        'mr-2 h-4 w-4 transition-colors',
+                        'mr-2 size-4 transition-colors',
                         isActive
                           ? 'text-primary'
                           : 'text-muted-foreground group-hover:text-foreground'

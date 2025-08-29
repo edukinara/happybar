@@ -247,7 +247,7 @@ export default function ParLevelsPage() {
         <div className='flex-1 space-y-2'>
           <Label htmlFor='search'>Search Products</Label>
           <div className='relative'>
-            <Search className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
+            <Search className='absolute left-3 top-3 size-4 text-muted-foreground' />
             <Input
               id='search'
               placeholder='Search by name or SKU...'
@@ -261,7 +261,7 @@ export default function ParLevelsPage() {
         {hasChanges && (
           <div className='flex items-end'>
             <Button onClick={saveChanges} disabled={saving}>
-              <Save className='h-4 w-4 mr-2' />
+              <Save className='size-4 mr-2' />
               {saving
                 ? 'Saving...'
                 : `Save Changes (${Object.keys(pendingChanges).length})`}
@@ -274,7 +274,7 @@ export default function ParLevelsPage() {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <Target className='h-5 w-5' />
+            <Target className='size-5' />
             Par Level Management
           </CardTitle>
           <CardDescription>
@@ -285,7 +285,7 @@ export default function ParLevelsPage() {
         <CardContent>
           {loading ? (
             <div className='flex items-center justify-center py-8'>
-              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
+              <div className='animate-spin rounded-full size-8 border-b-2 border-primary'></div>
             </div>
           ) : (
             <Table>
@@ -364,7 +364,7 @@ export default function ParLevelsPage() {
                 {filteredItems.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className='text-center py-8'>
-                      <AlertTriangle className='h-8 w-8 text-muted-foreground mx-auto mb-2' />
+                      <AlertTriangle className='size-8 text-muted-foreground mx-auto mb-2' />
                       <p className='text-muted-foreground'>
                         {searchTerm
                           ? 'No products found matching your search.'

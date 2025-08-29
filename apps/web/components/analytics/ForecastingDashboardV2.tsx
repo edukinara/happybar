@@ -148,7 +148,7 @@ export function ForecastingDashboardV2({
             <h2 className='text-xl font-semibold mb-2'>Error Loading Data</h2>
             <p className='text-muted-foreground mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -193,7 +193,7 @@ export function ForecastingDashboardV2({
             <CardTitle className='text-sm font-medium'>
               Overall Accuracy
             </CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -208,7 +208,7 @@ export function ForecastingDashboardV2({
             <CardTitle className='text-sm font-medium'>
               Confidence Score
             </CardTitle>
-            <Brain className='h-4 w-4 text-muted-foreground' />
+            <Brain className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -225,7 +225,7 @@ export function ForecastingDashboardV2({
             <CardTitle className='text-sm font-medium'>
               Forecast Value
             </CardTitle>
-            <BarChart3 className='h-4 w-4 text-muted-foreground' />
+            <BarChart3 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -243,7 +243,7 @@ export function ForecastingDashboardV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Forecast Cost</CardTitle>
-            <BarChart3 className='h-4 w-4 text-muted-foreground' />
+            <BarChart3 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -263,7 +263,7 @@ export function ForecastingDashboardV2({
             <CardTitle className='text-sm font-medium'>
               Items Forecasted
             </CardTitle>
-            <Activity className='h-4 w-4 text-muted-foreground' />
+            <Activity className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{data.forecastData.length}</div>
@@ -402,7 +402,7 @@ export function ForecastingDashboardV2({
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center space-x-2'>
-              <AlertTriangle className='h-5 w-5 text-red-500' />
+              <AlertTriangle className='size-5 text-red-500' />
               <span>High Stockout Risk</span>
             </CardTitle>
             <CardDescription>
@@ -441,7 +441,7 @@ export function ForecastingDashboardV2({
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center space-x-2'>
-              <TrendingDown className='h-5 w-5 text-yellow-500' />
+              <TrendingDown className='size-5 text-yellow-500' />
               <span>High Overstock Risk</span>
             </CardTitle>
             <CardDescription>

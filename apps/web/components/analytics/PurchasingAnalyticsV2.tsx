@@ -92,7 +92,7 @@ export function PurchasingAnalyticsV2({
             <h2 className='text-xl font-semibold mb-2'>Error Loading Data</h2>
             <p className='text-muted-foreground mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>
-              <RefreshCw className='mr-2 h-4 w-4' />
+              <RefreshCw className='mr-2 size-4' />
               Retry
             </Button>
           </div>
@@ -112,7 +112,7 @@ export function PurchasingAnalyticsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Spend</CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <DollarSign className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -129,7 +129,7 @@ export function PurchasingAnalyticsV2({
             <CardTitle className='text-sm font-medium'>
               Avg Order Value
             </CardTitle>
-            <ShoppingCart className='h-4 w-4 text-muted-foreground' />
+            <ShoppingCart className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -144,7 +144,7 @@ export function PurchasingAnalyticsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Suppliers</CardTitle>
-            <Users className='h-4 w-4 text-muted-foreground' />
+            <Users className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -159,7 +159,7 @@ export function PurchasingAnalyticsV2({
         <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Cost Savings</CardTitle>
-            <Target className='h-4 w-4 text-muted-foreground' />
+            <Target className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -309,7 +309,7 @@ export function PurchasingAnalyticsV2({
             <div className='space-y-4'>
               <div className='p-4 border rounded-lg bg-green-50 border-green-200'>
                 <div className='flex items-start space-x-3'>
-                  <CheckCircle className='h-5 w-5 text-green-600 mt-0.5' />
+                  <CheckCircle className='size-5 text-green-600 mt-0.5' />
                   <div>
                     <h4 className='font-medium text-green-900'>
                       Supplier Consolidation
@@ -326,7 +326,7 @@ export function PurchasingAnalyticsV2({
 
               <div className='p-4 border rounded-lg bg-blue-50 border-blue-200'>
                 <div className='flex items-start space-x-3'>
-                  <Target className='h-5 w-5 text-blue-600 mt-0.5' />
+                  <Target className='size-5 text-blue-600 mt-0.5' />
                   <div>
                     <h4 className='font-medium text-blue-900'>
                       Volume Discounts
@@ -343,7 +343,7 @@ export function PurchasingAnalyticsV2({
 
               <div className='p-4 border rounded-lg bg-yellow-50 border-yellow-200'>
                 <div className='flex items-start space-x-3'>
-                  <Calendar className='h-5 w-5 text-yellow-600 mt-0.5' />
+                  <Calendar className='size-5 text-yellow-600 mt-0.5' />
                   <div>
                     <h4 className='font-medium text-yellow-900'>
                       Contract Optimization

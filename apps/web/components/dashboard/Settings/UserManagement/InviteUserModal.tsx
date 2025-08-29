@@ -214,7 +214,7 @@ export function InviteUserModal({
       <DialogContent className='sm:max-w-[600px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='flex items-center'>
-            <UserPlus className='mr-2 h-5 w-5' />
+            <UserPlus className='mr-2 size-5' />
             Invite Team Member
           </DialogTitle>
           <DialogDescription>
@@ -235,7 +235,7 @@ export function InviteUserModal({
                   <FormLabel>Email Address</FormLabel>
                   <FormControl>
                     <div className='relative'>
-                      <Mail className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
+                      <Mail className='absolute left-3 top-3 size-4 text-muted-foreground' />
                       <Input
                         placeholder='colleague@example.com'
                         className='pl-10'
@@ -300,7 +300,7 @@ export function InviteUserModal({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className='flex items-center'>
-                        <Building2 className='mr-2 h-4 w-4' />
+                        <Building2 className='mr-2 size-4' />
                         Location Access
                         <Badge variant='secondary' className='ml-2 text-xs'>
                           Required
@@ -314,7 +314,7 @@ export function InviteUserModal({
                         <div className='space-y-3 max-h-48 overflow-y-auto border rounded-md p-3'>
                           {locations.length === 0 ? (
                             <div className='text-center py-4 text-muted-foreground'>
-                              <MapPin className='h-8 w-8 mx-auto mb-2 text-gray-300' />
+                              <MapPin className='size-8 mx-auto mb-2 text-gray-300' />
                               <p className='text-sm'>No locations available</p>
                               <p className='text-xs'>
                                 Create locations first to assign access
@@ -351,7 +351,7 @@ export function InviteUserModal({
                                   htmlFor={`location-${location.id}`}
                                   className='flex items-center space-x-2 cursor-pointer flex-1'
                                 >
-                                  <MapPin className='h-4 w-4 text-muted-foreground' />
+                                  <MapPin className='size-4 text-muted-foreground' />
                                   <span className='font-medium'>
                                     {location.name}
                                   </span>
@@ -469,7 +469,7 @@ export function InviteUserModal({
                 Cancel
               </Button>
               <Button type='submit' disabled={isLoading}>
-                {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                {isLoading && <Loader2 className='mr-2 size-4 animate-spin' />}
                 Send Invitation
               </Button>
             </DialogFooter>

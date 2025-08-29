@@ -389,7 +389,7 @@ export default function PricingPage() {
               </Link>
               <Link href='/register'>
                 <Button className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg'>
-                  <Sparkles className='h-4 w-4 mr-2' />
+                  <Sparkles className='size-4 mr-2' />
                   Get Started
                 </Button>
               </Link>
@@ -514,7 +514,7 @@ export default function PricingPage() {
                             key={item.feature_id}
                             className='flex items-center gap-2 text-sm'
                           >
-                            <Check className='h-4 w-4 text-green-500' />
+                            <Check className='size-4 text-green-500' />
                             <span>{item.feature?.name}</span>
                           </div>
                         ))}
@@ -540,7 +540,7 @@ export default function PricingPage() {
                   >
                     {subscribing === product.id ? (
                       <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                        <Loader2 className='mr-2 size-4 animate-spin' />
                         Processing...
                       </>
                     ) : (
@@ -556,7 +556,7 @@ export default function PricingPage() {
                         {!!customer &&
                         customer.products?.some((p) => p.id === product.id)
                           ? null
-                          : !isFree && <ArrowRight className='ml-2 h-4 w-4' />}
+                          : !isFree && <ArrowRight className='ml-2 size-4' />}
                       </>
                     )}
                   </Button>
@@ -626,7 +626,7 @@ export default function PricingPage() {
                         )}
                         <CardHeader>
                           <CardTitle className='flex items-center gap-2'>
-                            <category.icon className='h-5 w-5 text-primary' />
+                            <category.icon className='size-5 text-primary' />
                             {service.name}
                           </CardTitle>
                           <CardDescription>
@@ -651,7 +651,7 @@ export default function PricingPage() {
                                 key={featureIndex}
                                 className='flex items-start gap-2 text-sm'
                               >
-                                <Check className='h-4 w-4 text-green-500 mt-0.5 shrink-0' />
+                                <Check className='size-4 text-green-500 mt-0.5 shrink-0' />
                                 <span>{feature}</span>
                               </li>
                             ))}
@@ -717,14 +717,14 @@ export default function PricingPage() {
                         key={index}
                         className='flex items-start gap-2 text-sm'
                       >
-                        <Check className='h-4 w-4 text-green-500 mt-0.5 shrink-0' />
+                        <Check className='size-4 text-green-500 mt-0.5 shrink-0' />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button className='w-full'>
                     Get Bundle
-                    <ArrowRight className='ml-2 h-4 w-4' />
+                    <ArrowRight className='ml-2 size-4' />
                   </Button>
                 </CardContent>
               </Card>
@@ -813,7 +813,7 @@ export default function PricingPage() {
                 className='text-lg px-8'
               >
                 Start Free Trial
-                <ArrowRight className='ml-2 h-5 w-5' />
+                <ArrowRight className='ml-2 size-5' />
               </Button>
               <Button
                 size='lg'
@@ -821,7 +821,7 @@ export default function PricingPage() {
                 className='text-lg px-8 bg-transparent text-primary-foreground border-primary-foreground/50 hover:bg-primary-foreground/10'
               >
                 Schedule Demo
-                <Phone className='ml-2 h-5 w-5' />
+                <Phone className='ml-2 size-5' />
               </Button>
             </div>
             <p className='mt-6 text-sm opacity-75'>
