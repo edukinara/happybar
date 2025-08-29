@@ -46,7 +46,6 @@ import { toast } from 'sonner'
 const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   DRAFT: 'bg-gray-100 text-gray-800',
   SENT: 'bg-blue-100 text-blue-800',
-  CONFIRMED: 'bg-green-100 text-green-800',
   PARTIALLY_RECEIVED: 'bg-yellow-100 text-yellow-800',
   RECEIVED: 'bg-green-100 text-green-800',
   CANCELLED: 'bg-red-100 text-red-800',
@@ -55,7 +54,6 @@ const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   DRAFT: 'Draft',
   SENT: 'Sent',
-  CONFIRMED: 'Confirmed',
   PARTIALLY_RECEIVED: 'Partially Received',
   RECEIVED: 'Received',
   CANCELLED: 'Cancelled',
@@ -107,7 +105,7 @@ export default function OrdersPage() {
         0
       )
       const pendingOrders = response.data.filter((order) =>
-        ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'].includes(order.status)
+        ['SENT', 'PARTIALLY_RECEIVED'].includes(order.status)
       ).length
       const draftOrders = response.data.filter(
         (order) => order.status === 'DRAFT'
@@ -290,7 +288,6 @@ export default function OrdersPage() {
                   <SelectItem value='ALL'>All Statuses</SelectItem>
                   <SelectItem value='DRAFT'>Draft</SelectItem>
                   <SelectItem value='SENT'>Sent</SelectItem>
-                  <SelectItem value='CONFIRMED'>Confirmed</SelectItem>
                   <SelectItem value='PARTIALLY_RECEIVED'>
                     Partially Received
                   </SelectItem>
@@ -365,7 +362,10 @@ export default function OrdersPage() {
                           <Button size='sm' variant='outline' asChild>
                             <Link href={`/dashboard/orders/${order.id}`}>
                               <Eye className='size-4 mr-1' />
-                              View
+                              {order.status === 'SENT' ||
+                              order.status === 'PARTIALLY_RECEIVED'
+                                ? 'Receive Items'
+                                : 'View'}
                             </Link>
                           </Button>
 
@@ -379,33 +379,6 @@ export default function OrdersPage() {
                             >
                               <Send className='size-4 mr-1' />
                               Send
-                            </Button>
-                          )}
-
-                          {order.status === 'SENT' && (
-                            <Button
-                              size='sm'
-                              variant='outline'
-                              onClick={() =>
-                                handleStatusChange(order.id, 'CONFIRMED')
-                              }
-                            >
-                              Confirm
-                            </Button>
-                          )}
-
-                          {['CONFIRMED', 'PARTIALLY_RECEIVED'].includes(
-                            order.status
-                          ) && (
-                            <Button
-                              size='sm'
-                              variant='outline'
-                              onClick={() =>
-                                handleStatusChange(order.id, 'RECEIVED')
-                              }
-                            >
-                              <Package className='size-4 mr-1' />
-                              Receive
                             </Button>
                           )}
                         </div>

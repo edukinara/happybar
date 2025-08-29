@@ -1344,7 +1344,15 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
             supplier: true,
             items: {
               include: {
-                product: true,
+                product: {
+                  include: {
+                    category: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -1377,7 +1385,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
 
           // Track category spend
           order.items.forEach((item) => {
-            const category = item.product.categoryId || 'Other'
+            const category = item.product.category.name || 'Other'
             categorySpend.set(
               category,
               (categorySpend.get(category) || 0) + item.totalCost

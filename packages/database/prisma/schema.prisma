@@ -963,7 +963,6 @@ enum CountStatus {
 enum OrderStatus {
   DRAFT
   SENT
-  CONFIRMED
   PARTIALLY_RECEIVED
   RECEIVED
   CANCELLED

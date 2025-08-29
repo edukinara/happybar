@@ -67,7 +67,9 @@ export default function DashboardLayout({
   }, [user, loading, router])
 
   if (loading) {
-    return <HappBarLoader className='p-16' text='Loading Dashboard...' />
+    return (
+      <HappBarLoader className='p-16 text-nowrap' text='Loading Dashboard...' />
+    )
   }
 
   if (!user) {

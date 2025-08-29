@@ -23,6 +23,7 @@ export interface OrderItem {
   productId: string
   quantityOrdered: number
   quantityReceived: number
+  orderingUnit: 'UNIT' | 'CASE'
   unitCost: number
   totalCost: number
   createdAt: string
@@ -31,6 +32,7 @@ export interface OrderItem {
     id: string
     name: string
     sku?: string
+    caseSize: number
     category: {
       id: string
       name: string
@@ -54,7 +56,6 @@ export interface Supplier {
 export type OrderStatus =
   | 'DRAFT'
   | 'SENT'
-  | 'CONFIRMED'
   | 'PARTIALLY_RECEIVED'
   | 'RECEIVED'
   | 'CANCELLED'
@@ -242,9 +243,7 @@ class OrdersAPI {
     return this.updateOrder(id, { status: 'SENT' })
   }
 
-  async confirmOrder(id: string): Promise<{ success: boolean; data: Order }> {
-    return this.updateOrder(id, { status: 'CONFIRMED' })
-  }
+  // Removed confirmOrder method - orders go directly from SENT to receiving status
 
   async receiveOrder(
     id: string,

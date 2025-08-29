@@ -143,7 +143,11 @@ export const ordersRoutes: FastifyPluginAsync = async function (
           items: {
             include: {
               product: {
-                include: {
+                select: {
+                  id: true,
+                  name: true,
+                  sku: true,
+                  caseSize: true,
                   category: true,
                   suppliers: {
                     include: { supplier: true },
@@ -358,6 +362,103 @@ export const ordersRoutes: FastifyPluginAsync = async function (
           (sum, item) => sum + item.totalCost,
           0
         )
+
+        // Auto-determine order status based on received quantities
+        const allItemsReceived = updatedItems.every(
+          (item) => (item.quantityReceived ?? 0) >= item.quantityOrdered
+        )
+        const someItemsReceived = updatedItems.some(
+          (item) => (item.quantityReceived ?? 0) > 0
+        )
+
+        if (allItemsReceived && someItemsReceived) {
+          updateData.status = 'RECEIVED'
+          updateData.receivedDate = new Date()
+        } else if (someItemsReceived) {
+          updateData.status = 'PARTIALLY_RECEIVED'
+        }
+
+        // Update inventory for received items - convert to units first
+        for (const item of updatedItems) {
+          const receivedQty = item.quantityReceived ?? 0
+          const previouslyReceivedQty =
+            existingOrder.items.find((existing) => existing.id === item.id)
+              ?.quantityReceived ?? 0
+
+          const newlyReceivedQty = receivedQty - previouslyReceivedQty
+
+          if (newlyReceivedQty > 0) {
+            // Get product information for unit conversion
+            const product = await fastify.prisma.product.findFirst({
+              where: { id: item.productId, organizationId },
+              select: { caseSize: true },
+            })
+
+            if (!product) continue
+
+            // Convert received quantity to units (inventory is always in units)
+            const newlyReceivedInUnits =
+              item.orderingUnit === 'CASE'
+                ? newlyReceivedQty * product.caseSize
+                : newlyReceivedQty
+            // Find or create inventory item for this product
+            const inventoryItem = await fastify.prisma.inventoryItem.findFirst({
+              where: {
+                organizationId,
+                productId: item.productId,
+                // Use primary location if no specific location is set
+                // You might want to make location configurable in your UI
+              },
+            })
+
+            if (inventoryItem) {
+              // Update existing inventory (using units)
+              await fastify.prisma.inventoryItem.update({
+                where: { id: inventoryItem.id },
+                data: {
+                  currentQuantity:
+                    inventoryItem.currentQuantity + newlyReceivedInUnits,
+                  updatedAt: new Date(),
+                },
+              })
+            } else {
+              // Find primary location for this organization
+              const primaryLocation = await fastify.prisma.location.findFirst({
+                where: { organizationId },
+              })
+
+              if (primaryLocation) {
+                // Create new inventory item (using units)
+                await fastify.prisma.inventoryItem.create({
+                  data: {
+                    organizationId,
+                    productId: item.productId,
+                    locationId: primaryLocation.id,
+                    currentQuantity: newlyReceivedInUnits,
+                    minimumQuantity: 6,
+                  },
+                })
+              }
+            }
+
+            // Create audit log for inventory addition
+            await fastify.prisma.auditLog.create({
+              data: {
+                organizationId,
+                eventType: 'INVENTORY_RECEIVED',
+                productId: item.productId,
+                eventData: {
+                  orderId: id,
+                  quantityAdded: newlyReceivedInUnits, // Log the units added to inventory
+                  orderQuantity: newlyReceivedQty, // Also log the original order quantity
+                  orderingUnit: item.orderingUnit,
+                  unitCost: item.unitCost,
+                  source: 'ORDER_RECEIPT',
+                },
+              },
+            })
+          }
+        }
       }
 
       // Update order
@@ -437,6 +538,11 @@ export const ordersRoutes: FastifyPluginAsync = async function (
           },
           location: true,
         },
+        orderBy: {
+          product: {
+            name: 'asc',
+          },
+        },
       })
 
       // Filter for low stock items
@@ -445,81 +551,105 @@ export const ordersRoutes: FastifyPluginAsync = async function (
       )
 
       // Group by supplier and calculate suggested quantities
-      const suggestions = lowStockItems.reduce((acc: any, item) => {
-        const preferredSupplier = item.product.suppliers[0]
-        if (!preferredSupplier) return acc
+      const suggestions = lowStockItems.reduce(
+        (
+          acc: Record<
+            string,
+            {
+              supplier: any
+              items: any[]
+              product?: any
+              currentQuantity?: number
+              minimumQuantity?: number
+              suggestedQuantity?: number
+              unitCost?: number
+              estimatedCost?: number
+              location?: string
+              orderingUnit?: string
+              packSize?: number
+              totalEstimatedCost: number
+            }
+          >,
+          item
+        ) => {
+          const preferredSupplier = item.product.suppliers[0]
+          if (!preferredSupplier) return acc
 
-        const supplierId = preferredSupplier.supplierId
-        if (!acc[supplierId]) {
-          acc[supplierId] = {
-            supplier: preferredSupplier.supplier,
-            items: [],
-            totalEstimatedCost: 0,
+          const supplierId = preferredSupplier.supplierId
+          if (!acc[supplierId]) {
+            acc[supplierId] = {
+              supplier: preferredSupplier.supplier,
+              items: [],
+              totalEstimatedCost: 0,
+            }
           }
-        }
 
-        // Calculate the quantity needed to reach minimum
-        const quantityNeeded = item.minimumQuantity - item.currentQuantity
+          // Calculate the quantity needed to reach minimum
+          const quantityNeeded = item.minimumQuantity - item.currentQuantity
 
-        // Determine ordering unit and calculate suggested quantity
-        let suggestedQuantity: number
-        let unitCost: number
-        let orderingUnit = preferredSupplier.orderingUnit
+          // Determine ordering unit and calculate suggested quantity
+          let suggestedQuantity: number
+          let unitCost: number
+          let orderingUnit = preferredSupplier.orderingUnit
 
-        if (orderingUnit === 'CASE' && preferredSupplier.packSize) {
-          // When ordering by case, calculate how many cases needed
-          const casesNeeded = Math.ceil(
-            quantityNeeded / preferredSupplier.packSize
-          )
-          const minimumCases =
-            preferredSupplier.minimumOrderUnit === 'CASE'
-              ? preferredSupplier.minimumOrder
-              : Math.ceil(
-                  preferredSupplier.minimumOrder / preferredSupplier.packSize
-                )
+          if (orderingUnit === 'CASE' && preferredSupplier.packSize) {
+            // When ordering by case, calculate how many cases needed
+            const casesNeeded = Math.ceil(
+              quantityNeeded / preferredSupplier.packSize
+            )
+            const minimumCases =
+              preferredSupplier.minimumOrderUnit === 'CASE'
+                ? preferredSupplier.minimumOrder
+                : Math.ceil(
+                    preferredSupplier.minimumOrder / preferredSupplier.packSize
+                  )
 
-          // Take the maximum of cases needed or minimum order
-          const casesToOrder = Math.max(casesNeeded, minimumCases)
-          suggestedQuantity = casesToOrder // Store as cases
-          unitCost =
-            preferredSupplier.costPerCase ||
-            preferredSupplier.costPerUnit * preferredSupplier.packSize
-        } else {
-          // When ordering by unit, round up to avoid decimals
-          const minimumUnits =
-            preferredSupplier.minimumOrderUnit === 'UNIT'
-              ? preferredSupplier.minimumOrder
-              : preferredSupplier.minimumOrder *
-                (preferredSupplier.packSize || 1)
+            // Take the maximum of cases needed or minimum order
+            const casesToOrder = Math.max(casesNeeded, minimumCases)
+            suggestedQuantity = casesToOrder // Store as cases
+            unitCost =
+              preferredSupplier.costPerCase ||
+              preferredSupplier.costPerUnit * preferredSupplier.packSize
+          } else {
+            // When ordering by unit, round up to avoid decimals
+            const minimumUnits =
+              preferredSupplier.minimumOrderUnit === 'UNIT'
+                ? preferredSupplier.minimumOrder
+                : preferredSupplier.minimumOrder *
+                  (preferredSupplier.packSize || 1)
 
-          suggestedQuantity = Math.ceil(Math.max(quantityNeeded, minimumUnits))
-          unitCost = preferredSupplier.costPerUnit
+            suggestedQuantity = Math.ceil(
+              Math.max(quantityNeeded, minimumUnits)
+            )
+            unitCost = preferredSupplier.costPerUnit
 
-          // If there's a pack size, round up to full packs
-          if (preferredSupplier.packSize && preferredSupplier.packSize > 1) {
-            suggestedQuantity =
-              Math.ceil(suggestedQuantity / preferredSupplier.packSize) *
-              preferredSupplier.packSize
+            // If there's a pack size, round up to full packs
+            if (preferredSupplier.packSize && preferredSupplier.packSize > 1) {
+              suggestedQuantity =
+                Math.ceil(suggestedQuantity / preferredSupplier.packSize) *
+                preferredSupplier.packSize
+            }
           }
-        }
 
-        const estimatedCost = suggestedQuantity * unitCost
+          const estimatedCost = suggestedQuantity * unitCost
 
-        acc[supplierId].items.push({
-          product: item.product,
-          currentQuantity: item.currentQuantity,
-          minimumQuantity: item.minimumQuantity,
-          suggestedQuantity,
-          unitCost,
-          estimatedCost,
-          location: item.location,
-          orderingUnit,
-          packSize: preferredSupplier.packSize,
-        })
-        acc[supplierId].totalEstimatedCost += estimatedCost
+          acc[supplierId].items.push({
+            product: item.product,
+            currentQuantity: item.currentQuantity,
+            minimumQuantity: item.minimumQuantity,
+            suggestedQuantity,
+            unitCost,
+            estimatedCost,
+            location: item.location,
+            orderingUnit,
+            packSize: preferredSupplier.packSize,
+          })
+          acc[supplierId].totalEstimatedCost += estimatedCost
 
-        return acc
-      }, {})
+          return acc
+        },
+        {}
+      )
 
       return {
         success: true,

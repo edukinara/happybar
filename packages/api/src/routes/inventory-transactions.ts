@@ -333,24 +333,23 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
 
     // 4. Get receipts/purchases (if we have a purchases table)
     // For now, we'll check if there are any positive adjustments marked as receipts
-    const receipts = await fastify.prisma.stockMovement.findMany({
+    const receipts = await fastify.prisma.orderItem.findMany({
       where: {
-        organizationId,
+        order: {
+          organizationId,
+          status: 'RECEIVED',
+        },
         productId,
-        type: MovementType.ADJUSTMENT_IN || MovementType.ADJUSTMENT_OUT,
-        quantity: { gt: 0 },
-        reason: { in: ['RECEIPT', 'PURCHASE', 'DELIVERY'] },
-        OR: locationId
-          ? [{ fromLocationId: locationId }, { toLocationId: locationId }]
-          : undefined,
       },
       include: {
-        fromLocation: true,
-        user: {
-          select: { id: true, name: true, email: true },
+        order: {
+          include: {
+            supplier: true,
+          },
         },
+        product: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       take: Number(limit),
       skip: Number(offset),
     })
@@ -362,15 +361,12 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
         type: 'receipt',
         date: receipt.createdAt,
         productId: receipt.productId,
-        locationId: receipt.fromLocationId,
-        quantity: receipt.quantity,
-        reference: receipt.id,
-        notes: receipt.notes || 'Inventory receipt',
-        performedBy: receipt.user?.name || 'Unknown',
-        metadata: {
-          reason: receipt.reason,
-          status: receipt.status,
-        },
+        quantity:
+          receipt.orderingUnit === 'CASE'
+            ? receipt.quantityReceived * receipt.product.caseSize
+            : receipt.quantityReceived,
+        reference: receipt.order.orderNumber,
+        notes: receipt.order.notes,
       })
     })
 

@@ -9,6 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -41,7 +49,6 @@ import { toast } from 'sonner'
 const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   DRAFT: 'bg-gray-100 text-gray-800',
   SENT: 'bg-blue-100 text-blue-800',
-  CONFIRMED: 'bg-green-100 text-green-800',
   PARTIALLY_RECEIVED: 'bg-yellow-100 text-yellow-800',
   RECEIVED: 'bg-green-100 text-green-800',
   CANCELLED: 'bg-red-100 text-red-800',
@@ -56,6 +63,13 @@ export default function OrderDetailPage() {
   const [updating, setUpdating] = useState(false)
   const [editing, setEditing] = useState(false)
   const [notes, setNotes] = useState('')
+  const [receivingMode, setReceivingMode] = useState(false)
+  const [receivedQuantities, setReceivedQuantities] = useState<
+    Record<string, number>
+  >({})
+  const [receivedUnits, setReceivedUnits] = useState<
+    Record<string, 'UNIT' | 'CASE'>
+  >({})
 
   useEffect(() => {
     loadOrder()
@@ -67,6 +81,16 @@ export default function OrderDetailPage() {
       const response = await ordersApi.getOrder(orderId)
       setOrder(response.data)
       setNotes(response.data.notes || '')
+
+      // Initialize received quantities and units
+      const quantities: Record<string, number> = {}
+      const units: Record<string, 'UNIT' | 'CASE'> = {}
+      response.data.items.forEach((item) => {
+        quantities[item.id] = item.quantityReceived
+        units[item.id] = item.orderingUnit // Default to same unit as ordered
+      })
+      setReceivedQuantities(quantities)
+      setReceivedUnits(units)
     } catch (error) {
       console.error('Failed to load order:', error)
       toast.error('Failed to load order')
@@ -113,6 +137,68 @@ export default function OrderDetailPage() {
     }
   }
 
+  const convertToOrderingUnit = (
+    quantity: number,
+    fromUnit: 'UNIT' | 'CASE',
+    toUnit: 'UNIT' | 'CASE',
+    caseSize: number
+  ) => {
+    if (fromUnit === toUnit) return quantity
+
+    if (fromUnit === 'UNIT' && toUnit === 'CASE') {
+      return quantity / caseSize
+    } else if (fromUnit === 'CASE' && toUnit === 'UNIT') {
+      return quantity * caseSize
+    }
+
+    return quantity
+  }
+
+  const markOrderAsReceived = async () => {
+    if (!order) return
+
+    try {
+      setUpdating(true)
+
+      // Build items array with updated received quantities, converted to ordering unit
+      const items = order.items.map((item) => {
+        const receivedQty = receivedQuantities[item.id] || 0
+        const receivedUnit = receivedUnits[item.id] || item.orderingUnit
+
+        // Convert received quantity to match the ordering unit for storage
+        const convertedQuantity = convertToOrderingUnit(
+          receivedQty,
+          receivedUnit,
+          item.orderingUnit,
+          item.product.caseSize
+        )
+
+        return {
+          id: item.id,
+          productId: item.productId,
+          quantityOrdered: item.quantityOrdered,
+          quantityReceived: convertedQuantity,
+          unitCost: item.unitCost,
+        }
+      })
+
+      // Update order with received quantities and mark as RECEIVED
+      await ordersApi.updateOrder(order.id, {
+        items,
+        status: 'RECEIVED' as OrderStatus,
+        receivedDate: new Date().toISOString(),
+      })
+
+      toast.success('Order marked as received and inventory updated')
+      setReceivingMode(false)
+      loadOrder()
+    } catch (_error) {
+      toast.error('Failed to mark order as received')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   const getStatusActions = () => {
     if (!order) return []
 
@@ -135,28 +221,8 @@ export default function OrderDetailPage() {
         break
 
       case 'SENT':
-        actions.push({
-          label: 'Confirm',
-          icon: Check,
-          action: () => updateOrderStatus('CONFIRMED'),
-          variant: 'default' as const,
-        })
-        actions.push({
-          label: 'Cancel',
-          icon: X,
-          action: () => updateOrderStatus('CANCELLED'),
-          variant: 'destructive' as const,
-        })
-        break
-
-      case 'CONFIRMED':
       case 'PARTIALLY_RECEIVED':
-        actions.push({
-          label: 'Mark as Received',
-          icon: Package,
-          action: () => updateOrderStatus('RECEIVED'),
-          variant: 'default' as const,
-        })
+        // No action buttons for these statuses - handled by the receiving mode
         break
     }
 
@@ -229,24 +295,84 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Order Details */}
-      <div className='grid gap-6 lg:grid-cols-3'>
-        <div className='lg:col-span-2 space-y-6'>
+      <div className='grid gap-6 lg:grid-cols-7'>
+        <div className='lg:col-span-5 space-y-6'>
           {/* Order Items */}
           <Card>
             <CardHeader>
-              <CardTitle>Order Items</CardTitle>
-              <CardDescription>
-                {order.items.length} item{order.items.length === 1 ? '' : 's'}{' '}
-                in this order
-              </CardDescription>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle>Order Items</CardTitle>
+                  <CardDescription>
+                    {order.items.length} item
+                    {order.items.length === 1 ? '' : 's'} in this order
+                  </CardDescription>
+                </div>
+                {(order.status === 'SENT' ||
+                  order.status === 'PARTIALLY_RECEIVED') &&
+                  (receivingMode ? (
+                    <div className='flex gap-2'>
+                      <Button
+                        onClick={markOrderAsReceived}
+                        disabled={updating}
+                        variant='default'
+                      >
+                        <Check className='size-4 mr-2' />
+                        Mark as Received
+                      </Button>
+                      <Button
+                        variant='outline'
+                        onClick={() => {
+                          setReceivingMode(false)
+                          // Reset quantities and units to current values
+                          const quantities: Record<string, number> = {}
+                          const units: Record<string, 'UNIT' | 'CASE'> = {}
+                          order.items.forEach((item) => {
+                            quantities[item.id] = item.quantityReceived
+                            units[item.id] = item.orderingUnit
+                          })
+                          setReceivedQuantities(quantities)
+                          setReceivedUnits(units)
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        // Default received quantities to ordered quantities
+                        const quantities: Record<string, number> = {}
+                        const units: Record<string, 'UNIT' | 'CASE'> = {}
+                        order.items.forEach((item) => {
+                          // If already partially received, default to ordered quantity
+                          quantities[item.id] =
+                            item.quantityReceived > 0
+                              ? item.quantityReceived
+                              : item.quantityOrdered
+                          units[item.id] = item.orderingUnit
+                        })
+                        setReceivedQuantities(quantities)
+                        setReceivedUnits(units)
+                        setReceivingMode(true)
+                      }}
+                      disabled={updating}
+                      variant='default'
+                    >
+                      <Package className='size-4 mr-2' />
+                      Update Received Quantities
+                    </Button>
+                  ))}
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Product</TableHead>
-                    <TableHead>Quantity Ordered</TableHead>
-                    <TableHead>Quantity Received</TableHead>
+                    <TableHead>Ordered</TableHead>
+                    <TableHead>Received</TableHead>
+                    <TableHead>Ordered Unit</TableHead>
                     <TableHead>Unit Cost</TableHead>
                     <TableHead>Total Cost</TableHead>
                   </TableRow>
@@ -265,15 +391,65 @@ export default function OrderDetailPage() {
                       </TableCell>
                       <TableCell>{item.quantityOrdered.toFixed(2)}</TableCell>
                       <TableCell>
-                        <span
-                          className={
-                            item.quantityReceived < item.quantityOrdered
-                              ? 'text-orange-600'
-                              : 'text-green-600'
-                          }
-                        >
-                          {item.quantityReceived.toFixed(2)}
-                        </span>
+                        {receivingMode &&
+                        (order.status === 'SENT' ||
+                          order.status === 'PARTIALLY_RECEIVED') ? (
+                          <div className='flex items-center gap-2'>
+                            <Input
+                              type='number'
+                              min='0'
+                              step='0.01'
+                              value={receivedQuantities[item.id] || 0}
+                              onChange={(e) => {
+                                const value = Math.max(
+                                  0,
+                                  parseFloat(e.target.value) || 0
+                                )
+                                setReceivedQuantities((prev) => ({
+                                  ...prev,
+                                  [item.id]: value,
+                                }))
+                              }}
+                              className='w-20 h-8'
+                            />
+                            <Select
+                              value={
+                                receivedUnits[item.id] || item.orderingUnit
+                              }
+                              onValueChange={(value: 'UNIT' | 'CASE') => {
+                                setReceivedUnits((prev) => ({
+                                  ...prev,
+                                  [item.id]: value,
+                                }))
+                              }}
+                            >
+                              <SelectTrigger className='w-22 h-8'>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value='UNIT'>Units</SelectItem>
+                                <SelectItem value='CASE'>Cases</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : (
+                          <span
+                            className={
+                              item.quantityReceived < item.quantityOrdered
+                                ? 'text-orange-600'
+                                : item.quantityReceived === item.quantityOrdered
+                                  ? 'text-green-600'
+                                  : 'text-gray-600'
+                            }
+                          >
+                            {item.quantityReceived.toFixed(2)}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant='outline' className='text-xs'>
+                          {item.orderingUnit === 'CASE' ? 'Case' : 'Unit'}
+                        </Badge>
                       </TableCell>
                       <TableCell>${item.unitCost.toFixed(2)}</TableCell>
                       <TableCell>${item.totalCost.toFixed(2)}</TableCell>
@@ -348,7 +524,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Sidebar */}
-        <div className='space-y-6'>
+        <div className='space-y-6 lg:col-span-2'>
           {/* Supplier Info */}
           <Card>
             <CardHeader>
