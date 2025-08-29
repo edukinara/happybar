@@ -10,7 +10,8 @@
         ".next/**",
         "!.next/cache/**",
         "dist/**"
-      ]
+      ],
+      "env": ["CRON_SECRET"]
     },
     "dev": {
       "cache": false,

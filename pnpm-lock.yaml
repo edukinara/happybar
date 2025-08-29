@@ -326,6 +326,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@happy-bar/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@happy-bar/types':
         specifier: workspace:*
         version: link:../../packages/types
