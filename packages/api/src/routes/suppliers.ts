@@ -1,11 +1,10 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
+import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from 'fastify'
 import {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify'
-import { authMiddleware, requirePermission, requireAnyPermission } from '../middleware/auth-simple'
+  authMiddleware,
+  requireAnyPermission,
+  requirePermission,
+} from '../middleware/auth-simple'
 
 // Helper to get organization ID or throw error
 function getOrganizationId(request: FastifyRequest): string {
@@ -70,7 +69,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.get(
     '/products',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'read')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'read')],
     },
     async (request, reply) => {
       const { productId } = request.query as { productId?: string }
@@ -125,10 +124,13 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.get(
     '/',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'read')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'read')],
     },
     async (request, reply) => {
-      const { active, search } = request.query as { active?: string; search?: string }
+      const { active, search } = request.query as {
+        active?: string
+        search?: string
+      }
       const organizationId = getOrganizationId(request)
 
       // Build where clause
@@ -152,10 +154,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         where,
         include: {
           contacts: {
-            orderBy: [
-              { isPrimary: 'desc' },
-              { name: 'asc' }
-            ],
+            orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
           },
           products: {
             include: {
@@ -185,7 +184,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.get(
     '/:id',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'read')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'read')],
     },
     async (request, reply) => {
       const { id } = request.params as any
@@ -198,10 +197,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         },
         include: {
           contacts: {
-            orderBy: [
-              { isPrimary: 'desc' },
-              { name: 'asc' }
-            ],
+            orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
           },
           products: {
             include: {
@@ -246,15 +242,15 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.post(
     '/',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'write')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'write')],
     },
     async (request, reply) => {
-      const { 
-        name, 
+      const {
+        name,
         accountNumber,
-        contactEmail, 
-        contactPhone, 
-        address, 
+        contactEmail,
+        contactPhone,
+        address,
         terms,
         orderCutoffTime,
         orderCutoffDays,
@@ -263,7 +259,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         deliveryTimeEnd,
         minimumOrderValue,
         deliveryFee,
-        contacts
+        contacts,
       } = request.body as CreateSupplierRequest
       const organizationId = getOrganizationId(request)
 
@@ -293,8 +289,6 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           organizationId,
           name,
           accountNumber,
-          contactEmail,
-          contactPhone,
           address,
           terms,
           orderCutoffTime,
@@ -304,22 +298,21 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           deliveryTimeEnd,
           minimumOrderValue,
           deliveryFee,
-          contacts: contacts ? {
-            create: contacts.map(contact => ({
-              name: contact.name,
-              title: contact.title,
-              email: contact.email,
-              phone: contact.phone,
-              isPrimary: contact.isPrimary || false,
-            }))
-          } : undefined,
+          contacts: contacts
+            ? {
+                create: contacts.map((contact) => ({
+                  name: contact.name,
+                  title: contact.title,
+                  email: contact.email,
+                  phone: contact.phone,
+                  isPrimary: contact.isPrimary || false,
+                })),
+              }
+            : undefined,
         },
         include: {
           contacts: {
-            orderBy: [
-              { isPrimary: 'desc' },
-              { name: 'asc' }
-            ],
+            orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
           },
           _count: {
             select: {
@@ -339,17 +332,17 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.put(
     '/:id',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'write')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'write')],
     },
     async (request, reply) => {
       const { id } = request.params as any
-      const { 
-        name, 
+      const {
+        name,
         accountNumber,
-        contactEmail, 
-        contactPhone, 
-        address, 
-        terms, 
+        contactEmail,
+        contactPhone,
+        address,
+        terms,
         isActive,
         orderCutoffTime,
         orderCutoffDays,
@@ -358,7 +351,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         deliveryTimeEnd,
         minimumOrderValue,
         deliveryFee,
-        contacts
+        contacts,
       } = request.body as UpdateSupplierRequest
       const organizationId = getOrganizationId(request)
 
@@ -397,15 +390,13 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         const existingContacts = await fastify.prisma.supplierContact.findMany({
           where: { supplierId: id },
         })
-        
-        const contactIdsToKeep = contacts
-          .filter(c => c.id)
-          .map(c => c.id!)
-        
+
+        const contactIdsToKeep = contacts.filter((c) => c.id).map((c) => c.id!)
+
         const contactsToDelete = existingContacts
-          .filter(ec => !contactIdsToKeep.includes(ec.id))
-          .map(ec => ec.id)
-        
+          .filter((ec) => !contactIdsToKeep.includes(ec.id))
+          .map((ec) => ec.id)
+
         if (contactsToDelete.length > 0) {
           await fastify.prisma.supplierContact.deleteMany({
             where: {
@@ -414,7 +405,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
             },
           })
         }
-        
+
         // Update or create contacts
         for (const contact of contacts) {
           if (contact.id) {
@@ -450,8 +441,6 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         data: {
           name,
           accountNumber,
-          contactEmail,
-          contactPhone,
           address,
           terms,
           isActive,
@@ -465,10 +454,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         },
         include: {
           contacts: {
-            orderBy: [
-              { isPrimary: 'desc' },
-              { name: 'asc' }
-            ],
+            orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
           },
           _count: {
             select: {
@@ -488,7 +474,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.delete(
     '/:id',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'delete')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'delete')],
     },
     async (request, reply) => {
       const { id } = request.params as any
@@ -529,7 +515,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.get(
     '/:id/products',
     {
-      preHandler: [authMiddleware, requirePermission('suppliers', 'catalog')]
+      preHandler: [authMiddleware, requirePermission('suppliers', 'catalog')],
     },
     async (request, reply) => {
       const { id } = request.params as any
@@ -567,7 +553,10 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.post(
     '/:id/products',
     {
-      preHandler: [authMiddleware, requireAnyPermission(['suppliers.catalog', 'suppliers.write'])]
+      preHandler: [
+        authMiddleware,
+        requireAnyPermission(['suppliers.catalog', 'suppliers.write']),
+      ],
     },
     async (request, reply) => {
       const { id } = request.params as any
@@ -649,7 +638,10 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.put(
     '/:supplierId/products/:productId',
     {
-      preHandler: [authMiddleware, requireAnyPermission(['suppliers.catalog', 'suppliers.pricing'])]
+      preHandler: [
+        authMiddleware,
+        requireAnyPermission(['suppliers.catalog', 'suppliers.pricing']),
+      ],
     },
     async (request, reply) => {
       const { supplierId, productId } = request.params as any
@@ -687,7 +679,9 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           ...(supplierSku !== undefined && { supplierSku }),
           ...(orderingUnit !== undefined && { orderingUnit }),
           ...(costPerUnit !== undefined && { costPerUnit }),
-          ...(costPerCase !== undefined && { costPerCase: costPerCase || null }),
+          ...(costPerCase !== undefined && {
+            costPerCase: costPerCase || null,
+          }),
           ...(minimumOrder !== undefined && { minimumOrder }),
           ...(minimumOrderUnit !== undefined && { minimumOrderUnit }),
           ...(packSize !== undefined && { packSize: packSize || null }),
@@ -711,7 +705,10 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
   fastify.delete(
     '/:supplierId/products/:productId',
     {
-      preHandler: [authMiddleware, requireAnyPermission(['suppliers.catalog', 'suppliers.delete'])]
+      preHandler: [
+        authMiddleware,
+        requireAnyPermission(['suppliers.catalog', 'suppliers.delete']),
+      ],
     },
     async (request, reply) => {
       const { supplierId, productId } = request.params as any
