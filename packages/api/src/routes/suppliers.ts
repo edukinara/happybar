@@ -17,6 +17,7 @@ function getOrganizationId(request: FastifyRequest): string {
 
 interface CreateSupplierRequest {
   name: string
+  accountNumber?: string
   contactEmail?: string
   contactPhone?: string
   address?: string
@@ -28,10 +29,18 @@ interface CreateSupplierRequest {
   deliveryTimeEnd?: string
   minimumOrderValue?: number
   deliveryFee?: number
+  contacts?: {
+    name: string
+    title?: string
+    email?: string
+    phone?: string
+    isPrimary?: boolean
+  }[]
 }
 
 interface UpdateSupplierRequest {
   name?: string
+  accountNumber?: string
   contactEmail?: string
   contactPhone?: string
   address?: string
@@ -44,6 +53,14 @@ interface UpdateSupplierRequest {
   deliveryTimeEnd?: string
   minimumOrderValue?: number
   deliveryFee?: number
+  contacts?: {
+    id?: string
+    name: string
+    title?: string
+    email?: string
+    phone?: string
+    isPrimary?: boolean
+  }[]
 }
 
 export const suppliersRoutes: FastifyPluginAsync = async function (
@@ -134,6 +151,12 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       const suppliers = await fastify.prisma.supplier.findMany({
         where,
         include: {
+          contacts: {
+            orderBy: [
+              { isPrimary: 'desc' },
+              { name: 'asc' }
+            ],
+          },
           products: {
             include: {
               product: {
@@ -147,6 +170,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
             select: {
               orders: true,
               products: true,
+              contacts: true,
             },
           },
         },
@@ -173,6 +197,12 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           organizationId,
         },
         include: {
+          contacts: {
+            orderBy: [
+              { isPrimary: 'desc' },
+              { name: 'asc' }
+            ],
+          },
           products: {
             include: {
               product: {
@@ -197,6 +227,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
             select: {
               orders: true,
               products: true,
+              contacts: true,
             },
           },
         },
@@ -220,6 +251,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
     async (request, reply) => {
       const { 
         name, 
+        accountNumber,
         contactEmail, 
         contactPhone, 
         address, 
@@ -230,8 +262,9 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         deliveryTimeStart,
         deliveryTimeEnd,
         minimumOrderValue,
-        deliveryFee
-      } = request.body as any
+        deliveryFee,
+        contacts
+      } = request.body as CreateSupplierRequest
       const organizationId = getOrganizationId(request)
 
       if (!name) {
@@ -259,6 +292,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         data: {
           organizationId,
           name,
+          accountNumber,
           contactEmail,
           contactPhone,
           address,
@@ -270,12 +304,28 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           deliveryTimeEnd,
           minimumOrderValue,
           deliveryFee,
+          contacts: contacts ? {
+            create: contacts.map(contact => ({
+              name: contact.name,
+              title: contact.title,
+              email: contact.email,
+              phone: contact.phone,
+              isPrimary: contact.isPrimary || false,
+            }))
+          } : undefined,
         },
         include: {
+          contacts: {
+            orderBy: [
+              { isPrimary: 'desc' },
+              { name: 'asc' }
+            ],
+          },
           _count: {
             select: {
               orders: true,
               products: true,
+              contacts: true,
             },
           },
         },
@@ -295,6 +345,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       const { id } = request.params as any
       const { 
         name, 
+        accountNumber,
         contactEmail, 
         contactPhone, 
         address, 
@@ -306,8 +357,9 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         deliveryTimeStart,
         deliveryTimeEnd,
         minimumOrderValue,
-        deliveryFee
-      } = request.body as any
+        deliveryFee,
+        contacts
+      } = request.body as UpdateSupplierRequest
       const organizationId = getOrganizationId(request)
 
       // Verify supplier exists and belongs to organization
@@ -339,10 +391,65 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         }
       }
 
+      // Handle contacts update if provided
+      if (contacts) {
+        // Delete existing contacts that are not in the update
+        const existingContacts = await fastify.prisma.supplierContact.findMany({
+          where: { supplierId: id },
+        })
+        
+        const contactIdsToKeep = contacts
+          .filter(c => c.id)
+          .map(c => c.id!)
+        
+        const contactsToDelete = existingContacts
+          .filter(ec => !contactIdsToKeep.includes(ec.id))
+          .map(ec => ec.id)
+        
+        if (contactsToDelete.length > 0) {
+          await fastify.prisma.supplierContact.deleteMany({
+            where: {
+              id: { in: contactsToDelete },
+              supplierId: id,
+            },
+          })
+        }
+        
+        // Update or create contacts
+        for (const contact of contacts) {
+          if (contact.id) {
+            // Update existing contact
+            await fastify.prisma.supplierContact.update({
+              where: { id: contact.id },
+              data: {
+                name: contact.name,
+                title: contact.title,
+                email: contact.email,
+                phone: contact.phone,
+                isPrimary: contact.isPrimary || false,
+              },
+            })
+          } else {
+            // Create new contact
+            await fastify.prisma.supplierContact.create({
+              data: {
+                supplierId: id,
+                name: contact.name,
+                title: contact.title,
+                email: contact.email,
+                phone: contact.phone,
+                isPrimary: contact.isPrimary || false,
+              },
+            })
+          }
+        }
+      }
+
       const supplier = await fastify.prisma.supplier.update({
         where: { id },
         data: {
           name,
+          accountNumber,
           contactEmail,
           contactPhone,
           address,
@@ -357,10 +464,17 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           deliveryFee,
         },
         include: {
+          contacts: {
+            orderBy: [
+              { isPrimary: 'desc' },
+              { name: 'asc' }
+            ],
+          },
           _count: {
             select: {
               orders: true,
               products: true,
+              contacts: true,
             },
           },
         },

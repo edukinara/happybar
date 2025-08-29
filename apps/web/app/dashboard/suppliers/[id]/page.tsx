@@ -74,15 +74,7 @@ interface Product {
   }
 }
 
-const DAYS_OF_WEEK = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-]
+const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function SupplierDetailPage() {
   const prms = useParams()
@@ -313,6 +305,8 @@ export default function SupplierDetailPage() {
     ? editingProduct.product
     : allProducts.find((p) => p.id === selectedProductId)
 
+  const primaryContact = supplier.contacts?.find((c) => c.isPrimary)
+
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -360,16 +354,16 @@ export default function SupplierDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {supplier.contactEmail ? (
+              {primaryContact ? (
                 <div className='flex items-center gap-2'>
                   <Mail className='h-4 w-4 text-muted-foreground' />
-                  <span className='text-sm'>{supplier.contactEmail}</span>
+                  <span className='text-sm'>{primaryContact.email}</span>
                 </div>
               ) : null}
-              {supplier.contactPhone ? (
+              {primaryContact ? (
                 <div className='flex items-center gap-2'>
                   <Phone className='h-4 w-4 text-muted-foreground' />
-                  <span className='text-sm'>{supplier.contactPhone}</span>
+                  <span className='text-sm'>{primaryContact.phone}</span>
                 </div>
               ) : null}
               {supplier.address ? (

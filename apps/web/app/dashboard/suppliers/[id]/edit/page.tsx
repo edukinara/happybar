@@ -22,10 +22,14 @@ import {
   ArrowLeft,
   Building2,
   Clock,
-  DollarSign,
+  Mail,
+  Phone,
   RefreshCw,
   Save,
+  Trash2,
   Truck,
+  User,
+  UserPlus,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -33,14 +37,23 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 const DAYS_OF_WEEK = [
-  { id: 0, label: 'Sunday' },
-  { id: 1, label: 'Monday' },
-  { id: 2, label: 'Tuesday' },
-  { id: 3, label: 'Wednesday' },
-  { id: 4, label: 'Thursday' },
-  { id: 5, label: 'Friday' },
-  { id: 6, label: 'Saturday' },
+  { id: 0, label: 'Sun' },
+  { id: 1, label: 'Mon' },
+  { id: 2, label: 'Tue' },
+  { id: 3, label: 'Wed' },
+  { id: 4, label: 'Thu' },
+  { id: 5, label: 'Fri' },
+  { id: 6, label: 'Sat' },
 ]
+
+interface ContactFormData {
+  id?: string
+  name: string
+  title: string
+  email: string
+  phone: string
+  isPrimary: boolean
+}
 
 export default function EditSupplierPage() {
   const params = useParams()
@@ -49,10 +62,10 @@ export default function EditSupplierPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [supplier, setSupplier] = useState<Supplier | null>(null)
+  const [contacts, setContacts] = useState<ContactFormData[]>([])
   const [formData, setFormData] = useState({
     name: '',
-    contactEmail: '',
-    contactPhone: '',
+    accountNumber: '',
     address: '',
     terms: '',
     isActive: true,
@@ -76,8 +89,7 @@ export default function EditSupplierPage() {
       setSupplier(supplier)
       setFormData({
         name: supplier.name,
-        contactEmail: supplier.contactEmail || '',
-        contactPhone: supplier.contactPhone || '',
+        accountNumber: supplier.accountNumber || '',
         address: supplier.address || '',
         terms: supplier.terms || '',
         isActive: supplier.isActive,
@@ -89,6 +101,20 @@ export default function EditSupplierPage() {
         minimumOrderValue: supplier.minimumOrderValue?.toString() || '',
         deliveryFee: supplier.deliveryFee?.toString() || '',
       })
+
+      // Set contacts
+      if (supplier.contacts) {
+        setContacts(
+          supplier.contacts.map((c) => ({
+            id: c.id,
+            name: c.name,
+            title: c.title || '',
+            email: c.email || '',
+            phone: c.phone || '',
+            isPrimary: c.isPrimary,
+          }))
+        )
+      }
     } catch (error) {
       console.error('Failed to load supplier:', error)
       toast.error('Failed to load supplier')
@@ -106,6 +132,14 @@ export default function EditSupplierPage() {
       return
     }
 
+    // Validate contacts
+    for (const contact of contacts) {
+      if (!contact.name.trim()) {
+        toast.error('Contact name is required for all contacts')
+        return
+      }
+    }
+
     try {
       setSaving(true)
 
@@ -120,10 +154,17 @@ export default function EditSupplierPage() {
         orderCutoffTime: formData.orderCutoffTime || undefined,
         deliveryTimeStart: formData.deliveryTimeStart || undefined,
         deliveryTimeEnd: formData.deliveryTimeEnd || undefined,
-        contactEmail: formData.contactEmail || undefined,
-        contactPhone: formData.contactPhone || undefined,
+        accountNumber: formData.accountNumber || undefined,
         address: formData.address || undefined,
         terms: formData.terms || undefined,
+        contacts: contacts.map((c) => ({
+          id: c.id,
+          name: c.name,
+          title: c.title || undefined,
+          email: c.email || undefined,
+          phone: c.phone || undefined,
+          isPrimary: c.isPrimary,
+        })),
       }
 
       await suppliersApi.updateSupplier(supplierId, payload)
@@ -137,6 +178,47 @@ export default function EditSupplierPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const addContact = () => {
+    setContacts([
+      ...contacts,
+      {
+        name: '',
+        title: '',
+        email: '',
+        phone: '',
+        isPrimary: contacts.length === 0,
+      },
+    ])
+  }
+
+  const removeContact = (index: number) => {
+    const newContacts = contacts.filter((_, i) => i !== index)
+    // If we removed the primary contact, make the first one primary
+    if (contacts[index]?.isPrimary && newContacts?.[0]) {
+      newContacts[0].isPrimary = true
+    }
+    setContacts(newContacts)
+  }
+
+  const updateContact = (
+    index: number,
+    field: keyof ContactFormData,
+    value: string | boolean
+  ) => {
+    const newContacts = [...contacts]
+
+    // If setting as primary, unset all others
+    if (field === 'isPrimary' && value === true) {
+      newContacts.forEach((c, i) => {
+        c.isPrimary = i === index
+      })
+    } else {
+      ;(newContacts[index] as any)[field] = value
+    }
+
+    setContacts(newContacts)
   }
 
   const toggleDay = (
@@ -200,7 +282,7 @@ export default function EditSupplierPage() {
                 Basic Information
               </CardTitle>
               <CardDescription>
-                General supplier details and contact information
+                General supplier details and account information
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
@@ -217,48 +299,31 @@ export default function EditSupplierPage() {
                     required
                   />
                 </div>
-                <div className='flex items-center space-x-2 mt-6'>
-                  <Switch
-                    id='isActive'
-                    checked={formData.isActive}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({ ...prev, isActive: checked }))
+                <div className='space-y-2'>
+                  <Label htmlFor='accountNumber'>Account Number</Label>
+                  <Input
+                    id='accountNumber'
+                    value={formData.accountNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        accountNumber: e.target.value,
+                      }))
                     }
+                    placeholder='e.g., ACC-12345'
                   />
-                  <Label htmlFor='isActive'>Active Supplier</Label>
                 </div>
               </div>
 
-              <div className='grid gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='contactEmail'>Contact Email</Label>
-                  <Input
-                    id='contactEmail'
-                    type='email'
-                    value={formData.contactEmail}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        contactEmail: e.target.value,
-                      }))
-                    }
-                    placeholder='supplier@example.com'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='contactPhone'>Contact Phone</Label>
-                  <Input
-                    id='contactPhone'
-                    value={formData.contactPhone}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        contactPhone: e.target.value,
-                      }))
-                    }
-                    placeholder='+1 (555) 123-4567'
-                  />
-                </div>
+              <div className='flex items-center space-x-2'>
+                <Switch
+                  id='isActive'
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isActive: checked }))
+                  }
+                />
+                <Label htmlFor='isActive'>Active Supplier</Label>
               </div>
 
               <div className='space-y-2'>
@@ -272,8 +337,8 @@ export default function EditSupplierPage() {
                       address: e.target.value,
                     }))
                   }
-                  placeholder='123 Main St, City, State ZIP'
-                  rows={2}
+                  placeholder='123 Main St, City, State 12345'
+                  rows={3}
                 />
               </div>
 
@@ -285,25 +350,173 @@ export default function EditSupplierPage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, terms: e.target.value }))
                   }
-                  placeholder='e.g., Net 30, 2% discount for payment within 10 days'
+                  placeholder='e.g., Net 30, 2% discount if paid within 10 days'
                   rows={2}
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Order Schedule */}
+          {/* Contacts */}
+          <Card>
+            <CardHeader>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle className='flex items-center gap-2'>
+                    <User className='h-5 w-5' />
+                    Contacts
+                  </CardTitle>
+                  <CardDescription>
+                    Manage supplier contact persons
+                  </CardDescription>
+                </div>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={addContact}
+                >
+                  <UserPlus className='h-4 w-4 mr-2' />
+                  Add Contact
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {contacts.length === 0 ? (
+                <div className='text-center py-8 text-muted-foreground'>
+                  <User className='h-12 w-12 mx-auto mb-2 opacity-50' />
+                  <p>No contacts added yet</p>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    className='mt-2'
+                    onClick={addContact}
+                  >
+                    <UserPlus className='h-4 w-4 mr-2' />
+                    Add First Contact
+                  </Button>
+                </div>
+              ) : (
+                <div className='space-y-4'>
+                  {contacts.map((contact, index) => (
+                    <div
+                      key={index}
+                      className='border rounded-lg p-4 space-y-4'
+                    >
+                      <div className='flex items-start justify-between'>
+                        <div className='flex items-center gap-2'>
+                          <input
+                            type='radio'
+                            name='primaryContact'
+                            checked={contact.isPrimary}
+                            onChange={() =>
+                              updateContact(index, 'isPrimary', true)
+                            }
+                            className='mt-1'
+                          />
+                          <Label>Primary Contact</Label>
+                        </div>
+                        <Button
+                          type='button'
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => removeContact(index)}
+                        >
+                          <Trash2 className='h-4 w-4' />
+                        </Button>
+                      </div>
+
+                      <div className='grid gap-4 md:grid-cols-2'>
+                        <div className='space-y-2'>
+                          <Label>Name *</Label>
+                          <Input
+                            value={contact.name}
+                            onChange={(e) =>
+                              updateContact(index, 'name', e.target.value)
+                            }
+                            placeholder='Contact name'
+                            required
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label>Title</Label>
+                          <Input
+                            value={contact.title}
+                            onChange={(e) =>
+                              updateContact(index, 'title', e.target.value)
+                            }
+                            placeholder='e.g., Sales Manager'
+                          />
+                        </div>
+                      </div>
+
+                      <div className='grid gap-4 md:grid-cols-2'>
+                        <div className='space-y-2'>
+                          <Label className='flex items-center gap-2'>
+                            <Mail className='h-4 w-4' />
+                            Email
+                          </Label>
+                          <Input
+                            type='email'
+                            value={contact.email}
+                            onChange={(e) =>
+                              updateContact(index, 'email', e.target.value)
+                            }
+                            placeholder='contact@example.com'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label className='flex items-center gap-2'>
+                            <Phone className='h-4 w-4' />
+                            Phone
+                          </Label>
+                          <Input
+                            type='tel'
+                            value={contact.phone}
+                            onChange={(e) =>
+                              updateContact(index, 'phone', e.target.value)
+                            }
+                            placeholder='(555) 123-4567'
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Order Settings */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <Clock className='h-5 w-5' />
-                Order Schedule
+                Order Settings
               </CardTitle>
               <CardDescription>
-                Configure when orders should be placed with this supplier
+                Configure order cutoff times and schedules
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
+              <div className='grid gap-4 md:grid-cols-2'>
+                <div className='space-y-2'>
+                  <Label htmlFor='orderCutoffTime'>Order Cutoff Time</Label>
+                  <Input
+                    id='orderCutoffTime'
+                    type='time'
+                    value={formData.orderCutoffTime}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        orderCutoffTime: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
               <div className='space-y-2'>
                 <Label>Order Cutoff Days</Label>
                 <div className='flex flex-wrap gap-2'>
@@ -326,36 +539,18 @@ export default function EditSupplierPage() {
                   ))}
                 </div>
               </div>
-
-              <div className='space-y-2'>
-                <Label htmlFor='orderCutoffTime'>Order Cutoff Time</Label>
-                <Input
-                  id='orderCutoffTime'
-                  type='time'
-                  value={formData.orderCutoffTime}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      orderCutoffTime: e.target.value,
-                    }))
-                  }
-                />
-                <p className='text-sm text-muted-foreground'>
-                  Orders must be placed by this time on cutoff days
-                </p>
-              </div>
             </CardContent>
           </Card>
 
-          {/* Delivery Schedule */}
+          {/* Delivery Settings */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <Truck className='h-5 w-5' />
-                Delivery Schedule
+                Delivery Settings
               </CardTitle>
               <CardDescription>
-                Configure when this supplier delivers orders
+                Configure delivery schedules and requirements
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
@@ -384,7 +579,7 @@ export default function EditSupplierPage() {
 
               <div className='grid gap-4 md:grid-cols-2'>
                 <div className='space-y-2'>
-                  <Label htmlFor='deliveryTimeStart'>Delivery Time Start</Label>
+                  <Label htmlFor='deliveryTimeStart'>Delivery Start Time</Label>
                   <Input
                     id='deliveryTimeStart'
                     type='time'
@@ -398,7 +593,7 @@ export default function EditSupplierPage() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='deliveryTimeEnd'>Delivery Time End</Label>
+                  <Label htmlFor='deliveryTimeEnd'>Delivery End Time</Label>
                   <Input
                     id='deliveryTimeEnd'
                     type='time'
@@ -412,21 +607,7 @@ export default function EditSupplierPage() {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Order Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <DollarSign className='h-5 w-5' />
-                Order Requirements
-              </CardTitle>
-              <CardDescription>
-                Minimum order values and delivery fees
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
               <div className='grid gap-4 md:grid-cols-2'>
                 <div className='space-y-2'>
                   <Label htmlFor='minimumOrderValue'>
@@ -436,7 +617,6 @@ export default function EditSupplierPage() {
                     id='minimumOrderValue'
                     type='number'
                     step='0.01'
-                    min='0'
                     value={formData.minimumOrderValue}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -453,7 +633,6 @@ export default function EditSupplierPage() {
                     id='deliveryFee'
                     type='number'
                     step='0.01'
-                    min='0'
                     value={formData.deliveryFee}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -469,13 +648,31 @@ export default function EditSupplierPage() {
           </Card>
 
           {/* Actions */}
-          <div className='flex justify-end gap-4'>
-            <Button type='button' variant='outline' asChild>
-              <Link href={`/dashboard/suppliers/${supplierId}`}>Cancel</Link>
+          <div className='flex gap-2'>
+            <Button
+              type='submit'
+              disabled={
+                saving ||
+                !formData.name.trim() ||
+                !contacts?.[0]?.email ||
+                !contacts?.[0]?.name
+              }
+              className='flex items-center gap-2'
+            >
+              {saving ? (
+                <>
+                  <RefreshCw className='h-4 w-4 animate-spin' />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className='h-4 w-4' />
+                  Save Changes
+                </>
+              )}
             </Button>
-            <Button type='submit' disabled={saving}>
-              <Save className='h-4 w-4 mr-2' />
-              {saving ? 'Saving...' : 'Save Changes'}
+            <Button variant='outline' asChild>
+              <Link href={`/dashboard/suppliers/${supplierId}`}>Cancel</Link>
             </Button>
           </div>
         </div>

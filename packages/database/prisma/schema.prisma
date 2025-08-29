@@ -173,8 +173,7 @@ model Supplier {
   id                String            @id @default(cuid())
   organizationId    String
   name              String
-  contactEmail      String?
-  contactPhone      String?
+  accountNumber     String?           // Account number with the supplier
   address           String?
   terms             String?
   isActive          Boolean           @default(true)
@@ -188,12 +187,29 @@ model Supplier {
   deliveryFee       Float?            @default(0) // Delivery fee
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+  contacts          SupplierContact[] // Multiple contacts
   orders            Order[]
   products          ProductSupplier[]
   organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, name])
   @@map("suppliers")
+}
+
+model SupplierContact {
+  id         String   @id @default(cuid())
+  supplierId String
+  name       String
+  title      String?
+  email      String?
+  phone      String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@map("supplier_contacts")
 }
 
 model ProductSupplier {

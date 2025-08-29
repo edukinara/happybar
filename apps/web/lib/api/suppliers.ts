@@ -7,12 +7,23 @@ interface APIRes<T> {
   message?: string
 }
 
+export interface SupplierContact {
+  id: string
+  supplierId: string
+  name: string
+  title?: string
+  email?: string
+  phone?: string
+  isPrimary: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Supplier {
   id: string
   organizationId: string
   name: string
-  contactEmail?: string
-  contactPhone?: string
+  accountNumber?: string
   address?: string
   terms?: string
   isActive: boolean
@@ -25,9 +36,11 @@ export interface Supplier {
   deliveryFee?: number
   createdAt: string
   updatedAt: string
+  contacts?: SupplierContact[]
   _count?: {
     orders: number
     products: number
+    contacts: number
   }
   products?: ProductSupplier[]
 }
@@ -66,6 +79,7 @@ export interface ProductSupplier {
 
 export interface CreateSupplierRequest {
   name: string
+  accountNumber?: string
   contactEmail?: string
   contactPhone?: string
   address?: string
@@ -78,10 +92,18 @@ export interface CreateSupplierRequest {
   deliveryTimeEnd?: string
   minimumOrderValue?: number
   deliveryFee?: number
+  contacts?: {
+    name: string
+    title?: string
+    email?: string
+    phone?: string
+    isPrimary?: boolean
+  }[]
 }
 
 export interface UpdateSupplierRequest {
   name?: string
+  accountNumber?: string
   contactEmail?: string
   contactPhone?: string
   address?: string
@@ -94,6 +116,14 @@ export interface UpdateSupplierRequest {
   deliveryTimeEnd?: string
   minimumOrderValue?: number
   deliveryFee?: number
+  contacts?: {
+    id?: string
+    name: string
+    title?: string
+    email?: string
+    phone?: string
+    isPrimary?: boolean
+  }[]
 }
 
 export interface CreateProductSupplierRequest {

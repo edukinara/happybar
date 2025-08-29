@@ -9,6 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -26,34 +32,27 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
+import { cn } from '@/lib/utils'
 import {
   Building2,
   Clock,
-  DollarSign,
   Edit,
   Eye,
   Mail,
-  MapPin,
+  MoreHorizontal,
   Package,
   Phone,
   Plus,
   RefreshCw,
   Search,
+  Trash2,
   Truck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-const DAYS_OF_WEEK = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-]
+const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -100,23 +99,13 @@ export default function SuppliersPage() {
   const filteredSuppliers = suppliers.filter(
     (supplier) =>
       supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contactPhone?.includes(searchTerm)
+      supplier.contacts?.some(
+        (contact) =>
+          contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          contact.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   )
-
-  const formatDeliverySchedule = (supplier: Supplier) => {
-    if (supplier.deliveryDays.length === 0) return 'Not specified'
-
-    const days = supplier.deliveryDays
-      .map((day) => DAYS_OF_WEEK[day])
-      .join(', ')
-    const timeWindow =
-      supplier.deliveryTimeStart && supplier.deliveryTimeEnd
-        ? ` (${supplier.deliveryTimeStart} - ${supplier.deliveryTimeEnd})`
-        : ''
-
-    return days + timeWindow
-  }
 
   const formatOrderCutoff = (supplier: Supplier) => {
     if (supplier.orderCutoffDays.length === 0) return 'Not specified'
@@ -300,8 +289,7 @@ export default function SuppliersPage() {
                   <TableRow>
                     <TableHead>Supplier</TableHead>
                     <TableHead>Contact Info</TableHead>
-                    <TableHead>Order Schedule</TableHead>
-                    <TableHead>Delivery Schedule</TableHead>
+                    <TableHead>Order Cut-Off</TableHead>
                     <TableHead>Products</TableHead>
                     <TableHead>Orders</TableHead>
                     <TableHead>Status</TableHead>
@@ -309,123 +297,122 @@ export default function SuppliersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSuppliers.map((supplier) => (
-                    <TableRow key={supplier.id} className='hover:bg-muted/50'>
-                      <TableCell>
-                        <div>
-                          <div className='font-medium'>{supplier.name}</div>
-                          {supplier.minimumOrderValue && (
-                            <div className='text-sm text-muted-foreground'>
-                              Min order: $
-                              {supplier.minimumOrderValue.toFixed(2)}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='space-y-1'>
-                          {supplier.contactEmail && (
-                            <div className='flex items-center gap-1 text-sm'>
-                              <Mail className='h-3 w-3 text-muted-foreground' />
-                              <span>{supplier.contactEmail}</span>
-                            </div>
-                          )}
-                          {supplier.contactPhone && (
-                            <div className='flex items-center gap-1 text-sm'>
-                              <Phone className='h-3 w-3 text-muted-foreground' />
-                              <span>{supplier.contactPhone}</span>
-                            </div>
-                          )}
-                          {supplier.address && (
-                            <div className='flex items-center gap-1 text-sm'>
-                              <MapPin className='h-3 w-3 text-muted-foreground' />
-                              <span className='truncate max-w-32'>
-                                {supplier.address}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='text-sm'>
-                          <div className='flex items-center gap-1'>
-                            <Clock className='h-3 w-3 text-muted-foreground' />
-                            <span>{formatOrderCutoff(supplier)}</span>
+                  {filteredSuppliers.map((supplier) => {
+                    const primaryContact = supplier.contacts?.find(
+                      (c) => c.isPrimary
+                    )
+                    return (
+                      <TableRow key={supplier.id} className='hover:bg-muted/50'>
+                        <TableCell>
+                          <div>
+                            <div className='font-medium'>{supplier.name}</div>
+                            {supplier.minimumOrderValue && (
+                              <div className='text-sm text-muted-foreground'>
+                                Min order: $
+                                {supplier.minimumOrderValue.toFixed(2)}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='text-sm'>
-                          <div className='flex items-center gap-1'>
-                            <Truck className='h-3 w-3 text-muted-foreground' />
-                            <span>{formatDeliverySchedule(supplier)}</span>
-                          </div>
-                          {supplier.deliveryFee && supplier.deliveryFee > 0 && (
-                            <div className='flex items-center gap-1 text-xs text-muted-foreground mt-1'>
-                              <DollarSign className='h-3 w-3' />
-                              <span>
-                                ${supplier.deliveryFee.toFixed(2)} delivery fee
-                              </span>
+                        </TableCell>
+                        <TableCell>
+                          {primaryContact ? (
+                            <div className='space-y-1'>
+                              <div className='flex items-center gap-1 text-sm'>
+                                <Mail className='h-3 w-3 text-muted-foreground' />
+                                <span>{primaryContact.email}</span>
+                              </div>
+                              <div className='flex items-center gap-1 text-sm'>
+                                <Phone className='h-3 w-3 text-muted-foreground' />
+                                <span>{primaryContact.phone}</span>
+                              </div>
                             </div>
+                          ) : (
+                            <p>--</p>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant='secondary'>
-                          {supplier._count?.products || 0} products
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className='text-sm'>
-                          {supplier._count?.orders || 0}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={supplier.isActive ? 'default' : 'secondary'}
-                          className={
-                            supplier.isActive
-                              ? 'bg-green-100 text-green-800'
-                              : ''
-                          }
-                        >
-                          {supplier.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className='flex items-center gap-2'>
-                          <Button size='sm' variant='outline' asChild>
-                            <Link href={`/dashboard/suppliers/${supplier.id}`}>
-                              <Eye className='h-4 w-4 mr-1' />
-                              View
-                            </Link>
-                          </Button>
-                          <Button size='sm' variant='outline' asChild>
-                            <Link
-                              href={`/dashboard/suppliers/${supplier.id}/edit`}
-                            >
-                              <Edit className='h-4 w-4 mr-1' />
-                              Edit
-                            </Link>
-                          </Button>
-                          <Button
-                            size='sm'
+                        </TableCell>
+                        <TableCell>
+                          <div className='text-sm'>
+                            <div className='flex items-center gap-1'>
+                              <Clock className='h-3 w-3 text-muted-foreground' />
+                              <span>{formatOrderCutoff(supplier)}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant='secondary'>
+                            {supplier._count?.products || 0}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className='text-sm'>
+                            {supplier._count?.orders || 0}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
                             variant={
-                              supplier.isActive ? 'destructive' : 'default'
+                              supplier.isActive ? 'default' : 'secondary'
                             }
-                            onClick={() =>
-                              toggleSupplierStatus(
-                                supplier.id,
-                                supplier.isActive
-                              )
+                            className={
+                              supplier.isActive
+                                ? 'bg-green-100 text-green-800'
+                                : ''
                             }
                           >
-                            {supplier.isActive ? 'Deactivate' : 'Activate'}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                            {supplier.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className='w-[50px]'>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant='ghost' size='sm'>
+                                <MoreHorizontal className='h-4 w-4' />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/dashboard/suppliers/${supplier.id}`}
+                                >
+                                  <Eye className='h-4 w-4 mr-1' />
+                                  View
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/dashboard/suppliers/${supplier.id}/edit`}
+                                >
+                                  <Edit className='h-4 w-4 mr-1' />
+                                  Edit
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className={
+                                  supplier.isActive
+                                    ? 'text-destructive'
+                                    : 'text-foreground'
+                                }
+                                onClick={() =>
+                                  toggleSupplierStatus(
+                                    supplier.id,
+                                    supplier.isActive
+                                  )
+                                }
+                              >
+                                <Trash2
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    supplier.isActive ? 'text-destructive' : ''
+                                  )}
+                                />
+                                {supplier.isActive ? 'Deactivate' : 'Activate'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             )}
