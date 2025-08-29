@@ -1,3 +1,4 @@
+import { Prisma } from '@happy-bar/database'
 import { AppError, ErrorCode } from '@happy-bar/types'
 import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from 'fastify'
 import {
@@ -17,8 +18,6 @@ function getOrganizationId(request: FastifyRequest): string {
 interface CreateSupplierRequest {
   name: string
   accountNumber?: string
-  contactEmail?: string
-  contactPhone?: string
   address?: string
   terms?: string
   orderCutoffTime?: string
@@ -40,8 +39,6 @@ interface CreateSupplierRequest {
 interface UpdateSupplierRequest {
   name?: string
   accountNumber?: string
-  contactEmail?: string
-  contactPhone?: string
   address?: string
   terms?: string
   isActive?: boolean
@@ -76,7 +73,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       const organizationId = getOrganizationId(request)
 
       try {
-        const where: any = {
+        const where: Prisma.ProductSupplierWhereInput = {
           supplier: {
             organizationId,
           },
@@ -87,7 +84,11 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         }
 
         const productSuppliers = await fastify.prisma.productSupplier.findMany({
-          where,
+          where: {
+            supplier: {
+              organizationId,
+            },
+          },
           include: {
             supplier: {
               select: {
@@ -134,7 +135,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       const organizationId = getOrganizationId(request)
 
       // Build where clause
-      const where: any = { organizationId }
+      const where: Prisma.SupplierWhereInput | undefined = { organizationId }
 
       if (active === 'true') {
         where.isActive = true
@@ -145,8 +146,16 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       if (search) {
         where.OR = [
           { name: { contains: search, mode: 'insensitive' } },
-          { contactEmail: { contains: search, mode: 'insensitive' } },
-          { contactPhone: { contains: search, mode: 'insensitive' } },
+          {
+            contacts: {
+              some: { name: { contains: search, mode: 'insensitive' } },
+            },
+          },
+          {
+            contacts: {
+              some: { email: { contains: search, mode: 'insensitive' } },
+            },
+          },
         ]
       }
 
@@ -248,8 +257,6 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       const {
         name,
         accountNumber,
-        contactEmail,
-        contactPhone,
         address,
         terms,
         orderCutoffTime,
@@ -339,8 +346,6 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       const {
         name,
         accountNumber,
-        contactEmail,
-        contactPhone,
         address,
         terms,
         isActive,
