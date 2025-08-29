@@ -1,3 +1,4 @@
+import { OrderStatus, Prisma } from '@happy-bar/database'
 import { AppError, ErrorCode } from '@happy-bar/types'
 import {
   FastifyInstance,
@@ -295,10 +296,10 @@ export const ordersRoutes: FastifyPluginAsync = async function (
       }
 
       // Prepare update data
-      const updateData: any = {}
+      const updateData: Prisma.OrderUpdateInput = {}
 
       if (status) {
-        updateData.status = status
+        updateData.status = status as OrderStatus
       }
 
       if (receivedDate) {
