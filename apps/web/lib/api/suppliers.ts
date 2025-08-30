@@ -155,6 +155,7 @@ export const suppliersApi = {
   async getSuppliers(params?: {
     active?: boolean
     search?: string
+    excludeProducts?: boolean
   }): Promise<Supplier[]> {
     const queryParams = new URLSearchParams()
     if (params?.active !== undefined) {
@@ -162,6 +163,9 @@ export const suppliersApi = {
     }
     if (params?.search) {
       queryParams.append('search', params.search)
+    }
+    if (params?.excludeProducts !== undefined) {
+      queryParams.append('excludeProducts', params.excludeProducts.toString())
     }
 
     const url = `/api/suppliers${queryParams.toString() ? `?${queryParams}` : ''}`

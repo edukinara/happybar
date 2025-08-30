@@ -98,7 +98,7 @@ export default function EditProductPage() {
         await Promise.all([
           inventoryApi.getProduct(productId),
           categoriesApi.getCategories(),
-          suppliersApi.getSuppliers({ active: true }),
+          suppliersApi.getSuppliers({ active: true, excludeProducts: true }),
           suppliersApi.getProductSuppliers({ productId }),
         ])
 

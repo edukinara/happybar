@@ -3,6 +3,7 @@
 import { AuthProvider } from '@/lib/auth/auth-context'
 import { AutumnProvider } from '@/lib/subscription/autumn-provider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ThemeProvider } from 'next-themes'
 import { useState } from 'react'
 
@@ -12,19 +13,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
-            retry: (failureCount, error: unknown) => {
+            staleTime: 5 * 60 * 1000, // 5 minutes
+            gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+            retry: (failureCount, error: any) => {
               // Don't retry on 401/403 errors
-              if (
-                (error as { response?: { status?: number } })?.response
-                  ?.status === 401 ||
-                (error as { response?: { status?: number } })?.response
-                  ?.status === 403
-              ) {
+              if (error?.status === 401 || error?.status === 403) {
                 return false
               }
               return failureCount < 3
             },
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
           },
           mutations: {
             retry: false,
@@ -42,7 +41,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <AuthProvider>
-          <AutumnProvider>{children}</AutumnProvider>
+          <AutumnProvider>
+            {children}
+            <ReactQueryDevtools initialIsOpen={false} />
+          </AutumnProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

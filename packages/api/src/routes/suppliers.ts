@@ -84,11 +84,7 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
         }
 
         const productSuppliers = await fastify.prisma.productSupplier.findMany({
-          where: {
-            supplier: {
-              organizationId,
-            },
-          },
+          where,
           include: {
             supplier: {
               select: {
@@ -128,9 +124,10 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
       preHandler: [authMiddleware, requirePermission('suppliers', 'read')],
     },
     async (request, reply) => {
-      const { active, search } = request.query as {
+      const { active, search, excludeProducts } = request.query as {
         active?: string
         search?: string
+        excludeProducts?: string
       }
       const organizationId = getOrganizationId(request)
 
@@ -165,15 +162,18 @@ export const suppliersRoutes: FastifyPluginAsync = async function (
           contacts: {
             orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
           },
-          products: {
-            include: {
-              product: {
-                include: {
-                  category: true,
+          products:
+            excludeProducts === 'true'
+              ? false
+              : {
+                  include: {
+                    product: {
+                      include: {
+                        category: true,
+                      },
+                    },
+                  },
                 },
-              },
-            },
-          },
           _count: {
             select: {
               orders: true,

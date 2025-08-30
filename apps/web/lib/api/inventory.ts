@@ -154,10 +154,17 @@ export const inventoryApi = {
     status?: InventoryCountStatus
     locationId?: string
   }): Promise<InventoryCountResponse> {
+    // Ensure numeric params are actually numbers
+    const cleanParams = params ? {
+      ...params,
+      ...(params.page !== undefined && { page: Number(params.page) }),
+      ...(params.limit !== undefined && { limit: Number(params.limit) })
+    } : undefined
+    
     const response = await apiClient.get<APIRes<InventoryCountResponse>>(
       '/api/inventory-counts',
       {
-        params,
+        params: cleanParams,
       }
     )
     if (!response.success || !response.data) {

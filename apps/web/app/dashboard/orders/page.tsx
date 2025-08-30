@@ -25,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ordersApi, type Order, type OrderStatus } from '@/lib/api/orders'
+import { useOrders, useUpdateOrder, type OrderStatus } from '@/lib/queries'
 import {
   AlertCircle,
   Clock,
@@ -40,7 +40,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
@@ -60,82 +60,62 @@ const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
   const [pagination, setPagination] = useState({
-    total: 0,
     limit: 20,
     offset: 0,
   })
 
-  // Summary stats
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    totalSpend: 0,
-    pendingOrders: 0,
-    draftOrders: 0,
+  // Use query hooks for data fetching
+  const { data: ordersResponse, isLoading: loading, error } = useOrders({
+    status: statusFilter !== 'ALL' ? statusFilter : undefined,
+    limit: pagination.limit,
+    offset: pagination.offset,
   })
+  
+  const updateOrderMutation = useUpdateOrder()
+  
+  const orders = ordersResponse?.data || []
+  const totalOrders = ordersResponse?.pagination?.total || 0
 
-  useEffect(() => {
-    loadOrders()
-  }, [statusFilter, pagination.offset])
+  // Calculate stats from current orders data
+  const stats = useMemo(() => {
+    const totalSpend = orders.reduce(
+      (sum, order) =>
+        order.status !== 'CANCELLED' ? sum + order.totalAmount : sum,
+      0
+    )
+    const pendingOrders = orders.filter((order) =>
+      ['SENT', 'PARTIALLY_RECEIVED'].includes(order.status)
+    ).length
+    const draftOrders = orders.filter(
+      (order) => order.status === 'DRAFT'
+    ).length
 
-  const loadOrders = async () => {
-    try {
-      setLoading(true)
-      const params: { limit: number; offset: number; status?: OrderStatus } = {
-        limit: pagination.limit,
-        offset: pagination.offset,
-      }
-
-      if (statusFilter !== 'ALL') {
-        params.status = statusFilter
-      }
-
-      const response = await ordersApi.getOrders(params)
-      setOrders(response.data)
-      setPagination((prev) => ({ ...prev, total: response.pagination.total }))
-
-      // Calculate stats
-      const totalSpend = response.data.reduce(
-        (sum, order) =>
-          order.status !== 'CANCELLED' ? sum + order.totalAmount : sum,
-        0
-      )
-      const pendingOrders = response.data.filter((order) =>
-        ['SENT', 'PARTIALLY_RECEIVED'].includes(order.status)
-      ).length
-      const draftOrders = response.data.filter(
-        (order) => order.status === 'DRAFT'
-      ).length
-
-      setStats({
-        totalOrders: response.pagination.total,
-        totalSpend,
-        pendingOrders,
-        draftOrders,
-      })
-    } catch (error) {
-      console.warn('Failed to load orders:', error)
-      toast.error('Failed to load orders')
-    } finally {
-      setLoading(false)
+    return {
+      totalOrders,
+      totalSpend,
+      pendingOrders,
+      draftOrders,
     }
-  }
+  }, [orders, totalOrders])
 
   const handleStatusChange = async (
     orderId: string,
     newStatus: OrderStatus
   ) => {
-    try {
-      await ordersApi.updateOrder(orderId, { status: newStatus })
-      toast.success(`Order status updated to ${ORDER_STATUS_LABELS[newStatus]}`)
-      loadOrders()
-    } catch {
-      toast.error('Failed to update order status')
-    }
+    updateOrderMutation.mutate(
+      { id: orderId, data: { status: newStatus } },
+      {
+        onSuccess: () => {
+          toast.success(`Order status updated to ${ORDER_STATUS_LABELS[newStatus]}`)
+        },
+        onError: () => {
+          toast.error('Failed to update order status')
+        },
+      }
+    )
   }
 
   const filteredOrders = orders.filter(
@@ -150,6 +130,18 @@ export default function OrdersPage() {
       <div className='flex items-center justify-center min-h-[400px]'>
         <RefreshCw className='size-8 animate-spin mr-2' />
         <span>Loading orders...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <div className='text-center'>
+          <AlertCircle className='h-12 w-12 text-red-500 mx-auto mb-4' />
+          <h2 className='text-xl font-semibold mb-2'>Failed to load orders</h2>
+          <p className='text-muted-foreground'>Please try refreshing the page</p>
+        </div>
       </div>
     )
   }
@@ -390,15 +382,15 @@ export default function OrdersPage() {
             )}
 
             {/* Pagination */}
-            {pagination.total > pagination.limit && (
+            {totalOrders > pagination.limit && (
               <div className='flex items-center justify-between mt-6'>
                 <p className='text-sm text-muted-foreground'>
                   Showing {pagination.offset + 1} to{' '}
                   {Math.min(
                     pagination.offset + pagination.limit,
-                    pagination.total
+                    totalOrders
                   )}{' '}
-                  of {pagination.total} orders
+                  of {totalOrders} orders
                 </p>
                 <div className='flex gap-2'>
                   <Button
@@ -418,7 +410,7 @@ export default function OrdersPage() {
                     variant='outline'
                     size='sm'
                     disabled={
-                      pagination.offset + pagination.limit >= pagination.total
+                      pagination.offset + pagination.limit >= totalOrders
                     }
                     onClick={() =>
                       setPagination((prev) => ({

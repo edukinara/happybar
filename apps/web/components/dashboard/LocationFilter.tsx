@@ -9,41 +9,51 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
+import { useLocations } from '@/lib/queries'
+import type { LocationsResponse } from '@/lib/api/locations'
+import { useSelectedLocation } from '@/lib/stores'
 import { Check, ChevronDown, MapPin } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 interface LocationFilterProps {
   selectedLocationId?: string
-  onLocationChange: (locationId?: string) => void
+  onLocationChange?: (locationId?: string) => void
   showAllOption?: boolean
   placeholder?: string
+  useGlobalState?: boolean // New prop to use global state
 }
 
 export function LocationFilter({
-  selectedLocationId,
+  selectedLocationId: propSelectedLocationId,
   onLocationChange,
   showAllOption = true,
   placeholder = 'Filter by location',
+  useGlobalState = false,
 }: LocationFilterProps) {
-  const [locations, setLocations] = useState<LocationsResponse>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchLocations()
-  }, [])
-
-  const fetchLocations = async () => {
-    try {
-      setLoading(true)
-      const data = await locationsApi.getLocations()
-      setLocations(data)
-    } catch (error) {
-      console.warn('Failed to fetch locations:', error)
-    } finally {
-      setLoading(false)
-    }
+  // Re-enabled with stable query key fix
+  const { data: locations = [], isLoading: loading } = useLocations() as { 
+    data: LocationsResponse, 
+    isLoading: boolean 
   }
+  
+  // Use global state if enabled, otherwise use props
+  const { selectedLocationId: globalSelectedLocationId, setSelectedLocationId } = useSelectedLocation()
+  
+  const selectedLocationId = useGlobalState ? globalSelectedLocationId : propSelectedLocationId
+  
+  const handleLocationChange = (locationId?: string) => {
+    if (useGlobalState) {
+      setSelectedLocationId(locationId || null)
+    }
+    onLocationChange?.(locationId)
+  }
+  
+  // Auto-sync global state with props if needed
+  useEffect(() => {
+    if (useGlobalState && propSelectedLocationId !== undefined && propSelectedLocationId !== globalSelectedLocationId) {
+      setSelectedLocationId(propSelectedLocationId || null)
+    }
+  }, [propSelectedLocationId, globalSelectedLocationId, useGlobalState, setSelectedLocationId])
 
   const selectedLocation = locations.find(
     (loc) => loc.id === selectedLocationId
@@ -65,7 +75,7 @@ export function LocationFilter({
         <DropdownMenuSeparator />
 
         {showAllOption && (
-          <DropdownMenuItem onClick={() => onLocationChange(undefined)}>
+          <DropdownMenuItem onClick={() => handleLocationChange(undefined)}>
             <div className='flex items-center justify-between w-full'>
               <span>All Locations</span>
               {!selectedLocationId && <Check className='size-4' />}
@@ -81,7 +91,7 @@ export function LocationFilter({
           locations.map((location) => (
             <DropdownMenuItem
               key={location.id}
-              onClick={() => onLocationChange(location.id)}
+              onClick={() => handleLocationChange(location.id)}
             >
               <div className='flex items-center justify-between w-full'>
                 <div>

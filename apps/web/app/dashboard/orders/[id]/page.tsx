@@ -26,7 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { ordersApi, type Order, type OrderStatus } from '@/lib/api/orders'
+import { useOrder, useUpdateOrder, type OrderStatus } from '@/lib/queries'
 import {
   ArrowLeft,
   Building2,
@@ -58,9 +58,21 @@ export default function OrderDetailPage() {
   const params = useParams()
   const orderId = params.id as string
   const router = useRouter()
-  const [order, setOrder] = useState<Order | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
+
+  // Use our query hooks
+  const { data: orderResponse, isLoading: loading, error } = useOrder(orderId)
+  const updateOrderMutation = useUpdateOrder()
+
+  // Debug logging
+  console.log('📦 Order query state:', { 
+    orderId, 
+    loading, 
+    hasData: !!orderResponse, 
+    dataStructure: orderResponse ? Object.keys(orderResponse) : null,
+    order: orderResponse?.data 
+  })
+
+  // Local UI state
   const [editing, setEditing] = useState(false)
   const [notes, setNotes] = useState('')
   const [receivingMode, setReceivingMode] = useState(false)
@@ -71,70 +83,60 @@ export default function OrderDetailPage() {
     Record<string, 'UNIT' | 'CASE'>
   >({})
 
-  useEffect(() => {
-    loadOrder()
-  }, [params.id])
+  const order = orderResponse?.data || null
+  const updating = updateOrderMutation.isPending
 
-  const loadOrder = async () => {
-    try {
-      setLoading(true)
-      const response = await ordersApi.getOrder(orderId)
-      setOrder(response.data)
-      setNotes(response.data.notes || '')
+  // Initialize notes and quantities when order loads
+  useEffect(() => {
+    if (order) {
+      setNotes(order.notes || '')
 
       // Initialize received quantities and units
       const quantities: Record<string, number> = {}
       const units: Record<string, 'UNIT' | 'CASE'> = {}
-      response.data.items.forEach((item) => {
+      order.items.forEach((item) => {
         quantities[item.id] = item.quantityReceived
-        units[item.id] = item.orderingUnit // Default to same unit as ordered
+        units[item.id] = item.orderingUnit
       })
       setReceivedQuantities(quantities)
       setReceivedUnits(units)
-    } catch (error) {
-      console.error('Failed to load order:', error)
+    }
+  }, [order])
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
       toast.error('Failed to load order')
       router.push('/dashboard/orders')
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [error, router])
 
   const updateOrderStatus = async (newStatus: OrderStatus) => {
     if (!order) return
 
-    try {
-      setUpdating(true)
-      const updates: Partial<Order> = { status: newStatus }
+    const updates: Record<string, unknown> = { status: newStatus }
 
-      if (newStatus === 'RECEIVED') {
-        updates.receivedDate = new Date().toISOString()
-      }
-
-      await ordersApi.updateOrder(order.id, updates)
-      toast.success(`Order ${newStatus.toLowerCase()}`)
-      loadOrder()
-    } catch (_error) {
-      toast.error('Failed to update order status')
-    } finally {
-      setUpdating(false)
+    if (newStatus === 'RECEIVED') {
+      updates.receivedDate = new Date().toISOString()
     }
+
+    console.log('🚀 Updating order status:', { orderId: order.id, updates })
+    updateOrderMutation.mutate({ id: order.id, data: updates })
   }
 
   const saveNotes = async () => {
     if (!order) return
 
-    try {
-      setUpdating(true)
-      await ordersApi.updateOrder(order.id, { notes })
-      toast.success('Notes updated')
-      setEditing(false)
-      loadOrder()
-    } catch (_error) {
-      toast.error('Failed to update notes')
-    } finally {
-      setUpdating(false)
-    }
+    console.log('💾 Saving notes:', { orderId: order.id, notes })
+    updateOrderMutation.mutate(
+      { id: order.id, data: { notes } },
+      {
+        onSuccess: () => {
+          console.log('✅ Notes saved successfully')
+          setEditing(false)
+        },
+      }
+    )
   }
 
   const convertToOrderingUnit = (
@@ -157,46 +159,44 @@ export default function OrderDetailPage() {
   const markOrderAsReceived = async () => {
     if (!order) return
 
-    try {
-      setUpdating(true)
+    // Build items array with updated received quantities, converted to ordering unit
+    const items = order.items.map((item) => {
+      const receivedQty = receivedQuantities[item.id] || 0
+      const receivedUnit = receivedUnits[item.id] || item.orderingUnit
 
-      // Build items array with updated received quantities, converted to ordering unit
-      const items = order.items.map((item) => {
-        const receivedQty = receivedQuantities[item.id] || 0
-        const receivedUnit = receivedUnits[item.id] || item.orderingUnit
+      // Convert received quantity to match the ordering unit for storage
+      const convertedQuantity = convertToOrderingUnit(
+        receivedQty,
+        receivedUnit,
+        item.orderingUnit,
+        item.product.caseSize
+      )
 
-        // Convert received quantity to match the ordering unit for storage
-        const convertedQuantity = convertToOrderingUnit(
-          receivedQty,
-          receivedUnit,
-          item.orderingUnit,
-          item.product.caseSize
-        )
+      return {
+        id: item.id,
+        productId: item.productId,
+        quantityOrdered: item.quantityOrdered,
+        quantityReceived: convertedQuantity,
+        unitCost: item.unitCost,
+      }
+    })
 
-        return {
-          id: item.id,
-          productId: item.productId,
-          quantityOrdered: item.quantityOrdered,
-          quantityReceived: convertedQuantity,
-          unitCost: item.unitCost,
-        }
-      })
-
-      // Update order with received quantities and mark as RECEIVED
-      await ordersApi.updateOrder(order.id, {
-        items,
-        status: 'RECEIVED' as OrderStatus,
-        receivedDate: new Date().toISOString(),
-      })
-
-      toast.success('Order marked as received and inventory updated')
-      setReceivingMode(false)
-      loadOrder()
-    } catch (_error) {
-      toast.error('Failed to mark order as received')
-    } finally {
-      setUpdating(false)
-    }
+    // Update order with received quantities and mark as RECEIVED
+    updateOrderMutation.mutate(
+      {
+        id: order.id,
+        data: {
+          items,
+          status: 'RECEIVED' as OrderStatus,
+          receivedDate: new Date().toISOString(),
+        },
+      },
+      {
+        onSuccess: () => {
+          setReceivingMode(false)
+        },
+      }
+    )
   }
 
   const getStatusActions = () => {
@@ -448,7 +448,9 @@ export default function OrderDetailPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant='outline' className='text-xs'>
-                          {item.orderingUnit === 'CASE' ? 'Case' : 'Unit'}
+                          {item.orderingUnit === 'CASE'
+                            ? `Case (${item.product.caseSize})`
+                            : 'Unit'}
                         </Badge>
                       </TableCell>
                       <TableCell>${item.unitCost.toFixed(2)}</TableCell>

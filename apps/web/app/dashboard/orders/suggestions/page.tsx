@@ -31,6 +31,7 @@ import {
   type CreateOrderRequest,
   type OrderSuggestion,
 } from '@/lib/api/orders'
+import { useCreateOrder } from '@/lib/queries'
 import {
   DollarSign,
   Eye,
@@ -64,10 +65,12 @@ export default function OrderSuggestionsPage() {
   const router = useRouter()
   const [suggestions, setSuggestions] = useState<OrderSuggestion[]>([])
   const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     Record<string, SelectedSuggestion>
   >({})
+  
+  // Use the proper mutation hook for cache invalidation
+  const createOrderMutation = useCreateOrder()
 
   useEffect(() => {
     loadSuggestions()
@@ -284,35 +287,52 @@ export default function OrderSuggestionsPage() {
       return
     }
 
-    try {
-      setCreating(true)
-      const orders: CreateOrderRequest[] = Object.values(
-        selectedSuggestions
-      ).map((selection) => ({
-        supplierId: selection.supplierId,
-        notes: 'Generated from reorder suggestions',
-        items: selection.items.map((item) => ({
-          productId: item.productId,
-          quantityOrdered: item.quantity,
-          unitCost: item.unitCost,
-          orderingUnit: item.orderingUnit,
-        })),
-      }))
+    const orders: CreateOrderRequest[] = Object.values(
+      selectedSuggestions
+    ).map((selection) => ({
+      supplierId: selection.supplierId,
+      notes: 'Generated from reorder suggestions',
+      items: selection.items.map((item) => ({
+        productId: item.productId,
+        quantityOrdered: item.quantity,
+        unitCost: item.unitCost,
+        orderingUnit: item.orderingUnit,
+      })),
+    }))
 
-      // Create all orders
-      const createdOrders = await Promise.all(
-        orders.map((order) => ordersApi.createOrder(order))
-      )
+    let createdCount = 0
+    const totalOrders = orders.length
 
-      toast.success(
-        `Created ${createdOrders.length} order${createdOrders.length === 1 ? '' : 's'} successfully`
-      )
+    // Create orders one by one using the mutation hook for proper cache invalidation
+    for (const order of orders) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          createOrderMutation.mutate(order, {
+            onSuccess: () => {
+              createdCount++
+              resolve()
+            },
+            onError: (error) => {
+              console.error('Failed to create order:', error)
+              reject(error)
+            }
+          })
+        })
+      } catch (error) {
+        // If one fails, show error but continue with others
+        console.error('Failed to create order:', error)
+      }
+    }
+
+    if (createdCount > 0) {
+      // Don't show duplicate toast - the mutation hook already shows individual success toasts
+      // Show a summary toast only if multiple orders were created
+      if (totalOrders > 1) {
+        toast.success(`Created ${createdCount} orders from suggestions`)
+      }
       router.push('/dashboard/orders')
-    } catch (error) {
-      console.error('Failed to create orders:', error)
-      toast.error('Failed to create orders')
-    } finally {
-      setCreating(false)
+    } else {
+      toast.error('Failed to create any orders')
     }
   }
 
@@ -400,9 +420,9 @@ export default function OrderSuggestionsPage() {
                   </p>
                 </div>
               </div>
-              <Button onClick={createSelectedOrders} disabled={creating}>
+              <Button onClick={createSelectedOrders} disabled={createOrderMutation.isPending}>
                 <Send className='size-4 mr-2' />
-                {creating ? 'Creating...' : 'Create Orders'}
+                {createOrderMutation.isPending ? 'Creating...' : 'Create Orders'}
               </Button>
             </div>
           </CardContent>

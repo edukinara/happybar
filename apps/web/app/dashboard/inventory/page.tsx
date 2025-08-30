@@ -32,7 +32,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { inventoryApi } from '@/lib/api/inventory'
+import { useInventory } from '@/lib/queries'
+import { useSelectedLocation } from '@/lib/stores'
 import { cn } from '@/lib/utils'
 import type { InventoryLevel } from '@happy-bar/types'
 import {
@@ -43,37 +44,24 @@ import {
   Search,
 } from 'lucide-react'
 import pluralize from 'pluralize'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export default function InventoryPage() {
-  const [inventory, setInventory] = useState<InventoryLevel[]>([])
-  const [filteredInventory, setFilteredInventory] = useState<InventoryLevel[]>(
-    []
-  )
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Use query hooks for data fetching
+  const { data: inventory = [], isLoading: loading, error } = useInventory()
+  
+  // Use global location state
+  const { selectedLocationId } = useSelectedLocation()
+  
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >()
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
 
-  // Calculate pagination values
-  const totalItems = filteredInventory.length
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
-  const paginatedInventory = filteredInventory.slice(startIndex, endIndex)
-
-  useEffect(() => {
-    fetchInventory()
-  }, [])
-
-  useEffect(() => {
-    const filtered = inventory.filter((item) => {
+  // Filtered inventory using useMemo for performance
+  const filteredInventory = useMemo(() => {
+    return inventory.filter((item) => {
       // Search filter
       const matchesSearch =
         !searchTerm ||
@@ -90,9 +78,19 @@ export default function InventoryPage() {
 
       return matchesSearch && matchesLocation
     })
-    setFilteredInventory(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
   }, [inventory, searchTerm, selectedLocationId])
+  
+  // Calculate pagination values
+  const totalItems = filteredInventory.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
+  const paginatedInventory = filteredInventory.slice(startIndex, endIndex)
+  
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filteredInventory.length])
   const [currentItem, setCurrentItem] = useState<InventoryLevel>()
   const [historyOpen, setHistoryOpen] = useState(false)
 
@@ -112,19 +110,7 @@ export default function InventoryPage() {
     setCurrentPage(1)
   }
 
-  const fetchInventory = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await inventoryApi.getInventoryLevels()
-      setInventory(data)
-    } catch (err) {
-      console.error('Failed to fetch inventory:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch inventory')
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Remove fetchInventory - now handled by query hooks
 
   const getStockStatus = (current: number, minimum: number) => {
     if (current <= 0)
@@ -162,8 +148,8 @@ export default function InventoryPage() {
           <h2 className='text-xl font-semibold mb-2'>
             Failed to load inventory
           </h2>
-          <p className='text-muted-foreground mb-4'>{error}</p>
-          <Button onClick={fetchInventory}>Try Again</Button>
+          <p className='text-muted-foreground mb-4'>{error?.message || 'Unknown error occurred'}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     )
@@ -268,8 +254,7 @@ export default function InventoryPage() {
               />
             </div>
             <LocationFilter
-              selectedLocationId={selectedLocationId}
-              onLocationChange={setSelectedLocationId}
+              useGlobalState={true}
             />
           </div>
 

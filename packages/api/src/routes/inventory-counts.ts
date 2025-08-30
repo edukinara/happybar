@@ -68,16 +68,20 @@ const inventoryCountRoutes: FastifyPluginAsync = async (fastify) => {
     const organizationId = getOrganizationId(request)
 
     const {
-      page = 1,
-      limit = 20,
+      page: pageParam = '1',
+      limit: limitParam = '20',
       status,
       locationId,
     } = request.query as {
-      page?: number
-      limit?: number
+      page?: string
+      limit?: string
       status?: InventoryCountStatus
       locationId?: string
     }
+
+    // Convert string params to numbers with validation
+    const page = Math.max(1, parseInt(pageParam, 10) || 1)
+    const limit = Math.max(1, Math.min(100, parseInt(limitParam, 10) || 20))
 
     const where: any = { organizationId }
     if (status) where.status = status

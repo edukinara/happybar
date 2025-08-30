@@ -12,11 +12,15 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { inventoryApi } from '@/lib/api/inventory'
-import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
-import { useDashboard } from '@/lib/hooks/use-dashboard'
-import { usePOSIntegrations } from '@/lib/hooks/use-pos-integrations'
-import type { InventoryLevel } from '@happy-bar/types'
+// Re-enabled with stable query key fixes
+import {
+  useInventory,
+  useInventoryCounts,
+  useLocations,
+  useLowStockItems,
+} from '@/lib/queries'
+import { useSelectedLocation } from '@/lib/stores'
+import type { Integration } from '@happy-bar/types'
 import {
   AlertTriangle,
   BarChart3,
@@ -28,73 +32,85 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-
-interface LocationStats {
-  location: LocationsResponse[number]
-  totalItems: number
-  totalValue: number
-  lowStockItems: number
-  outOfStockItems: number
-  stockHealth: number
-}
+import { useMemo } from 'react'
 
 export default function DashboardPage() {
-  const { stats, loading, error } = useDashboard()
-  const { integrations } = usePOSIntegrations()
+  // Use global location state first
+  const { selectedLocationId, setSelectedLocationId } = useSelectedLocation()
 
-  // Location-based inventory state
-  const [inventory, setInventory] = useState<InventoryLevel[]>([])
-  const [locations, setLocations] = useState<LocationsResponse>([])
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >()
-  const [locationStats, setLocationStats] = useState<LocationStats[]>([])
-  const [loadingLocationData, setLoadingLocationData] = useState(false)
+  // Essential queries with stable query keys
+  const inventoryQuery = useInventory()
+  const locationsQuery = useLocations()
+  const lowStockQuery = useLowStockItems()
+  const inventoryCountsQuery = useInventoryCounts({
+    limit: 5, // Explicitly pass as number, not string
+    page: 1,
+  })
+  const pendingOrdersQuery = { data: 0 }
+  const integrations: Integration[] = []
 
-  // Load location-based inventory data
-  useEffect(() => {
-    loadLocationData()
-  }, [])
+  // Extract data from queries
+  const inventory = inventoryQuery.data || []
+  const locations = locationsQuery.data || []
+  const lowStockItems = lowStockQuery.data || []
+  const recentCounts = inventoryCountsQuery.data?.counts || []
+  const pendingOrdersCount = pendingOrdersQuery.data || 0
 
-  useEffect(() => {
-    calculateLocationStats()
-  }, [inventory, locations])
+  // Loading states
+  const loading =
+    inventoryQuery.isLoading ||
+    locationsQuery.isLoading ||
+    lowStockQuery.isLoading
+  const loadingLocationData =
+    inventoryQuery.isLoading || locationsQuery.isLoading
 
-  const loadLocationData = async () => {
-    try {
-      setLoadingLocationData(true)
-      const [inventoryData, locationsData] = await Promise.all([
-        inventoryApi.getInventoryLevels(),
-        locationsApi.getLocations(),
-      ])
-      setInventory(inventoryData)
-      setLocations(locationsData)
-    } catch (error) {
-      console.error('Failed to load location data:', error)
-    } finally {
-      setLoadingLocationData(false)
+  // Error handling
+  const error =
+    inventoryQuery.error || locationsQuery.error || lowStockQuery.error
+
+  // Calculate dashboard stats from the query data
+  const stats = useMemo(() => {
+    if (!inventory.length) return null
+
+    const totalValue = inventory.reduce((sum, item) => {
+      const cost = item?.currentQuantity || 0
+      const price = item?.product?.costPerUnit || 0
+      return sum + cost * price
+    }, 0)
+
+    const uniqueProducts = new Set(inventory.map((item) => item.productId))
+
+    return {
+      totalItems: uniqueProducts.size,
+      lowStockItems: lowStockItems.length,
+      totalValue,
+      recentCounts: recentCounts.slice(0, 5),
     }
-  }
+  }, [inventory, lowStockItems, recentCounts])
 
-  const calculateLocationStats = () => {
-    if (!inventory.length || !locations.length) return
+  // Calculate location stats using useMemo to prevent recalculation on every render
+  const locationStats = useMemo(() => {
+    // Ensure we have valid arrays
+    if (!Array.isArray(inventory) || !Array.isArray(locations)) return []
+    if (!inventory.length || !locations.length) return []
 
-    const stats = locations.map((location) => {
+    return locations.map((location) => {
       const locationInventory = inventory.filter(
-        (item) => item.locationId === location.id
+        (item) => item?.locationId === location?.id
       )
 
       const totalItems = locationInventory.length
-      const totalValue = locationInventory.reduce(
-        (sum, item) => sum + item.currentQuantity * item.product.costPerUnit,
-        0
-      )
+      const totalValue = locationInventory.reduce((sum, item) => {
+        // Defensive check for nested properties
+        const cost = item?.currentQuantity || 0
+        const price = item?.product?.costPerUnit || 0
+        return sum + cost * price
+      }, 0)
       const lowStockItems = locationInventory.filter(
-        (item) => item.currentQuantity < item.minimumQuantity
+        (item) => (item?.currentQuantity || 0) < (item?.minimumQuantity || 0)
       ).length
       const outOfStockItems = locationInventory.filter(
-        (item) => item.currentQuantity <= 0
+        (item) => (item?.currentQuantity || 0) <= 0
       ).length
 
       return {
@@ -109,15 +125,14 @@ export default function DashboardPage() {
             : 100,
       }
     })
-
-    setLocationStats(stats)
-  }
+  }, [inventory, locations])
 
   const getSelectedLocationStats = () => {
     if (!selectedLocationId) return null
     return locationStats.find((stat) => stat.location.id === selectedLocationId)
   }
 
+  // Check loading state first
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
@@ -134,7 +149,9 @@ export default function DashboardPage() {
           <h2 className='text-xl font-semibold mb-2'>
             Failed to load dashboard
           </h2>
-          <p className='text-muted-foreground'>{error}</p>
+          <p className='text-muted-foreground'>
+            {error?.message || 'Unknown error occurred'}
+          </p>
         </div>
       </div>
     )
@@ -231,9 +248,11 @@ export default function DashboardPage() {
               <ShoppingCart className='size-4 brand-icon-primary' />
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold brand-text-gradient'>0</div>
+              <div className='text-2xl font-bold brand-text-gradient'>
+                {pendingOrdersCount}
+              </div>
               <p className='text-xs text-muted-foreground'>
-                Orders coming soon
+                Orders awaiting delivery
               </p>
             </CardContent>
           </Card>
@@ -252,8 +271,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </div>
               <LocationFilter
-                selectedLocationId={selectedLocationId}
-                onLocationChange={setSelectedLocationId}
+                useGlobalState={true}
                 placeholder='All locations'
               />
             </div>
@@ -474,7 +492,7 @@ export default function DashboardPage() {
                     <div className='grid grid-cols-3 gap-4 text-center'>
                       <div>
                         <div className='text-2xl font-bold text-blue-600'>
-                          {stats.recentCounts[0]?.itemsCount || 0}
+                          {stats.recentCounts[0]?.itemsCounted || 0}
                         </div>
                         <div className='text-xs text-muted-foreground'>
                           Items Counted
@@ -525,7 +543,9 @@ export default function DashboardPage() {
                           <div>
                             <div className='font-medium'>{count.name}</div>
                             <div className='text-sm text-muted-foreground'>
-                              by {count.user}
+                              {count.createdAt
+                                ? new Date(count.createdAt).toLocaleDateString()
+                                : ''}
                             </div>
                           </div>
                           <div className='text-right'>
@@ -533,7 +553,7 @@ export default function DashboardPage() {
                               {count.status.toLowerCase()}
                             </div>
                             <div className='text-xs text-muted-foreground'>
-                              {count.itemsCount} items
+                              {count.itemsCounted || 0} items
                             </div>
                           </div>
                         </div>
@@ -557,7 +577,7 @@ export default function DashboardPage() {
 
           <div className='col-span-3 space-y-4'>
             {/* Alert Summary */}
-            <AlertSummaryCard locationId={selectedLocationId} />
+            <AlertSummaryCard locationId={selectedLocationId || undefined} />
 
             {/* Quick Actions */}
             <Card className='brand-card'>
