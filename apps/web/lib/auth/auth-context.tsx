@@ -328,12 +328,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signOut()
       setUser(null)
-      router.push('/login')
+      // Use window.location for a hard redirect to ensure clean state
+      window.location.href = '/login'
     } catch (error) {
       console.error('Logout failed:', error)
       // Still redirect to login even if signOut fails
       setUser(null)
-      router.push('/login')
+      window.location.href = '/login'
     }
   }
 
