@@ -21,15 +21,30 @@ async function cleanupDeselectedGroups(
   prisma: unknown,
   organizationId: string
 ) {
+  console.log(`🧹 Starting cleanup for deselected groups. Selected groups: ${selectedGroupGuids.length}`)
+  
+  if (selectedGroupGuids.length === 0) {
+    console.log(`⚠️ No selected groups - skipping cleanup to prevent deleting all products`)
+    return
+  }
+
   // Get all POS products for this integration that are NOT in the selected groups
+  // FIXED: Use proper GUID matching logic instead of broken wildcard patterns
   const productsToDelete = await (prisma as any).pOSProduct.findMany({
     where: {
       integrationId,
       organizationId,
-      // Only delete products that have a category (group) and it's not in selected groups
+      // Only consider products that have a category AND it's not in selected groups
       AND: [
         { category: { not: null } },
-        { category: { notIn: selectedGroupGuids.map((guid) => `%${guid}%`) } },
+        // FIXED: Check if category contains any of the selected GUIDs (proper matching)
+        { 
+          NOT: {
+            OR: selectedGroupGuids.map(guid => ({
+              category: { contains: guid }
+            }))
+          }
+        }
       ],
     },
     include: {
@@ -37,22 +52,59 @@ async function cleanupDeselectedGroups(
     },
   })
 
-  if (productsToDelete.length > 0) {
-    // Delete product mappings first
-    await (prisma as any).productMapping.deleteMany({
-      where: {
-        posProductId: { in: productsToDelete.map((p: { id: string }) => p.id) },
-        organizationId,
-      },
-    })
+  console.log(`🔍 Found ${productsToDelete.length} products to potentially delete from deselected groups`)
 
-    // Delete POS products
-    await (prisma as any).pOSProduct.deleteMany({
-      where: {
-        id: { in: productsToDelete.map((p: { id: string }) => p.id) },
-        organizationId,
-      },
-    })
+  if (productsToDelete.length > 0) {
+    // IMPORTANT: Check for products with mappings and warn
+    const productsWithMappings = productsToDelete.filter((p: any) => p.mappings && p.mappings.length > 0)
+    
+    if (productsWithMappings.length > 0) {
+      console.log(`⚠️ WARNING: ${productsWithMappings.length} products have mappings that would be deleted:`)
+      productsWithMappings.forEach((p: any) => {
+        console.log(`   - "${p.name}" has ${p.mappings.length} mappings`)
+      })
+      
+      // For safety, only delete products WITHOUT mappings
+      const safeProductsToDelete = productsToDelete.filter((p: any) => !p.mappings || p.mappings.length === 0)
+      
+      if (safeProductsToDelete.length > 0) {
+        console.log(`🗑️ Safely deleting ${safeProductsToDelete.length} products without mappings`)
+        
+        await (prisma as any).pOSProduct.deleteMany({
+          where: {
+            id: { in: safeProductsToDelete.map((p: { id: string }) => p.id) },
+            organizationId,
+          },
+        })
+      }
+      
+      // Mark products with mappings as inactive instead of deleting
+      if (productsWithMappings.length > 0) {
+        console.log(`🔒 Marking ${productsWithMappings.length} products with mappings as inactive`)
+        
+        for (const product of productsWithMappings) {
+          await (prisma as any).pOSProduct.update({
+            where: { id: product.id },
+            data: { 
+              isActive: false,
+              lastSyncedAt: new Date() 
+            }
+          })
+        }
+      }
+    } else {
+      // No mappings, safe to delete all
+      console.log(`🗑️ Deleting ${productsToDelete.length} products (no mappings to preserve)`)
+      
+      await (prisma as any).pOSProduct.deleteMany({
+        where: {
+          id: { in: productsToDelete.map((p: { id: string }) => p.id) },
+          organizationId,
+        },
+      })
+    }
+  } else {
+    console.log(`✅ No products need cleanup`)
   }
 }
 
@@ -219,8 +271,19 @@ export const posRoutes: FastifyPluginAsync = async function (fastify) {
           throw new AppError('Integration not found', ErrorCode.NOT_FOUND, 404)
         }
 
+        // Create callback to save updated credentials
+        const updateCredentials = async (updatedCredentials: any) => {
+          await fastify.prisma.pOSIntegration.update({
+            where: { id: integrationId },
+            data: { credentials: updatedCredentials },
+          })
+        }
+
         // Create POS client
-        const client = createPOSClient(integration.credentials as any)
+        const client = createPOSClient(
+          integration.credentials as any,
+          updateCredentials
+        )
 
         // Get location IDs based on integration mode
         const credentials = integration.credentials as any
@@ -310,8 +373,17 @@ export const posRoutes: FastifyPluginAsync = async function (fastify) {
           : {}),
       }
 
+      const { integrationId } = request.params as { integrationId: string }
+      // Create callback to save updated credentials
+      const updateCredentials = async (updatedCredentials: any) => {
+        await fastify.prisma.pOSIntegration.update({
+          where: { id: integrationId },
+          data: { credentials: updatedCredentials },
+        })
+      }
+
       // Test the connection before saving
-      const client = createPOSClient(credentials)
+      const client = createPOSClient(credentials, updateCredentials)
       const testResult = await client.testConnection()
 
       if (!testResult.success) {
@@ -471,8 +543,16 @@ export const posRoutes: FastifyPluginAsync = async function (fastify) {
           },
         }
       } else {
+        const { integrationId } = request.params as { integrationId: string }
+        // Create callback to save updated credentials
+        const updateCredentials = async (updatedCredentials: any) => {
+          await fastify.prisma.pOSIntegration.update({
+            where: { id: integrationId },
+            data: { credentials: updatedCredentials },
+          })
+        }
         // Standard API Access - test directly
-        const client = createPOSClient(credentials)
+        const client = createPOSClient(credentials, updateCredentials)
         const testResult = await client.testConnection()
         return {
           success: true,

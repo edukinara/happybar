@@ -39,7 +39,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { inventoryApi } from '@/lib/api/inventory'
 import type {
   AdjustmentReason,
-  InventoryProduct,
+  InventoryItemWithBasicProduct,
   StockMovement,
 } from '@happy-bar/types'
 import {
@@ -58,7 +58,7 @@ import { toast } from 'sonner'
 
 export default function InventoryAdjustmentsPage() {
   const [adjustments, setAdjustments] = useState<StockMovement[]>([])
-  const [products, setProducts] = useState<InventoryProduct[]>([])
+  const [products, setProducts] = useState<InventoryItemWithBasicProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [selectedLocationId, setSelectedLocationId] = useState<string>()
@@ -92,7 +92,7 @@ export default function InventoryAdjustmentsPage() {
           page: pagination.page,
           limit: pagination.limit,
         }),
-        inventoryApi.getProducts(),
+        inventoryApi.getInventoryProducts(),
       ])
 
       // Filter for adjustment movements only
@@ -124,10 +124,20 @@ export default function InventoryAdjustmentsPage() {
       toast.error('Please fill in all required fields')
       return
     }
+    const productId = products.find(
+      (product) => product.id === formData.productId
+    )?.productId
+    if (!productId) {
+      toast.error('Product not found')
+      return
+    }
 
     try {
       setSubmitting(true)
-      await inventoryApi.createAdjustment(formData)
+      await inventoryApi.createAdjustment({
+        ...formData,
+        productId,
+      })
 
       toast.success('Adjustment created successfully')
       setShowCreateDialog(false)
@@ -213,39 +223,57 @@ export default function InventoryAdjustmentsPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateAdjustment} className='space-y-4'>
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='product'>Product *</Label>
-                  <Select
-                    value={formData.productId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, productId: value })
-                    }
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder='Select product' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className='gap-0'>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div className='space-y-2'>
+                    <Label htmlFor='product'>Product *</Label>
+                    <Select
+                      value={formData.productId}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, productId: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select product' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.product.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className='space-y-2'>
-                  <Label htmlFor='location'>Location *</Label>
-                  <LocationFilter
-                    selectedLocationId={formData.locationId}
-                    onLocationChange={(locationId) =>
-                      setFormData({ ...formData, locationId: locationId || '' })
-                    }
-                    placeholder='Select location'
-                  />
+                  <div className='space-y-2'>
+                    <Label htmlFor='location'>Location *</Label>
+                    <LocationFilter
+                      selectedLocationId={formData.locationId}
+                      onLocationChange={(locationId) =>
+                        setFormData({
+                          ...formData,
+                          locationId: locationId || '',
+                        })
+                      }
+                      placeholder='Select location'
+                    />
+                  </div>
                 </div>
+                {formData.productId && (
+                  <p className='text-secondary font-semibold text-sm px-3'>
+                    {' '}
+                    Current Qty:{' '}
+                    {
+                      +(
+                        products.find(
+                          (product) => product.id === formData.productId
+                        )?.currentQuantity || 0
+                      )?.toFixed(2)
+                    }
+                  </p>
+                )}
               </div>
 
               <div className='grid grid-cols-2 gap-4'>

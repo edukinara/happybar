@@ -5,6 +5,7 @@ import type {
   InventoryCountStatus,
   InventoryCountType,
   InventoryItem,
+  InventoryItemWithBasicProduct,
   InventoryLevel,
   InventoryProduct,
   LowStockItem,
@@ -118,6 +119,16 @@ export const inventoryApi = {
     return response.data
   },
 
+  async getInventoryProducts(): Promise<InventoryItemWithBasicProduct[]> {
+    const response = await apiClient.get<
+      APIRes<InventoryItemWithBasicProduct[]>
+    >('/api/inventory/inventory-items')
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get inventory items')
+    }
+    return response.data
+  },
+
   async getInventoryLevels(): Promise<InventoryLevel[]> {
     const response = await apiClient.get<APIRes<InventoryLevel[]>>(
       '/api/inventory/levels'
@@ -155,12 +166,14 @@ export const inventoryApi = {
     locationId?: string
   }): Promise<InventoryCountResponse> {
     // Ensure numeric params are actually numbers
-    const cleanParams = params ? {
-      ...params,
-      ...(params.page !== undefined && { page: Number(params.page) }),
-      ...(params.limit !== undefined && { limit: Number(params.limit) })
-    } : undefined
-    
+    const cleanParams = params
+      ? {
+          ...params,
+          ...(params.page !== undefined && { page: Number(params.page) }),
+          ...(params.limit !== undefined && { limit: Number(params.limit) }),
+        }
+      : undefined
+
     const response = await apiClient.get<APIRes<InventoryCountResponse>>(
       '/api/inventory-counts',
       {

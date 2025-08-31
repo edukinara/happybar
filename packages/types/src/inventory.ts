@@ -58,6 +58,33 @@ export type InventoryProduct = Product & {
   mappings: { id: string }
 }
 
+export interface InventoryItemWithBasicProduct {
+  id: string
+  organizationId: string
+  createdAt: Date
+  updatedAt: Date
+  productId: string
+  locationId: string
+  zoneId: string | null
+  aisleId: string | null
+  shelfId: string | null
+  binId: string | null
+  currentQuantity: number
+  minimumQuantity: number
+  maximumQuantity: number | null
+  lastCountDate: Date | null
+  lastReceivedDate: Date | null
+  binLocationCode: string | null
+  product: {
+    id: string
+    name: string
+    category: {
+      id: string
+      name: string
+    }
+  }
+}
+
 export interface InventoryLevel extends InventoryItem {
   product: Product & {
     category: Category

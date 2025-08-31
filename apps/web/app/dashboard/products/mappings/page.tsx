@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -57,6 +58,7 @@ import { recipesApi } from '@/lib/api/recipes'
 import { getServingUnitOptions } from '@/lib/constants/product-options'
 import {
   ProductUnit,
+  type ProductContainer,
   type Recipe,
   type RecipePOSMapping,
 } from '@happy-bar/types'
@@ -71,6 +73,7 @@ import {
   Plus,
   Search,
   Trash2,
+  Users,
   Zap,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -120,6 +123,14 @@ export default function ProductMappingsPage() {
   >('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
+  // Bulk operations state
+  const [selectedMappings, setSelectedMappings] = useState<Set<string>>(
+    new Set()
+  )
+  const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false)
+  const [bulkServingUnit, setBulkServingUnit] = useState<string>('')
+  const [bulkServingSize, setBulkServingSize] = useState<number | undefined>()
+
   useEffect(() => {
     fetchIntegrations()
     fetchProducts()
@@ -160,7 +171,7 @@ export default function ProductMappingsPage() {
   const fetchProducts = async () => {
     try {
       const response = await getProducts({ limit: 1000 })
-      setProducts(response.products)
+      setProducts(response.products as Product[])
     } catch (_error) {
       toast.error('Error', {
         description: 'Failed to fetch products',
@@ -490,6 +501,97 @@ export default function ProductMappingsPage() {
     setMappingServingSize(1.5)
   }
 
+  // Bulk operations handlers
+  const handleSelectMapping = (mappingId: string, checked: boolean) => {
+    const newSelection = new Set(selectedMappings)
+    if (checked) {
+      newSelection.add(mappingId)
+    } else {
+      newSelection.delete(mappingId)
+    }
+    setSelectedMappings(newSelection)
+  }
+
+  const handleSelectAllMappings = (checked: boolean) => {
+    if (checked) {
+      setSelectedMappings(new Set(filteredMappings.map((m) => m.id)))
+    } else {
+      setSelectedMappings(new Set())
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedMappings.size === 0) return
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedMappings.size} mapping(s)? This action cannot be undone.`
+      )
+    ) {
+      return
+    }
+
+    try {
+      await Promise.all(
+        Array.from(selectedMappings).map((id) => deleteProductMapping(id))
+      )
+
+      toast.success('Success', {
+        description: `${selectedMappings.size} mapping(s) deleted successfully`,
+      })
+
+      setSelectedMappings(new Set())
+      fetchMappings()
+      fetchSuggestions()
+    } catch (_error) {
+      toast.error('Error', {
+        description: 'Failed to delete some mappings',
+      })
+    }
+  }
+
+  const handleBulkEdit = async () => {
+    if (selectedMappings.size === 0) return
+
+    try {
+      const mappingsToUpdate = filteredMappings.filter((m) =>
+        selectedMappings.has(m.id)
+      )
+
+      await Promise.all(
+        mappingsToUpdate.map((mapping) =>
+          updateProductMapping(mapping.id, {
+            productId: mapping.productId,
+            posProductId: mapping.posProductId,
+            isConfirmed: mapping.isConfirmed,
+            servingUnit: bulkServingUnit || undefined,
+            servingSize: bulkServingSize || undefined,
+          })
+        )
+      )
+
+      toast.success('Success', {
+        description: `${selectedMappings.size} mapping(s) updated successfully`,
+      })
+
+      setIsBulkEditDialogOpen(false)
+      setSelectedMappings(new Set())
+      setBulkServingUnit('')
+      setBulkServingSize(undefined)
+      fetchMappings()
+    } catch (_error) {
+      toast.error('Error', {
+        description: 'Failed to update some mappings',
+      })
+    }
+  }
+
+  const handleCancelBulkEdit = () => {
+    setIsBulkEditDialogOpen(false)
+    setBulkServingUnit('')
+    setBulkServingSize(undefined)
+  }
+
   // Get serving unit options for the selected product
   const getServingOptions = () => {
     const selectedProductData = products.find((p) => p.id === selectedProduct)
@@ -802,6 +904,100 @@ export default function ProductMappingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Edit Dialog */}
+      <Dialog
+        open={isBulkEditDialogOpen}
+        onOpenChange={setIsBulkEditDialogOpen}
+      >
+        <DialogContent className='sm:max-w-[500px]'>
+          <DialogHeader>
+            <DialogTitle>Bulk Edit Product Mappings</DialogTitle>
+            <DialogDescription>
+              Update serving unit and size for {selectedMappings.size} selected
+              mapping(s)
+            </DialogDescription>
+          </DialogHeader>
+          <div className='grid gap-4 py-4'>
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='grid gap-2'>
+                <Label htmlFor='bulk-serving-unit'>
+                  Serving Unit (Optional)
+                </Label>
+                <Select
+                  value={bulkServingUnit || '__none__'}
+                  onValueChange={(value) =>
+                    setBulkServingUnit(value === '__none__' ? '' : value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select serving unit' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='__none__'>No serving unit</SelectItem>
+                    {/* {Object.values(ProductUnit).map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
+                    ))} */}
+                    {getServingUnitOptions(
+                      mappings.reduce((acc: ProductContainer[], m) => {
+                        if (
+                          selectedMappings.has(m.id) &&
+                          m.product?.container &&
+                          !acc.some((a) => a === m.product.container)
+                        ) {
+                          acc.push(m.product.container)
+                        }
+                        return acc
+                      }, [])
+                    ).map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className='grid gap-2'>
+                <Label htmlFor='bulk-serving-size'>
+                  Serving Size (Optional)
+                </Label>
+                <Input
+                  id='bulk-serving-size'
+                  type='number'
+                  min='0.01'
+                  step='0.01'
+                  value={bulkServingSize || ''}
+                  onChange={(e) =>
+                    setBulkServingSize(
+                      e.target.value ? parseFloat(e.target.value) : undefined
+                    )
+                  }
+                  placeholder='e.g., 1.5 for 1.5oz shot'
+                />
+              </div>
+            </div>
+            <div className='text-sm text-muted-foreground'>
+              These values will be applied to all {selectedMappings.size}{' '}
+              selected mappings.
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant='outline' onClick={handleCancelBulkEdit}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBulkEdit}
+              disabled={!bulkServingUnit && !bulkServingSize}
+            >
+              Update {selectedMappings.size} Mapping(s)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {!selectedIntegration ? (
         <Button asChild>
           <a href='/dashboard/settings'>
@@ -861,151 +1057,6 @@ export default function ProductMappingsPage() {
                 Map POS products directly to inventory products (for
                 bottled/packaged items)
               </div>
-
-              {/* Filters for Direct Mappings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Filter Mappings</CardTitle>
-                  <CardDescription>
-                    Filter and search through your product mappings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className='flex flex-wrap gap-4'>
-                    <div className='flex-1 min-w-[200px]'>
-                      <div className='relative'>
-                        <Search className='absolute left-2 top-2.5 size-4 text-muted-foreground' />
-                        <Input
-                          placeholder='Search mappings...'
-                          value={mappingSearch}
-                          onChange={(e) => setMappingSearch(e.target.value)}
-                          className='pl-8'
-                        />
-                      </div>
-                    </div>
-                    <Select
-                      value={confirmationFilter}
-                      onValueChange={(value: 'all' | 'confirmed' | 'auto') =>
-                        setConfirmationFilter(value)
-                      }
-                    >
-                      <SelectTrigger className='w-[180px]'>
-                        <SelectValue placeholder='Filter by status' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='all'>All Mappings</SelectItem>
-                        <SelectItem value='confirmed'>
-                          Confirmed Only
-                        </SelectItem>
-                        <SelectItem value='auto'>Auto-mapped Only</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={categoryFilter}
-                      onValueChange={setCategoryFilter}
-                    >
-                      <SelectTrigger className='w-[180px]'>
-                        <SelectValue placeholder='Filter by category' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='all'>All Categories</SelectItem>
-                        {posCategories
-                          .filter((category) => !!category)
-                          .map((category) => (
-                            <SelectItem key={category} value={category!}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    {(mappingSearch ||
-                      confirmationFilter !== 'all' ||
-                      categoryFilter !== 'all') && (
-                      <Button
-                        variant='outline'
-                        onClick={() => {
-                          setMappingSearch('')
-                          setConfirmationFilter('all')
-                          setCategoryFilter('all')
-                        }}
-                      >
-                        Clear Filters
-                      </Button>
-                    )}
-                  </div>
-                  {(mappingSearch ||
-                    confirmationFilter !== 'all' ||
-                    categoryFilter !== 'all') && (
-                    <p className='text-sm text-muted-foreground mt-2'>
-                      Showing {filteredMappings.length} of {mappings.length}{' '}
-                      mappings
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Mapping Suggestions */}
-              {suggestions.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className='flex items-center gap-2'>
-                      <Zap className='size-5' />
-                      Auto-Mapping Suggestions
-                    </CardTitle>
-                    <CardDescription>
-                      AI-powered suggestions for mapping POS products to
-                      internal products
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className='space-y-3'>
-                      {suggestions.slice(0, 5).map((suggestion) => (
-                        <div
-                          key={`${suggestion.productId}-${suggestion.posProductId}`}
-                          className='flex items-center justify-between p-3 border rounded-lg'
-                        >
-                          <div className='flex-1'>
-                            <div className='font-medium'>
-                              {suggestion.productName}
-                            </div>
-                            <div className='text-sm text-muted-foreground'>
-                              ↔ {suggestion.posProductName}
-                            </div>
-                            <div className='flex gap-1 mt-1'>
-                              {suggestion.reasons.map((reason, index) => (
-                                <Badge
-                                  key={index}
-                                  variant='secondary'
-                                  className='text-xs'
-                                >
-                                  {reason}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                          <div className='flex items-center gap-2'>
-                            <Badge
-                              variant={
-                                suggestion.confidence > 0.8
-                                  ? 'default'
-                                  : 'secondary'
-                              }
-                            >
-                              {(suggestion.confidence * 100).toFixed(0)}% match
-                            </Badge>
-                            <Button
-                              size='sm'
-                              onClick={() => handleAcceptSuggestion(suggestion)}
-                            >
-                              <CheckCircle className='size-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
 
               {/* Create Dialog */}
               <div className='flex w-full justify-end'>
@@ -1188,6 +1239,69 @@ export default function ProductMappingsPage() {
                 </Dialog>
               </div>
 
+              {/* Mapping Suggestions */}
+              {suggestions.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='flex items-center gap-2'>
+                      <Zap className='size-5' />
+                      Auto-Mapping Suggestions
+                    </CardTitle>
+                    <CardDescription>
+                      AI-powered suggestions for mapping POS products to
+                      internal products
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className='space-y-3'>
+                      {suggestions.slice(0, 5).map((suggestion) => (
+                        <div
+                          key={`${suggestion.productId}-${suggestion.posProductId}`}
+                          className='flex items-center justify-between p-3 border rounded-lg'
+                        >
+                          <div className='flex-1'>
+                            <div className='font-medium'>
+                              {suggestion.productName}
+                            </div>
+                            <div className='text-sm text-muted-foreground'>
+                              ↔ {suggestion.posProductName}
+                            </div>
+                            <div className='flex gap-1 mt-1'>
+                              {suggestion.reasons.map((reason, index) => (
+                                <Badge
+                                  key={index}
+                                  variant='secondary'
+                                  className='text-xs'
+                                >
+                                  {reason}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            <Badge
+                              variant={
+                                suggestion.confidence > 0.8
+                                  ? 'default'
+                                  : 'secondary'
+                              }
+                            >
+                              {(suggestion.confidence * 100).toFixed(0)}% match
+                            </Badge>
+                            <Button
+                              size='sm'
+                              onClick={() => handleAcceptSuggestion(suggestion)}
+                            >
+                              <CheckCircle className='size-4' />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Direct Product Mappings */}
               <Card>
                 <CardHeader>
@@ -1195,6 +1309,112 @@ export default function ProductMappingsPage() {
                   <CardDescription>
                     Active mappings between POS products and internal products
                   </CardDescription>
+                  <div className='flex flex-wrap gap-4 mt-2'>
+                    <div className='flex-1 min-w-[200px]'>
+                      <div className='relative'>
+                        <Search className='absolute left-2 top-2.5 size-4 text-muted-foreground' />
+                        <Input
+                          placeholder='Search mappings...'
+                          value={mappingSearch}
+                          onChange={(e) => setMappingSearch(e.target.value)}
+                          className='pl-8'
+                        />
+                      </div>
+                    </div>
+                    <Select
+                      value={confirmationFilter}
+                      onValueChange={(value: 'all' | 'confirmed' | 'auto') =>
+                        setConfirmationFilter(value)
+                      }
+                    >
+                      <SelectTrigger className='w-[180px]'>
+                        <SelectValue placeholder='Filter by status' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='all'>All Mappings</SelectItem>
+                        <SelectItem value='confirmed'>
+                          Confirmed Only
+                        </SelectItem>
+                        <SelectItem value='auto'>Auto-mapped Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={categoryFilter}
+                      onValueChange={setCategoryFilter}
+                    >
+                      <SelectTrigger className='w-[180px]'>
+                        <SelectValue placeholder='Filter by category' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='all'>All Categories</SelectItem>
+                        {posCategories
+                          .filter((category) => !!category)
+                          .map((category) => (
+                            <SelectItem key={category} value={category!}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    {(mappingSearch ||
+                      confirmationFilter !== 'all' ||
+                      categoryFilter !== 'all') && (
+                      <Button
+                        variant='outline'
+                        onClick={() => {
+                          setMappingSearch('')
+                          setConfirmationFilter('all')
+                          setCategoryFilter('all')
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
+                  {(mappingSearch ||
+                    confirmationFilter !== 'all' ||
+                    categoryFilter !== 'all') && (
+                    <p className='text-sm text-muted-foreground mt-2'>
+                      Showing {filteredMappings.length} of {mappings.length}{' '}
+                      mappings
+                    </p>
+                  )}
+                  {/* Bulk Actions */}
+                  {selectedMappings.size > 0 && (
+                    <div className='flex items-center gap-2 mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg'>
+                      <div className='flex items-center gap-2 flex-1'>
+                        <Users className='size-4 text-blue-600' />
+                        <span className='text-sm font-medium text-blue-700'>
+                          {selectedMappings.size} mapping(s) selected
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() => setIsBulkEditDialogOpen(true)}
+                        >
+                          <Edit className='size-4 mr-1' />
+                          Bulk Edit
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='destructive'
+                          onClick={handleBulkDelete}
+                        >
+                          <Trash2 className='size-4 mr-1' />
+                          Delete Selected
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          onClick={() => setSelectedMappings(new Set())}
+                        >
+                          Clear Selection
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {filteredMappings.length === 0 ? (
@@ -1209,6 +1429,18 @@ export default function ProductMappingsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className='w-[50px]'>
+                            <Checkbox
+                              checked={
+                                selectedMappings.size > 0 &&
+                                selectedMappings.size ===
+                                  filteredMappings.length
+                              }
+                              onCheckedChange={(checked) =>
+                                handleSelectAllMappings(checked as boolean)
+                              }
+                            />
+                          </TableHead>
                           <TableHead>Internal Product</TableHead>
                           <TableHead>POS Product</TableHead>
                           <TableHead>Serving Info</TableHead>
@@ -1221,6 +1453,17 @@ export default function ProductMappingsPage() {
                       <TableBody>
                         {filteredMappings.map((mapping) => (
                           <TableRow key={mapping.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedMappings.has(mapping.id)}
+                                onCheckedChange={(checked) =>
+                                  handleSelectMapping(
+                                    mapping.id,
+                                    checked as boolean
+                                  )
+                                }
+                              />
+                            </TableCell>
                             <TableCell>
                               <div>
                                 <div className='font-medium'>

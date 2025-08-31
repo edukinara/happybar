@@ -162,7 +162,7 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
     async (request: FastifyRequest, _reply) => {
       // Get location filter for the current user
       const locationFilter = await getLocationFilter(request, fastify.prisma)
-      
+
       const products = await fastify.prisma.product.findMany({
         where: { organizationId: getOrganizationId(request), isActive: true },
         include: {
@@ -178,6 +178,43 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
           },
         },
         orderBy: { name: 'asc' },
+      })
+
+      return {
+        success: true,
+        data: products,
+      }
+    }
+  )
+  fastify.get(
+    '/inventory-items',
+    {
+      preHandler: [authMiddleware, requirePermission('products', 'read')],
+    },
+    async (request: FastifyRequest, _reply) => {
+      // Get location filter for the current user
+      const locationFilter = await getLocationFilter(request, fastify.prisma)
+
+      const products = await fastify.prisma.inventoryItem.findMany({
+        where: {
+          organizationId: getOrganizationId(request),
+          location: locationFilter,
+        },
+        include: {
+          product: {
+            select: {
+              name: true,
+              id: true,
+              category: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { product: { name: 'asc' } },
       })
 
       return {

@@ -1,8 +1,8 @@
 import type {
   Category,
+  InventoryProduct,
   POSProduct,
   Product,
-  ProductMapping,
   ProductMappingResponse,
 } from '@happy-bar/types'
 import { apiClient } from './client'
@@ -20,9 +20,7 @@ export interface MappingSuggestion {
 }
 
 export interface ProductsResponse {
-  products: (Product & {
-    mappings: ProductMapping[]
-  })[]
+  products: InventoryProduct[]
   pagination: {
     page: number
     limit: number

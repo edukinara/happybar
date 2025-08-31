@@ -1,8 +1,9 @@
+import { PrismaClient } from '@happy-bar/database'
 import { createPOSClient } from '@happy-bar/pos'
 import { POSProduct, SyncResult } from '@happy-bar/types'
 
 export class POSSyncService {
-  constructor(private prisma: any) {}
+  constructor(private prisma: PrismaClient) {}
 
   /**
    * Sync products from POS to database
@@ -40,14 +41,16 @@ export class POSSyncService {
           updated++
         } else {
           // Get or create category
-          let category = await this.prisma.category.findFirst({
-            where: {
-              organizationId,
-              name: posProduct.category,
-            },
-          })
+          let category = posProduct.category
+            ? await this.prisma.category.findFirst({
+                where: {
+                  organizationId,
+                  name: posProduct.category,
+                },
+              })
+            : null
 
-          if (!category) {
+          if (!category && posProduct.category) {
             category = await this.prisma.category.create({
               data: {
                 organizationId,
@@ -63,10 +66,10 @@ export class POSSyncService {
               organizationId,
               name: posProduct.name,
               sku: posProduct.sku || null,
-              categoryId: category.id,
+              categoryId: category?.id || '',
               unit: 'each', // Default unit
               unitSize: 1,
-              unitsPerCase: 1,
+              caseSize: 1,
               costPerUnit: (posProduct.price || 0) * 0.7, // Estimate 30% margin
               sellPrice: posProduct.price || 0,
               isActive: posProduct.isActive,
@@ -104,9 +107,19 @@ export class POSSyncService {
       if (!integration) {
         throw new Error('Integration not found')
       }
+      // Create callback to save updated credentials
+      const updateCredentials = async (updatedCredentials: any) => {
+        await this.prisma.pOSIntegration.update({
+          where: { id: integrationId },
+          data: { credentials: updatedCredentials },
+        })
+      }
 
       // Create POS client
-      const client = createPOSClient(integration.credentials)
+      const client = createPOSClient(
+        integration.credentials as any,
+        updateCredentials
+      )
 
       // Use provided location IDs or determine them based on integration mode
       if (!locationIds || locationIds.length === 0) {
@@ -221,6 +234,7 @@ export class POSSyncService {
     for (const sale of sales) {
       for (const item of sale.items) {
         const product = item.product
+        if (!product) continue
 
         // If product has recipes, calculate ingredient usage
         for (const recipeItem of product.recipes) {
@@ -296,12 +310,12 @@ export class POSSyncService {
           },
           update: {
             name: product.name,
-            sku: product.sku,
-            category: product.category,
-            price: product.price,
+            sku: product.sku || null,
+            category: product.category || null,
+            price: product.price || null,
             servingUnit: product.servingUnit || null,
             servingSize: product.servingSize || null,
-            isActive: product.isActive,
+            isActive: product.isActive ?? true,
             lastSyncedAt: new Date(),
             rawData: product,
           },
@@ -322,8 +336,8 @@ export class POSSyncService {
         })
       } catch (error) {
         console.error(
-          `Failed to save POS product ${product.externalId}:`,
-          error
+          `Failed to save POS product ${product.externalId} - ${product.name}:`,
+          error instanceof Error ? error.message : error
         )
       }
     }

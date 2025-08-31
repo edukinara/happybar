@@ -31,7 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
+import { type Supplier } from '@/lib/api/suppliers'
+import { useSuppliers, useUpdateSupplier } from '@/lib/queries/suppliers'
 import { cn } from '@/lib/utils'
 import {
   Building2,
@@ -50,62 +51,41 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useDebounce } from '@/hooks/use-debounce'
 import { toast } from 'sonner'
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<
     'ALL' | 'ACTIVE' | 'INACTIVE'
   >('ALL')
 
-  useEffect(() => {
-    loadSuppliers()
-  }, [statusFilter])
+  // Debounce search term for better performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  const loadSuppliers = async () => {
-    try {
-      setLoading(true)
-      const params: { active?: boolean; search?: string } = {}
+  // Use hooks for data fetching and mutations
+  const { data: suppliers = [], isLoading: loading } = useSuppliers({
+    active: statusFilter === 'ACTIVE' ? true : statusFilter === 'INACTIVE' ? false : undefined,
+    search: debouncedSearchTerm || undefined,
+  })
+  
+  const updateSupplierMutation = useUpdateSupplier()
 
-      if (statusFilter === 'ACTIVE') params.active = true
-      if (statusFilter === 'INACTIVE') params.active = false
-      if (searchTerm) params.search = searchTerm
-
-      const suppliers = await suppliersApi.getSuppliers(params)
-      setSuppliers(suppliers)
-    } catch (error) {
-      console.error('Failed to load suppliers:', error)
-      toast.error('Failed to load suppliers')
-    } finally {
-      setLoading(false)
-    }
+  const toggleSupplierStatus = (id: string, isActive: boolean) => {
+    updateSupplierMutation.mutate(
+      { id, data: { isActive: !isActive } },
+      {
+        onSuccess: () => {
+          // Success toast is handled by the mutation hook
+        },
+      }
+    )
   }
 
-  const toggleSupplierStatus = async (id: string, isActive: boolean) => {
-    try {
-      await suppliersApi.updateSupplier(id, { isActive: !isActive })
-      toast.success(`Supplier ${!isActive ? 'activated' : 'deactivated'}`)
-      loadSuppliers()
-    } catch (error) {
-      console.error('Failed to update supplier status:', error)
-      toast.error('Failed to update supplier status')
-    }
-  }
-
-  const filteredSuppliers = suppliers.filter(
-    (supplier) =>
-      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contacts?.some(
-        (contact) =>
-          contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          contact.phone?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  )
+  // Server-side filtering is now handled by the useSuppliers hook
+  const filteredSuppliers = suppliers
 
   const formatOrderCutoff = (supplier: Supplier) => {
     if (supplier.orderCutoffDays.length === 0) return 'Not specified'

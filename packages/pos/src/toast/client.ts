@@ -7,7 +7,7 @@ import {
   ToastRestaurant,
 } from '@happy-bar/types'
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
-import { Restaurant } from '../menu'
+import { MenuGroup, Restaurant } from '../menu'
 
 export interface ToastAPIResponse<T = unknown> {
   data?: T
@@ -265,21 +265,32 @@ export class ToastAPIClient {
       const groups: ToastMenuGroup[] = []
       const restaurant = response.data
 
+      const getMenuGroupNames = (group: MenuGroup, name: string) => {
+        if (group.menuItems) {
+          groups.push({
+            guid: group.guid,
+            name: `${name} > ${group.name}`,
+            items:
+              group.menuItems.map((i) => ({
+                ...i,
+                isActive: true,
+                modifiedDate: restaurant.lastUpdated,
+                price: i.price || undefined,
+              })) || [],
+          })
+        }
+        if (group.menuGroups) {
+          for (const subGroup of group.menuGroups) {
+            getMenuGroupNames(subGroup, group.name)
+          }
+        }
+      }
+
       if (restaurant?.menus) {
         for (const menu of restaurant.menus) {
           if (menu.menuGroups) {
             for (const group of menu.menuGroups) {
-              groups.push({
-                guid: group.guid,
-                name: `${menu.name} > ${group.name}`,
-                items:
-                  group.menuItems.map((i) => ({
-                    ...i,
-                    isActive: true,
-                    modifiedDate: restaurant.lastUpdated,
-                    price: i.price || undefined,
-                  })) || [],
-              })
+              getMenuGroupNames(group, menu.name)
             }
           }
         }
@@ -328,43 +339,57 @@ export class ToastAPIClient {
       const items: ToastMenuItem[] = []
       const restaurant = response.data
 
+      // function to extract items from deeply nested menuGroups
+      const getMenuGroupItems = (
+        group: MenuGroup,
+        name: string,
+        selectedGroupGuids?: string[]
+      ) => {
+        if (group.menuItems) {
+          let skip = false
+          if (selectedGroupGuids && selectedGroupGuids.length > 0) {
+            if (!selectedGroupGuids.includes(group.guid)) {
+              skip = true // Skip this group if not selected
+            }
+          }
+          if (!skip) {
+            items.push(
+              ...group.menuItems.map((item: unknown) => {
+                const menuItem = item as {
+                  guid: string
+                  name: string
+                  description?: string
+                  price?: number
+                  deleted?: boolean
+                  modifiedDate?: string
+                }
+                return {
+                  guid: menuItem.guid,
+                  name: menuItem.name,
+                  description: menuItem.description,
+                  price: menuItem.price || 0,
+                  isActive: !menuItem.deleted,
+                  modifiedDate: menuItem.modifiedDate || restaurant.lastUpdated,
+                  category: `${name}>${group.name}`,
+                  menu: name,
+                  groupGuid: group.guid,
+                }
+              })
+            )
+          }
+        }
+        if (group.menuGroups) {
+          for (const subGroup of group.menuGroups) {
+            getMenuGroupItems(subGroup, group.name, selectedGroupGuids)
+          }
+        }
+      }
+
       if (restaurant?.menus) {
         for (const menu of restaurant.menus) {
           if (menu.menuGroups) {
             for (const group of menu.menuGroups) {
-              // Filter by selected groups if specified
-              if (selectedGroupGuids && selectedGroupGuids.length > 0) {
-                if (!selectedGroupGuids.includes(group.guid)) {
-                  continue // Skip this group if not selected
-                }
-              }
-
-              if (group.menuItems) {
-                items.push(
-                  ...group.menuItems.map((item: unknown) => {
-                    const menuItem = item as {
-                      guid: string
-                      name: string
-                      description?: string
-                      price?: number
-                      deleted?: boolean
-                      modifiedDate?: string
-                    }
-                    return {
-                      guid: menuItem.guid,
-                      name: menuItem.name,
-                      description: menuItem.description,
-                      price: menuItem.price || 0,
-                      isActive: !menuItem.deleted,
-                      modifiedDate:
-                        menuItem.modifiedDate || restaurant.lastUpdated,
-                      category: `${menu.name}>${group.name}`,
-                      menu: menu.name,
-                      groupGuid: group.guid,
-                    }
-                  })
-                )
-              }
+              getMenuGroupItems(group, menu.name, selectedGroupGuids)
             }
           }
         }

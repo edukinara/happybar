@@ -38,19 +38,34 @@ export const PRODUCT_CONTAINER_OPTIONS = [
 
 // Generate serving unit options for product mappings
 export const getServingUnitOptions = (
-  productContainer?: ProductContainer | null
+  productContainer?: ProductContainer | ProductContainer[] | null
 ) => {
-  const baseOptions = [
+  if (!productContainer) {
+    return PRODUCT_UNIT_OPTIONS
+  }
+  if (Array.isArray(productContainer)) {
+    return [
+      ...productContainer.map((container) => ({
+        value: `${
+          PRODUCT_CONTAINER_OPTIONS.find((opt) => opt.value === container)
+            ?.value || 'unit'
+        }`,
+        label:
+          PRODUCT_CONTAINER_OPTIONS.find((opt) => opt.value === container)
+            ?.label || 'Unit',
+      })),
+      ...PRODUCT_UNIT_OPTIONS,
+    ]
+  }
+  return [
     {
-      value: `${PRODUCT_CONTAINER_OPTIONS.find((opt) => opt.value === productContainer)?.value || 'container'}`,
+      value: `${PRODUCT_CONTAINER_OPTIONS.find((opt) => opt.value === productContainer)?.value || 'unit'}`,
       label: productContainer
-        ? `${PRODUCT_CONTAINER_OPTIONS.find((opt) => opt.value === productContainer)?.label || 'Container'}`
+        ? `${PRODUCT_CONTAINER_OPTIONS.find((opt) => opt.value === productContainer)?.label || 'Unit'}`
         : 'Unit',
     },
     ...PRODUCT_UNIT_OPTIONS,
   ]
-
-  return baseOptions
 }
 
 // Helper to format product display with unit and container

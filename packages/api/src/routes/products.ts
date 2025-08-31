@@ -168,12 +168,30 @@ export async function productRoutes(fastify: FastifyInstance) {
         fastify.prisma.product.findMany({
           where,
           include: {
-            category: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
             mappings: {
               include: {
                 posProduct: {
                   include: {
                     integration: true,
+                  },
+                },
+              },
+            },
+            inventoryItems: {
+              select: {
+                id: true,
+                currentQuantity: true,
+                locationId: true,
+                location: {
+                  select: {
+                    id: true,
+                    name: true,
                   },
                 },
               },
@@ -432,6 +450,7 @@ export async function productRoutes(fastify: FastifyInstance) {
 
   // Import POS products
   fastify.post('/import-pos-products', async (request, reply) => {
+    console.log('🚀 Starting POS product import...', request.body)
     const validatedData = posProductImportSchema.parse(request.body)
 
     const integration = await fastify.prisma.pOSIntegration.findFirst({
@@ -449,7 +468,18 @@ export async function productRoutes(fastify: FastifyInstance) {
     const { createPOSClient } = await import('@happy-bar/pos')
     const { POSSyncService } = await import('../services/pos-sync')
 
-    const client = createPOSClient(integration.credentials as any)
+    const { integrationId } = request.params as { integrationId: string }
+    // Create callback to save updated credentials
+    const updateCredentials = async (updatedCredentials: any) => {
+      await fastify.prisma.pOSIntegration.update({
+        where: { id: integrationId },
+        data: { credentials: updatedCredentials },
+      })
+    }
+    const client = createPOSClient(
+      integration.credentials as any,
+      updateCredentials
+    )
     const syncService = new POSSyncService(fastify.prisma)
 
     try {
@@ -493,12 +523,23 @@ export async function productRoutes(fastify: FastifyInstance) {
         syncResult.productsSync.products &&
         syncResult.productsSync.products.length > 0
       ) {
+        console.log(`📦 About to save ${syncResult.productsSync.products.length} products to database`)
+        console.log(`Organization: ${getOrganizationId(request)}, Integration: ${validatedData.integrationId}`)
+        
         await syncService.saveProductsToDatabase(
           getOrganizationId(request),
           validatedData.integrationId,
           syncResult.productsSync.products
         )
         importedCount = syncResult.productsSync.products.length
+        
+        console.log(`✅ Successfully processed ${importedCount} products`)
+      } else {
+        console.log('❌ No products to save - sync result:', {
+          hasProductsSync: !!syncResult.productsSync,
+          hasProducts: !!(syncResult.productsSync?.products),
+          productCount: syncResult.productsSync?.products?.length || 0
+        })
       }
 
       // Auto-map products if requested

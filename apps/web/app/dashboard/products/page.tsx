@@ -40,7 +40,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { inventoryApi } from '@/lib/api/inventory'
+import { useDeleteProduct, useProducts } from '@/lib/queries/products'
 import type { InventoryProduct } from '@happy-bar/types'
 import {
   AlertTriangle,
@@ -61,12 +61,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<InventoryProduct[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<InventoryProduct[]>(
-    []
-  )
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLocationId, setSelectedLocationId] = useState<
     string | undefined
@@ -76,9 +70,40 @@ export default function ProductsPage() {
   )
   const [showBulkSupplierDialog, setShowBulkSupplierDialog] = useState(false)
 
+  // Use hooks for data fetching and mutations
+  const {
+    data: products = { products: [] },
+    isLoading: loading,
+    error,
+    refetch,
+  } = useProducts()
+  const deleteProductMutation = useDeleteProduct()
+
+  // Track product usage with new Autumn system
+  const { setUsage } = useProductUsageTracker()
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
+
+  // Filter products based on search term and location
+  const filteredProducts = products.products.filter((product) => {
+    // Search filter
+    const matchesSearch =
+      !searchTerm ||
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Location filter
+    const matchesLocation =
+      !selectedLocationId ||
+      product.inventoryItems?.some(
+        (item) => item.locationId === selectedLocationId
+      )
+
+    return matchesSearch && matchesLocation
+  })
 
   // Calculate pagination values
   const totalItems = filteredProducts.length
@@ -87,34 +112,17 @@ export default function ProductsPage() {
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex)
 
-  // Track product usage with new Autumn system
-  const { setUsage } = useProductUsageTracker()
-
+  // Update usage tracking when products change
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    if (products.products.length > 0) {
+      setUsage(products.products.length).catch(console.warn)
+    }
+  }, [products.products.length, setUsage])
 
+  // Reset to first page when filters change
   useEffect(() => {
-    const filtered = products.filter((product) => {
-      // Search filter
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.upc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
-
-      // Location filter - check if product has inventory in selected location
-      const matchesLocation =
-        !selectedLocationId ||
-        product.inventoryItems.some(
-          (item) => item.locationId === selectedLocationId
-        )
-
-      return matchesSearch && matchesLocation
-    })
-    setFilteredProducts(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
-  }, [products, searchTerm, selectedLocationId])
+    setCurrentPage(1)
+  }, [searchTerm, selectedLocationId])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -125,24 +133,7 @@ export default function ProductsPage() {
     setCurrentPage(1)
   }
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await inventoryApi.getProducts()
-      setProducts(data)
-
-      // Update Autumn usage tracking with current product count
-      await setUsage(data.length)
-    } catch (err) {
-      console.warn('Failed to fetch products:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch products')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteProduct = (productId: string) => {
     if (
       !confirm(
         'Are you sure you want to delete this product? This action cannot be undone.'
@@ -151,13 +142,7 @@ export default function ProductsPage() {
       return
     }
 
-    try {
-      await inventoryApi.deleteProduct(productId)
-      await fetchProducts()
-    } catch (err) {
-      console.warn('Failed to delete product:', err)
-      alert('Failed to delete product. Please try again.')
-    }
+    deleteProductMutation.mutate(productId)
   }
 
   const handleSelectAll = (checked: boolean) => {
@@ -223,8 +208,10 @@ export default function ProductsPage() {
           <h2 className='text-xl font-semibold mb-2'>
             Failed to load products
           </h2>
-          <p className='text-muted-foreground mb-4'>{error}</p>
-          <Button onClick={fetchProducts}>Try Again</Button>
+          <p className='text-muted-foreground mb-4'>
+            {error?.message || 'An error occurred while loading products'}
+          </p>
+          <Button onClick={() => refetch()}>Try Again</Button>
         </div>
       </div>
     )
@@ -265,8 +252,8 @@ export default function ProductsPage() {
               }
             >
               <div className='flex flex-row gap-2 flex-wrap'>
-                <ImportFromPOS onComplete={() => void fetchProducts()} />
-                <AddProductDialog onComplete={() => void fetchProducts()} />
+                <ImportFromPOS onComplete={() => void refetch()} />
+                <AddProductDialog onComplete={() => void refetch()} />
               </div>
             </ProductsGate>
           </div>
@@ -560,7 +547,7 @@ export default function ProductsPage() {
           )}
           onComplete={() => {
             setSelectedProducts(new Set())
-            fetchProducts()
+            refetch()
           }}
         />
       </div>

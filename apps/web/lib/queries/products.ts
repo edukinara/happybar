@@ -25,14 +25,20 @@ export function useProducts(params?: {
   includeInactive?: boolean
 }) {
   // Create stable query key by only including defined params
-  const stableParams = params ? {
-    ...(params.limit !== undefined && { limit: params.limit }),
-    ...(params.offset !== undefined && { offset: params.offset }),
-    ...(params.search !== undefined && { search: params.search }),
-    ...(params.category !== undefined && { category: params.category }),
-    ...(params.locationId !== undefined && { locationId: params.locationId }),
-    ...(params.includeInactive !== undefined && { includeInactive: params.includeInactive }),
-  } : {}
+  const stableParams = params
+    ? {
+        ...(params.limit !== undefined && { limit: params.limit }),
+        ...(params.offset !== undefined && { offset: params.offset }),
+        ...(params.search !== undefined && { search: params.search }),
+        ...(params.category !== undefined && { category: params.category }),
+        ...(params.locationId !== undefined && {
+          locationId: params.locationId,
+        }),
+        ...(params.includeInactive !== undefined && {
+          includeInactive: params.includeInactive,
+        }),
+      }
+    : {}
 
   return useQuery({
     queryKey: productKeys.list(stableParams),
@@ -70,12 +76,15 @@ export function useCreateProduct() {
     onSuccess: (response) => {
       // Invalidate ALL product-related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: productKeys.all })
-      
+
       // Invalidate inventory queries since new product affects inventory
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      
+
       // Add the new product to cache with correct data structure
-      queryClient.setQueryData(productKeys.detail(response.product.id), response.product)
+      queryClient.setQueryData(
+        productKeys.detail(response.product.id),
+        response.product
+      )
 
       toast.success('Product created successfully')
     },
@@ -99,11 +108,14 @@ export function useUpdateProduct() {
     }) => productsApi.updateProduct(id, data),
     onSuccess: (response, variables) => {
       // Update the specific product in cache with correct data structure
-      queryClient.setQueryData(productKeys.detail(variables.id), response.product)
-      
+      queryClient.setQueryData(
+        productKeys.detail(variables.id),
+        response.product
+      )
+
       // Invalidate ALL product-related queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: productKeys.all })
-      
+
       // Invalidate inventory if product details that affect inventory changed
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
 

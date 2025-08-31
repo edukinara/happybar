@@ -34,7 +34,8 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { inventoryApi } from '@/lib/api/inventory'
-import { ordersApi, type CreateOrderRequest } from '@/lib/api/orders'
+import { type CreateOrderRequest } from '@/lib/api/orders'
+import { useCreateOrder, useSendOrder } from '@/lib/queries/orders'
 import {
   Building2,
   Calculator,
@@ -96,7 +97,10 @@ export default function NewOrderPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+
+  // Use mutation hooks for proper cache invalidation
+  const createOrderMutation = useCreateOrder()
+  const sendOrderMutation = useSendOrder()
 
   // Order form state
   const [expectedDate, setExpectedDate] = useState('')
@@ -307,12 +311,13 @@ export default function NewOrderPage() {
       return
     }
 
-    try {
-      setSaving(true)
-      const ordersBySupplier = getOrdersBySupplier()
-      const createdOrders = []
+    const ordersBySupplier = getOrdersBySupplier()
+    const totalOrders = ordersBySupplier.size
+    let createdCount = 0
+    let sentCount = 0
 
-      // Create separate orders for each supplier
+    try {
+      // Create separate orders for each supplier using mutation hooks
       for (const [supplierId, items] of ordersBySupplier) {
         const orderData: CreateOrderRequest = {
           supplierId,
@@ -326,28 +331,58 @@ export default function NewOrderPage() {
           })),
         }
 
-        const response = await ordersApi.createOrder(orderData)
-        createdOrders.push(response.data)
+        // Create the order using mutation hook for proper cache invalidation
+        await new Promise<void>((resolve, reject) => {
+          createOrderMutation.mutate(orderData, {
+            onSuccess: async (response) => {
+              createdCount++
 
-        if (sendOrder) {
-          // Send the order immediately
-          await ordersApi.sendOrder(response.data.id)
-        }
+              if (sendOrder) {
+                // Send the order immediately using mutation hook
+                await new Promise<void>((sendResolve, sendReject) => {
+                  sendOrderMutation.mutate(response.data.id, {
+                    onSuccess: () => {
+                      sentCount++
+                      sendResolve()
+                    },
+                    onError: (error) => {
+                      console.error('Failed to send order:', error)
+                      sendReject(error)
+                    },
+                  })
+                })
+              }
+              resolve()
+            },
+            onError: (error) => {
+              console.error('Failed to create order:', error)
+              reject(error)
+            },
+          })
+        })
       }
 
-      const action = sendOrder ? 'created and sent' : 'saved as draft'
-      if (createdOrders.length === 1) {
-        toast.success(`Order ${action} successfully!`)
+      // Success message based on what was done
+      if (totalOrders === 1) {
+        // Don't show duplicate toast - mutation hooks already show success messages
+        // Only show custom message if different from default
+        // if (!sendOrder) {
+        //   toast.success(`Order saved as draft successfully!`)
+        // }
       } else {
-        toast.success(`${createdOrders.length} orders ${action} successfully!`)
+        if (sendOrder) {
+          toast.success(
+            `${createdCount} orders created and ${sentCount} sent successfully!`
+          )
+        } else {
+          toast.success(`${createdCount} orders saved as draft successfully!`)
+        }
       }
 
       router.push('/dashboard/orders')
     } catch (error) {
       console.error('Failed to save orders:', error)
       toast.error('Failed to save orders')
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -625,10 +660,12 @@ export default function NewOrderPage() {
                 <Button
                   className='w-full'
                   onClick={() => saveOrders(false)}
-                  disabled={saving || orderItems.length === 0}
+                  disabled={
+                    createOrderMutation.isPending || orderItems.length === 0
+                  }
                 >
                   <Save className='size-4 mr-2' />
-                  {saving
+                  {createOrderMutation.isPending
                     ? 'Saving...'
                     : getOrdersBySupplier().size > 1
                       ? 'Save Orders as Draft'
@@ -639,10 +676,14 @@ export default function NewOrderPage() {
                   className='w-full'
                   variant='outline'
                   onClick={() => saveOrders(true)}
-                  disabled={saving || orderItems.length === 0}
+                  disabled={
+                    createOrderMutation.isPending ||
+                    sendOrderMutation.isPending ||
+                    orderItems.length === 0
+                  }
                 >
                   <Send className='size-4 mr-2' />
-                  {saving
+                  {createOrderMutation.isPending || sendOrderMutation.isPending
                     ? 'Saving...'
                     : getOrdersBySupplier().size > 1
                       ? 'Save & Send Orders'
