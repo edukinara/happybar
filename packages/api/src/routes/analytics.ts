@@ -258,9 +258,14 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
                 product: item.product,
                 posProduct: item.posProduct,
               }
-
-              const posUnit = item.posProduct.servingUnit || 'unit'
-              const servingSize = item.posProduct.servingSize
+              const posUnit =
+                item.posProduct?.servingUnit ||
+                item.posProduct?.mappings?.[0].servingUnit ||
+                'unit'
+              const servingSize =
+                item.posProduct?.servingSize ||
+                item.posProduct?.mappings?.[0].servingSize ||
+                undefined
               const full = fullDepltionUnits.includes(posUnit)
               const actualQty =
                 !servingSize || full
@@ -551,6 +556,12 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
                   select: {
                     servingSize: true,
                     servingUnit: true,
+                    mappings: {
+                      select: {
+                        servingSize: true,
+                        servingUnit: true,
+                      },
+                    },
                   },
                 },
               },
@@ -583,36 +594,84 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
           string,
           Map<string, { units: number; revenue: number }>
         >()
+        
+        // Create a set of all dates in the range to ensure we include zero-demand days
+        const startDate = sixtyDaysAgo
+        const endDate = new Date()
+        const allDates = new Set<string>()
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          allDates.add(d.toISOString().split('T')[0]!)
+        }
 
+        // First pass: identify all products with sales
+        const productsWithSales = new Set<string>()
+        sales.forEach((sale) => {
+          sale.items.forEach((item) => {
+            if (item.product && item.productId) {
+              productsWithSales.add(item.productId)
+            }
+          })
+        })
+        
+        // Initialize all products with zero demand for all dates
+        productsWithSales.forEach(productId => {
+          const dailyMap = new Map<string, { units: number; revenue: number }>()
+          allDates.forEach(date => {
+            dailyMap.set(date, { units: 0, revenue: 0 })
+          })
+          productDailyDemand.set(productId, dailyMap)
+        })
+
+        // Second pass: populate actual sales data
         sales.forEach((sale) => {
           const dateKey = sale.saleDate.toISOString().split('T')[0]!
           sale.items.forEach((item) => {
             if (item.product && item.productId) {
-              let itemQty = 0
+              let itemQty = item.quantity // Default to raw quantity
+              const servingUnit =
+                item.posProduct?.servingUnit ||
+                item.posProduct?.mappings?.[0]?.servingUnit ||
+                undefined
+              const servingSize =
+                item.posProduct?.servingSize ||
+                item.posProduct?.mappings?.[0]?.servingSize ||
+                undefined
 
+              // Only convert if we have all necessary unit information
               if (
-                item.posProduct?.servingSize &&
-                item.posProduct?.servingUnit &&
-                item.product.unit
+                servingSize &&
+                servingUnit &&
+                item.product.unit &&
+                item.product.unitSize > 0
               ) {
-                const conversion = UnitConverter.calculateServingDepletion(
-                  item.posProduct.servingSize,
-                  item.posProduct.servingUnit,
-                  item.product.unit,
-                  item.product.unitSize,
-                  item.quantity
-                )
-                itemQty = conversion.convertedAmount / item.product.unitSize
+                try {
+                  // Convert POS serving to inventory unit
+                  const conversionResult = UnitConverter.convert(
+                    servingSize * item.quantity, // Total volume sold
+                    servingUnit, // POS unit (e.g., "fl oz")
+                    item.product.unit, // Product unit (e.g., "ml")
+                    item.product.unitSize // Not used in convert, but passed
+                  )
+
+                  // Divide by container size to get number of containers
+                  // e.g., 88.72 ml / 750 ml = 0.118 bottles
+                  itemQty =
+                    conversionResult.convertedAmount / item.product.unitSize
+                } catch (error) {
+                  console.warn(
+                    `Unit conversion failed for product ${item.productId}:`,
+                    error
+                  )
+                  // Fall back to raw quantity
+                }
               }
-              if (!productDailyDemand.has(item.productId)) {
-                productDailyDemand.set(item.productId, new Map())
-              }
+
               const dailyMap = productDailyDemand.get(item.productId)
               if (dailyMap) {
+                const existing = dailyMap.get(dateKey) || { units: 0, revenue: 0 }
                 dailyMap.set(dateKey, {
-                  units: (dailyMap.get(dateKey)?.units || 0) + itemQty,
-                  revenue:
-                    (dailyMap.get(dateKey)?.revenue || 0) + item.totalPrice,
+                  units: existing.units + itemQty,
+                  revenue: existing.revenue + item.totalPrice,
                 })
               }
             }

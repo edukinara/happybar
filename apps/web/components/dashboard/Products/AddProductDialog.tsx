@@ -21,17 +21,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { categoriesApi } from '@/lib/api/categories'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
+import { useCategories } from '@/lib/queries'
+import { ProductUnit } from '@happy-bar/types'
 import { Building2, Loader2, Plus, Save, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-
-interface Category {
-  id: string
-  name: string
-}
 
 interface ProductSupplier {
   supplierId: string
@@ -51,7 +47,7 @@ export default function AddProductDialog({
   onComplete,
 }: AddProductDialogProps) {
   const [open, setOpen] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
+  const { data: categories } = useCategories()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [productSuppliers, setProductSuppliers] = useState<ProductSupplier[]>(
     []
@@ -65,10 +61,10 @@ export default function AddProductDialog({
     sku: '',
     upc: '',
     categoryId: '',
-    unit: '',
-    container: '',
-    unitSize: 1,
-    caseSize: 1,
+    unit: ProductUnit.ML,
+    container: 'bottle',
+    unitSize: 750,
+    caseSize: 12,
     costPerUnit: 0,
     costPerCase: 0,
     sellPrice: 0,
@@ -84,12 +80,10 @@ export default function AddProductDialog({
   const fetchInitialData = async () => {
     try {
       setLoading(true)
-      const [categoriesData, suppliersData] = await Promise.all([
-        categoriesApi.getCategories(),
+      const [suppliersData] = await Promise.all([
         suppliersApi.getSuppliers({ active: true }),
       ])
 
-      setCategories(categoriesData)
       setSuppliers(suppliersData)
     } catch (error) {
       console.warn('Failed to fetch initial data:', error)
@@ -145,10 +139,10 @@ export default function AddProductDialog({
         sku: '',
         upc: '',
         categoryId: '',
-        unit: '',
-        container: '',
-        unitSize: 1,
-        caseSize: 1,
+        unit: ProductUnit.ML,
+        container: 'bottle',
+        unitSize: 750,
+        caseSize: 12,
         costPerUnit: 0,
         costPerCase: 0,
         sellPrice: 0,
@@ -332,7 +326,7 @@ export default function AddProductDialog({
                       <SelectValue placeholder='Select a category' />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {categories?.categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
                         </SelectItem>

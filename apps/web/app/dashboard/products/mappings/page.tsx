@@ -128,8 +128,12 @@ export default function ProductMappingsPage() {
     new Set()
   )
   const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false)
-  const [bulkServingUnit, setBulkServingUnit] = useState<string>('')
-  const [bulkServingSize, setBulkServingSize] = useState<number | undefined>()
+  const [bulkServingUnit, setBulkServingUnit] = useState<string>(
+    ProductUnit.FL_OZ
+  )
+  const [bulkServingSize, setBulkServingSize] = useState<number | undefined>(
+    1.5
+  )
 
   useEffect(() => {
     fetchIntegrations()
@@ -563,7 +567,7 @@ export default function ProductMappingsPage() {
           updateProductMapping(mapping.id, {
             productId: mapping.productId,
             posProductId: mapping.posProductId,
-            isConfirmed: mapping.isConfirmed,
+            isConfirmed: true,
             servingUnit: bulkServingUnit || undefined,
             servingSize: bulkServingSize || undefined,
           })
@@ -576,8 +580,8 @@ export default function ProductMappingsPage() {
 
       setIsBulkEditDialogOpen(false)
       setSelectedMappings(new Set())
-      setBulkServingUnit('')
-      setBulkServingSize(undefined)
+      setBulkServingUnit(ProductUnit.FL_OZ)
+      setBulkServingSize(1.5)
       fetchMappings()
     } catch (_error) {
       toast.error('Error', {
@@ -588,8 +592,8 @@ export default function ProductMappingsPage() {
 
   const handleCancelBulkEdit = () => {
     setIsBulkEditDialogOpen(false)
-    setBulkServingUnit('')
-    setBulkServingSize(undefined)
+    setBulkServingUnit(ProductUnit.FL_OZ)
+    setBulkServingSize(1.5)
   }
 
   // Get serving unit options for the selected product
@@ -741,25 +745,6 @@ export default function ProductMappingsPage() {
           </DialogHeader>
           <div className='grid gap-4 py-4'>
             <div className='grid gap-2'>
-              <Label htmlFor='edit-internal-product'>Internal Product</Label>
-              <Select
-                value={selectedProduct}
-                onValueChange={setSelectedProduct}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select internal product' />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      {product.name} {product.sku && `(${product.sku})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className='grid gap-2'>
               <Label htmlFor='edit-pos-product'>POS Product</Label>
               <Select
                 value={selectedPOSProduct}
@@ -775,6 +760,24 @@ export default function ProductMappingsPage() {
                       {product.category && `${product.category}`}{' '}
                       {product.price && `$${product.price.toFixed(2)}`}
                       {product.sku && `(${product.sku})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className='grid gap-2'>
+              <Label htmlFor='edit-internal-product'>Internal Product</Label>
+              <Select
+                value={selectedProduct}
+                onValueChange={setSelectedProduct}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Select internal product' />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((product) => (
+                    <SelectItem key={product.id} value={product.id}>
+                      {product.name} {product.sku && `(${product.sku})`}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1095,6 +1098,28 @@ export default function ProductMappingsPage() {
                     </DialogHeader>
                     <div className='grid gap-4 py-4'>
                       <div className='grid gap-2'>
+                        <Label htmlFor='pos-product'>POS Product</Label>
+                        <Select
+                          value={selectedPOSProduct}
+                          onValueChange={setSelectedPOSProduct}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select POS product' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {unmappedPOSProducts.map((product) => (
+                              <SelectItem key={product.id} value={product.id}>
+                                {product.name} {'=>'}{' '}
+                                {product.category && `${product.category}`}{' '}
+                                {product.price &&
+                                  `$${product.price.toFixed(2)}`}
+                                {product.sku && `(${product.sku})`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className='grid gap-2'>
                         <Label htmlFor='mapping-target'>
                           {mappingType === 'direct'
                             ? 'Internal Product'
@@ -1136,29 +1161,6 @@ export default function ProductMappingsPage() {
                                     /serving
                                   </SelectItem>
                                 ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className='grid gap-2'>
-                        <Label htmlFor='pos-product'>POS Product</Label>
-                        <Select
-                          value={selectedPOSProduct}
-                          onValueChange={setSelectedPOSProduct}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select POS product' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {unmappedPOSProducts.map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                {product.name} {'=>'}{' '}
-                                {product.category && `${product.category}`}{' '}
-                                {product.price &&
-                                  `$${product.price.toFixed(2)}`}
-                                {product.sku && `(${product.sku})`}
-                              </SelectItem>
-                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1644,8 +1646,8 @@ export default function ProductMappingsPage() {
                       Create Recipe Mapping
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className='sm:max-w-[500px]'>
-                    <DialogHeader>
+                  <DialogContent className='max-w-full sm:max-w-md'>
+                    <DialogHeader className='items-baseline'>
                       <DialogTitle>Create Recipe Mapping</DialogTitle>
                       <DialogDescription>
                         Map a POS cocktail/drink to a recipe
@@ -1658,7 +1660,7 @@ export default function ProductMappingsPage() {
                           value={selectedRecipe}
                           onValueChange={setSelectedRecipe}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className='max-w-xs sm:max-w-sm'>
                             <SelectValue placeholder='Select recipe' />
                           </SelectTrigger>
                           <SelectContent>
@@ -1679,7 +1681,7 @@ export default function ProductMappingsPage() {
                           value={selectedPOSProduct}
                           onValueChange={setSelectedPOSProduct}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className='max-w-xs sm:max-w-sm'>
                             <SelectValue placeholder='Select POS product' />
                           </SelectTrigger>
                           <SelectContent>

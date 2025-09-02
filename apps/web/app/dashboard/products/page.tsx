@@ -27,6 +27,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -40,7 +47,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useDeleteProduct, useProducts } from '@/lib/queries/products'
+import {
+  useCategories,
+  useDeleteProduct,
+  useProducts,
+} from '@/lib/queries/products'
 import type { InventoryProduct } from '@happy-bar/types'
 import {
   AlertTriangle,
@@ -62,6 +73,8 @@ import { useEffect, useState } from 'react'
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const { data: categories, isFetching: fetchingCategories } = useCategories()
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [selectedLocationId, setSelectedLocationId] = useState<
     string | undefined
   >()
@@ -102,7 +115,11 @@ export default function ProductsPage() {
         (item) => item.locationId === selectedLocationId
       )
 
-    return matchesSearch && matchesLocation
+    // Category filter
+    const matchesCategory =
+      categoryFilter === 'all' || product?.categoryId === categoryFilter
+
+    return matchesSearch && matchesLocation && matchesCategory
   })
 
   // Calculate pagination values
@@ -282,21 +299,6 @@ export default function ProductsPage() {
 
           <Card className='brand-card'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Categories</CardTitle>
-              <AlertTriangle className='size-4 brand-icon-accent' />
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold brand-text-gradient'>
-                {paginatedProducts.length}
-              </div>
-              <p className='text-xs text-muted-foreground'>
-                Page {currentPage} of {totalPages}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className='brand-card'>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Avg Cost</CardTitle>
               <DollarSign className='size-4 brand-icon-primary' />
             </CardHeader>
@@ -331,7 +333,7 @@ export default function ProductsPage() {
           </CardHeader>
           <CardContent>
             <div className='flex items-center justify-between mb-4'>
-              <div className='flex items-center space-x-2'>
+              <div className='flex items-center gap-2'>
                 <Search className='size-4 text-muted-foreground' />
                 <Input
                   placeholder='Search by product name, SKU, UPC, or category...'
@@ -341,50 +343,71 @@ export default function ProductsPage() {
                 />
               </div>
               <div className='flex items-center gap-2'>
-                {selectedProducts.size > 0 && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant='outline'
-                        disabled={selectedProducts.size === 0}
-                      >
-                        <ListPlus className='size-4 mr-2' />
-                        Bulk Actions ({selectedProducts.size})
-                        <ChevronDown className='size-4 ml-2' />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
-                      <DropdownMenuItem
-                        onClick={() => setShowBulkSupplierDialog(true)}
-                      >
-                        <Building2 className='size-4 mr-2' />
-                        Assign to Supplier
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Are you sure you want to delete ${selectedProducts.size} products?`
-                            )
-                          ) {
-                            // TODO: Implement bulk delete
-                            // console.log('Bulk delete:', Array.from(selectedProducts))
-                          }
-                        }}
-                        className='text-destructive'
-                      >
-                        <Trash2 className='size-4 mr-2' />
-                        Delete Selected
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-                <LocationFilter
-                  selectedLocationId={selectedLocationId}
-                  onLocationChange={setSelectedLocationId}
-                  placeholder='Filter by location'
-                />
+                <div className='flex items-center gap-2'>
+                  {selectedProducts.size > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant='outline'
+                          disabled={selectedProducts.size === 0}
+                        >
+                          <ListPlus className='size-4 mr-2' />
+                          Bulk Actions ({selectedProducts.size})
+                          <ChevronDown className='size-4 ml-2' />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end'>
+                        <DropdownMenuItem
+                          onClick={() => setShowBulkSupplierDialog(true)}
+                        >
+                          <Building2 className='size-4 mr-2' />
+                          Assign to Supplier
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Are you sure you want to delete ${selectedProducts.size} products?`
+                              )
+                            ) {
+                              // TODO: Implement bulk delete
+                              // console.log('Bulk delete:', Array.from(selectedProducts))
+                            }
+                          }}
+                          className='text-destructive'
+                        >
+                          <Trash2 className='size-4 mr-2' />
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                    disabled={fetchingCategories}
+                  >
+                    <SelectTrigger className='w-[180px]'>
+                      <SelectValue placeholder='Filter by category' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All Categories</SelectItem>
+                      {categories?.categories
+                        ?.filter((category) => !!category)
+                        .map((category) => (
+                          <SelectItem key={category.id} value={category.id!}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <LocationFilter
+                    selectedLocationId={selectedLocationId}
+                    onLocationChange={setSelectedLocationId}
+                    placeholder='Filter by location'
+                  />
+                </div>
               </div>
             </div>
 

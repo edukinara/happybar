@@ -12,6 +12,7 @@ import { SettingsRoute } from '@/components/auth/RouteGuard'
 import AuditLogsCard from '@/components/dashboard/Settings/AuditLogs'
 import InventorySettingsCard from '@/components/dashboard/Settings/InventorySettings'
 import LocationsCard from '@/components/dashboard/Settings/Locations'
+import OrganizationDetailsCard from '@/components/dashboard/Settings/OrganizationDetails'
 import { UserManagementCard } from '@/components/dashboard/Settings/UserManagement'
 import { HappBarLoader } from '@/components/HappyBarLoader'
 import { SyncDialog } from '@/components/pos/sync-dialog'
@@ -589,6 +590,9 @@ export default function SettingsPage() {
             <TabsContent value='organization' className='space-y-6'>
               {loadedTabs.has('organization') ? (
                 <>
+                  {/* Organization Details */}
+                  <OrganizationDetailsCard />
+
                   {/* Locations Management - Requires manager or admin role */}
                   <ManagerOnly
                     fallback={

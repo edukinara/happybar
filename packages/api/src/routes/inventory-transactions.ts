@@ -190,7 +190,16 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
       },
       include: {
         sale: true,
-        posProduct: true,
+        posProduct: {
+          include: {
+            mappings: {
+              select: {
+                servingSize: true,
+                servingUnit: true,
+              },
+            },
+          },
+        },
         product: {
           select: {
             id: true,
@@ -236,13 +245,20 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
           depletedQuantity = saleItem.quantity
         } else {
           // Check if there's a product mapping with serving units
-          const mapping = saleItem.posProduct
+          const servingUnit =
+            saleItem.posProduct?.servingUnit ||
+            saleItem.posProduct?.mappings?.[0].servingUnit ||
+            undefined
+          const servingSize =
+            saleItem.posProduct?.servingSize ||
+            saleItem.posProduct?.mappings?.[0].servingSize ||
+            undefined
 
-          if (mapping?.servingSize && mapping?.servingUnit && product.unit) {
+          if (servingSize && servingUnit && product.unit) {
             // Use unit conversion for POS serving to inventory unit
             const conversion = UnitConverter.calculateServingDepletion(
-              mapping.servingSize,
-              mapping.servingUnit,
+              servingSize,
+              servingUnit,
               product.unit,
               product.unitSize,
               saleItem.quantity
@@ -250,8 +266,8 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
             // Divide by unitSize to get the number of inventory units depleted
             depletedQuantity = conversion.convertedAmount / product.unitSize
             conversionDetails = {
-              posServingSize: mapping.servingSize,
-              posServingUnit: mapping.servingUnit,
+              posServingSize: servingSize,
+              posServingUnit: servingUnit,
               inventoryUnit: product.unit,
               inventoryUnitSize: product.unitSize,
               convertedAmount: conversion.convertedAmount,
@@ -259,15 +275,11 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
               conversionFactor: conversion.conversionFactor,
               isFullDepletion: conversion.isFullDepletion,
             }
-          } else if (
-            saleItem.posProduct?.servingSize &&
-            saleItem.posProduct?.servingUnit &&
-            product.unit
-          ) {
+          } else if (servingSize && servingUnit && product.unit) {
             // Use POS product serving info directly
             const conversion = UnitConverter.calculateServingDepletion(
-              saleItem.posProduct.servingSize,
-              saleItem.posProduct.servingUnit,
+              servingSize,
+              servingUnit,
               product.unit,
               product.unitSize,
               saleItem.quantity
@@ -275,8 +287,8 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
             // Divide by unitSize to get the number of inventory units depleted
             depletedQuantity = conversion.convertedAmount / product.unitSize
             conversionDetails = {
-              posServingSize: saleItem.posProduct.servingSize,
-              posServingUnit: saleItem.posProduct.servingUnit,
+              posServingSize: servingSize,
+              posServingUnit: servingUnit,
               inventoryUnit: product.unit,
               inventoryUnitSize: product.unitSize,
               convertedAmount: conversion.convertedAmount,

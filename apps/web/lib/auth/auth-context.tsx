@@ -256,7 +256,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (result.error) {
         // Check if the error code is specifically EMAIL_NOT_VERIFIED
         if (result.error.code === 'EMAIL_NOT_VERIFIED') {
-          throw new Error('Please check your email and click the verification link to verify your account before logging in. A new verification email has been sent.')
+          throw new Error(
+            'Please check your email and click the verification link to verify your account before logging in. A new verification email has been sent.'
+          )
         }
         throw new Error(result.error.message || 'Login failed')
       }
@@ -329,12 +331,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signOut()
       setUser(null)
       // Use window.location for a hard redirect to ensure clean state
-      window.location.href = '/login'
     } catch (error) {
       console.error('Logout failed:', error)
       // Still redirect to login even if signOut fails
       setUser(null)
-      window.location.href = '/login'
     }
   }
 

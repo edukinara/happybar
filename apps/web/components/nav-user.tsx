@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth/auth-context'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export function NavUser({
   user,
@@ -29,9 +30,10 @@ export function NavUser({
   }
 }) {
   const { logout } = useAuth()
+  const Router = useRouter()
 
   const handleLogout = async () => {
-    await logout()
+    await logout().then(() => Router.push('/login'))
   }
 
   return (

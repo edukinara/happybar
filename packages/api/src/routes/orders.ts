@@ -7,6 +7,7 @@ import {
   FastifyRequest,
 } from 'fastify'
 import { authMiddleware, requirePermission } from '../middleware/auth-simple'
+import { sendSupplierOrderEmail } from '../utils/supplier-order-email'
 
 // Helper to get organization ID or throw error
 function getOrganizationId(request: FastifyRequest): string {
@@ -302,6 +303,9 @@ export const ordersRoutes: FastifyPluginAsync = async function (
       // Prepare update data
       const updateData: Prisma.OrderUpdateInput = {}
 
+      // Store the previous status to check if it changed to SENT
+      const previousStatus = existingOrder.status
+
       if (status) {
         updateData.status = status as OrderStatus
       }
@@ -466,7 +470,12 @@ export const ordersRoutes: FastifyPluginAsync = async function (
         where: { id },
         data: updateData,
         include: {
-          supplier: true,
+          supplier: {
+            include: {
+              contacts: true,
+            },
+          },
+          organization: true,
           items: {
             include: {
               product: {
@@ -476,6 +485,82 @@ export const ordersRoutes: FastifyPluginAsync = async function (
           },
         },
       })
+
+      // Send email to supplier if order status changed to SENT
+      if (previousStatus !== 'SENT' && updatedOrder.status === 'SENT') {
+        console.log(
+          `Order ${updatedOrder.orderNumber} status changed to SENT, sending emails to supplier contacts`
+        )
+
+        // Get all supplier contacts with email addresses
+        const contactsWithEmail = updatedOrder.supplier.contacts.filter(
+          (contact) => contact.email
+        )
+
+        if (contactsWithEmail.length > 0) {
+          console.log(
+            `Found ${contactsWithEmail.length} contacts with email addresses for ${updatedOrder.supplier.name}`
+          )
+
+          // Prepare base email data
+          const organizationMetadata = updatedOrder.organization.metadata as any
+          const address = organizationMetadata?.address || {}
+
+          const baseEmailData = {
+            supplierName: updatedOrder.supplier.name,
+            organizationName: updatedOrder.organization.name,
+            organizationAddress: {
+              street: address.street,
+              city: address.city,
+              state: address.state,
+              zip: address.zip,
+              country: address.country,
+            },
+            orderNumber: updatedOrder.orderNumber,
+            orderDate: updatedOrder.createdAt,
+            items: updatedOrder.items.map((item) => ({
+              productName: item.product.name,
+              size: `${item.product.unitSize} ${item.product.unit}`,
+              quantity: item.quantityOrdered,
+              orderingUnit: item.orderingUnit || 'UNIT',
+              unitsPerCase: item.product.caseSize,
+            })),
+            notes: updatedOrder.notes || undefined,
+          }
+
+          // Send email to each contact
+          for (const contact of contactsWithEmail) {
+            try {
+              const emailData = {
+                ...baseEmailData,
+                email: contact.email!,
+              }
+
+              const emailResult = await sendSupplierOrderEmail(emailData)
+
+              if (emailResult.success) {
+                console.log(
+                  `Successfully sent order email to ${contact.name || 'contact'} (${contact.email}) at ${updatedOrder.supplier.name}`
+                )
+              } else {
+                console.error(
+                  `Failed to send order email to ${contact.name || 'contact'} (${contact.email}):`,
+                  emailResult.error
+                )
+              }
+            } catch (error) {
+              console.error(
+                `Error sending order email to ${contact.name || 'contact'} (${contact.email}):`,
+                error
+              )
+            }
+          }
+        } else {
+          console.warn(
+            `Cannot send order emails - supplier ${updatedOrder.supplier.name} has no contacts with email addresses`
+          )
+        }
+      }
 
       return { success: true, data: updatedOrder }
     }

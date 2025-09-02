@@ -384,9 +384,22 @@ export async function productRoutes(fastify: FastifyInstance) {
         throw new AppError('Product not found', ErrorCode.NOT_FOUND, 404)
       }
 
-      await fastify.prisma.product.delete({
-        where: { id },
-      })
+      // Delete related records that don't have cascade delete
+      // This includes InventoryCountItems which don't have onDelete: Cascade
+      await fastify.prisma.$transaction([
+        // Delete inventory count items first
+        fastify.prisma.inventoryCountItem.deleteMany({
+          where: { productId: id }
+        }),
+        // Delete audit logs
+        fastify.prisma.auditLog.deleteMany({
+          where: { productId: id }
+        }),
+        // Then delete the product
+        fastify.prisma.product.delete({
+          where: { id },
+        })
+      ])
 
       return { success: true }
     }
@@ -523,22 +536,26 @@ export async function productRoutes(fastify: FastifyInstance) {
         syncResult.productsSync.products &&
         syncResult.productsSync.products.length > 0
       ) {
-        console.log(`📦 About to save ${syncResult.productsSync.products.length} products to database`)
-        console.log(`Organization: ${getOrganizationId(request)}, Integration: ${validatedData.integrationId}`)
-        
+        console.log(
+          `📦 About to save ${syncResult.productsSync.products.length} products to database`
+        )
+        console.log(
+          `Organization: ${getOrganizationId(request)}, Integration: ${validatedData.integrationId}`
+        )
+
         await syncService.saveProductsToDatabase(
           getOrganizationId(request),
           validatedData.integrationId,
           syncResult.productsSync.products
         )
         importedCount = syncResult.productsSync.products.length
-        
+
         console.log(`✅ Successfully processed ${importedCount} products`)
       } else {
         console.log('❌ No products to save - sync result:', {
           hasProductsSync: !!syncResult.productsSync,
-          hasProducts: !!(syncResult.productsSync?.products),
-          productCount: syncResult.productsSync?.products?.length || 0
+          hasProducts: !!syncResult.productsSync?.products,
+          productCount: syncResult.productsSync?.products?.length || 0,
         })
       }
 
@@ -1134,6 +1151,9 @@ async function generateMappingSuggestions(
       organizationId,
       integrationId,
       mappings: {
+        none: {},
+      },
+      recipePOSMappings: {
         none: {},
       },
     },

@@ -21,10 +21,14 @@ async function cleanupDeselectedGroups(
   prisma: unknown,
   organizationId: string
 ) {
-  console.log(`🧹 Starting cleanup for deselected groups. Selected groups: ${selectedGroupGuids.length}`)
-  
+  console.log(
+    `🧹 Starting cleanup for deselected groups. Selected groups: ${selectedGroupGuids.length}`
+  )
+
   if (selectedGroupGuids.length === 0) {
-    console.log(`⚠️ No selected groups - skipping cleanup to prevent deleting all products`)
+    console.log(
+      `⚠️ No selected groups - skipping cleanup to prevent deleting all products`
+    )
     return
   }
 
@@ -38,13 +42,13 @@ async function cleanupDeselectedGroups(
       AND: [
         { category: { not: null } },
         // FIXED: Check if category contains any of the selected GUIDs (proper matching)
-        { 
+        {
           NOT: {
-            OR: selectedGroupGuids.map(guid => ({
-              category: { contains: guid }
-            }))
-          }
-        }
+            OR: selectedGroupGuids.map((guid) => ({
+              category: { contains: guid },
+            })),
+          },
+        },
       ],
     },
     include: {
@@ -52,24 +56,34 @@ async function cleanupDeselectedGroups(
     },
   })
 
-  console.log(`🔍 Found ${productsToDelete.length} products to potentially delete from deselected groups`)
+  console.log(
+    `🔍 Found ${productsToDelete.length} products to potentially delete from deselected groups`
+  )
 
   if (productsToDelete.length > 0) {
     // IMPORTANT: Check for products with mappings and warn
-    const productsWithMappings = productsToDelete.filter((p: any) => p.mappings && p.mappings.length > 0)
-    
+    const productsWithMappings = productsToDelete.filter(
+      (p: any) => p.mappings && p.mappings.length > 0
+    )
+
     if (productsWithMappings.length > 0) {
-      console.log(`⚠️ WARNING: ${productsWithMappings.length} products have mappings that would be deleted:`)
+      console.log(
+        `⚠️ WARNING: ${productsWithMappings.length} products have mappings that would be deleted:`
+      )
       productsWithMappings.forEach((p: any) => {
         console.log(`   - "${p.name}" has ${p.mappings.length} mappings`)
       })
-      
+
       // For safety, only delete products WITHOUT mappings
-      const safeProductsToDelete = productsToDelete.filter((p: any) => !p.mappings || p.mappings.length === 0)
-      
+      const safeProductsToDelete = productsToDelete.filter(
+        (p: any) => !p.mappings || p.mappings.length === 0
+      )
+
       if (safeProductsToDelete.length > 0) {
-        console.log(`🗑️ Safely deleting ${safeProductsToDelete.length} products without mappings`)
-        
+        console.log(
+          `🗑️ Safely deleting ${safeProductsToDelete.length} products without mappings`
+        )
+
         await (prisma as any).pOSProduct.deleteMany({
           where: {
             id: { in: safeProductsToDelete.map((p: { id: string }) => p.id) },
@@ -77,25 +91,29 @@ async function cleanupDeselectedGroups(
           },
         })
       }
-      
+
       // Mark products with mappings as inactive instead of deleting
       if (productsWithMappings.length > 0) {
-        console.log(`🔒 Marking ${productsWithMappings.length} products with mappings as inactive`)
-        
+        console.log(
+          `🔒 Marking ${productsWithMappings.length} products with mappings as inactive`
+        )
+
         for (const product of productsWithMappings) {
           await (prisma as any).pOSProduct.update({
             where: { id: product.id },
-            data: { 
+            data: {
               isActive: false,
-              lastSyncedAt: new Date() 
-            }
+              lastSyncedAt: new Date(),
+            },
           })
         }
       }
     } else {
       // No mappings, safe to delete all
-      console.log(`🗑️ Deleting ${productsToDelete.length} products (no mappings to preserve)`)
-      
+      console.log(
+        `🗑️ Deleting ${productsToDelete.length} products (no mappings to preserve)`
+      )
+
       await (prisma as any).pOSProduct.deleteMany({
         where: {
           id: { in: productsToDelete.map((p: { id: string }) => p.id) },
@@ -543,11 +561,10 @@ export const posRoutes: FastifyPluginAsync = async function (fastify) {
           },
         }
       } else {
-        const { integrationId } = request.params as { integrationId: string }
         // Create callback to save updated credentials
         const updateCredentials = async (updatedCredentials: any) => {
           await fastify.prisma.pOSIntegration.update({
-            where: { id: integrationId },
+            where: { id },
             data: { credentials: updatedCredentials },
           })
         }
