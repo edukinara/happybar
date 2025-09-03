@@ -118,6 +118,50 @@ export async function updateProduct(
   }
 }
 
+export interface BulkUpdateProductsRequest {
+  updates: Array<{
+    id: string
+    data: Partial<
+      Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'category' | 'mappings'>
+    >
+  }>
+}
+
+export interface BulkUpdateProductsResponse {
+  total: number
+  successful: number
+  failed: number
+  results: Array<{
+    id: string
+    success: boolean
+    product?: Product
+    error?: string
+  }>
+  errors: Array<{
+    id: string
+    error: string
+  }>
+}
+
+export async function bulkUpdateProducts(
+  request: BulkUpdateProductsRequest
+): Promise<BulkUpdateProductsResponse> {
+  const response = await apiClient.put<APIRes<BulkUpdateProductsResponse>>(
+    '/api/products/bulk-update',
+    request
+  )
+
+  // The apiClient already unwraps response.data, so response is the actual data
+  if (response && 'success' in response && response.success && response.data) {
+    return response.data
+  } else if (response && 'total' in response && 'successful' in response) {
+    // Already unwrapped format - cast through unknown for type safety
+    return response as unknown as BulkUpdateProductsResponse
+  } else {
+    throw new Error('Failed to bulk update products')
+  }
+}
+
 export async function deleteProduct(id: string): Promise<{ success: boolean }> {
   const response = await apiClient.delete<{ success: boolean }>(
     `/api/products/${id}`

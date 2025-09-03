@@ -43,7 +43,7 @@ export function useProducts(params?: {
   return useQuery({
     queryKey: productKeys.list(stableParams),
     queryFn: () => productsApi.getProducts(params),
-    staleTime: 5 * 60 * 1000, // 2 minutes - balanced caching
+    staleTime: 10 * 60 * 1000, // 10 minutes - balanced caching
   })
 }
 
@@ -139,6 +139,63 @@ export function useUpdateProduct() {
     },
     onError: (error) => {
       toast.error(error?.message || 'Failed to update product')
+    },
+  })
+}
+
+// Bulk Update Products Mutation
+export function useBulkUpdateProducts() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: productsApi.BulkUpdateProductsRequest) =>
+      productsApi.bulkUpdateProducts(data),
+    onSuccess: (response) => {
+      // Update individual product caches for successful updates
+      response.results.forEach((result) => {
+        if (result.success && result.product) {
+          queryClient.setQueryData(
+            productKeys.detail(result.id),
+            result.product
+          )
+        }
+      })
+
+      // Invalidate ALL product-related queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
+
+      // Invalidate inventory queries since product changes affect inventory
+      queryClient.invalidateQueries({ queryKey: ['inventory'] })
+
+      // Show appropriate success/error messages
+      const { successful, failed, total } = response
+      if (failed === 0) {
+        toast.success(
+          `Successfully updated ${successful} product${successful !== 1 ? 's' : ''}`
+        )
+      } else if (successful === 0) {
+        toast.error(`Failed to update all ${total} products`)
+      } else {
+        toast.success(
+          `Updated ${successful} of ${total} products (${failed} failed)`
+        )
+
+        // Show details of failed updates
+        const failedProductIds = response.errors
+          .slice(0, 3)
+          .map((e) => e.id)
+          .join(', ')
+        if (response.errors.length <= 3) {
+          toast.error(`Failed products: ${failedProductIds}`)
+        } else {
+          toast.error(
+            `Failed products: ${failedProductIds} and ${response.errors.length - 3} more`
+          )
+        }
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Failed to bulk update products')
     },
   })
 }

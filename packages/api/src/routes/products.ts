@@ -365,6 +365,148 @@ export async function productRoutes(fastify: FastifyInstance) {
     }
   )
 
+  // Bulk update products
+  fastify.put(
+    '/bulk-update',
+    {
+      preHandler: [authMiddleware, requirePermission('products', 'write')],
+    },
+    async (request: any, reply) => {
+      const validatedData = z
+        .object({
+          updates: z.array(
+            z.object({
+              id: z.string(),
+              data: updateProductSchema,
+            })
+          ),
+        })
+        .parse(request.body)
+
+      const organizationId = getOrganizationId(request)
+      const results: {
+        id: string
+        success: boolean
+        error?: string
+        product?: {
+          id: string
+          organizationId: string
+          name: string
+          sku: string | null
+          upc: string | null
+          categoryId: string
+          unit: string
+          unitSize: number
+          caseSize: number
+          costPerUnit: number
+          costPerCase: number | null
+          sellPrice: number | null
+          alcoholContent: number | null
+          image: string | null
+          isActive: boolean
+          posProductId: string | null
+          createdAt: Date
+          updatedAt: Date
+          container: string | null
+          category: {
+            id: string
+            organizationId: string
+            name: string
+            isActive: boolean
+            createdAt: Date
+            updatedAt: Date
+            parentId: string | null
+            sortOrder: number
+          }
+        }
+      }[] = []
+      const errors: {
+        id: string
+        error: string
+      }[] = []
+
+      // Process each update in parallel for better performance
+      await Promise.allSettled(
+        validatedData.updates.map(async (update) => {
+          try {
+            // Check if product exists and belongs to organization
+            const existingProduct = await fastify.prisma.product.findFirst({
+              where: {
+                id: update.id,
+                organizationId,
+              },
+            })
+
+            if (!existingProduct) {
+              throw new Error(`Product with ID ${update.id} not found`)
+            }
+
+            // Check for SKU/UPC conflicts if updating those fields
+            if (update.data.sku || update.data.upc) {
+              const existing = await fastify.prisma.product.findFirst({
+                where: {
+                  organizationId,
+                  id: { not: update.id },
+                  OR: [
+                    ...(update.data.sku ? [{ sku: update.data.sku }] : []),
+                    ...(update.data.upc ? [{ upc: update.data.upc }] : []),
+                  ],
+                },
+              })
+
+              if (existing) {
+                throw new Error(
+                  `Product with SKU "${update.data.sku}" or UPC "${update.data.upc}" already exists`
+                )
+              }
+            }
+
+            // Update the product
+            const updatedProduct = await fastify.prisma.product.update({
+              where: { id: update.id },
+              data: update.data,
+              include: {
+                category: true,
+              },
+            })
+
+            results.push({
+              id: update.id,
+              success: true,
+              product: updatedProduct,
+            })
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error'
+            errors.push({
+              id: update.id,
+              error: errorMessage,
+            })
+            results.push({
+              id: update.id,
+              success: false,
+              error: errorMessage,
+            })
+          }
+        })
+      )
+
+      const successCount = results.filter((r) => r.success).length
+      const errorCount = results.filter((r) => !r.success).length
+
+      return {
+        success: true,
+        data: {
+          total: validatedData.updates.length,
+          successful: successCount,
+          failed: errorCount,
+          results,
+          errors,
+        },
+      }
+    }
+  )
+
   // Delete product
   fastify.delete(
     '/:id',
@@ -1111,23 +1253,122 @@ export async function productRoutes(fastify: FastifyInstance) {
       const limit = !!query.limit ? parseInt(query.limit || '25', 10) : 25
       const search = query.search
 
-      const catalogMatches = await fastify.prisma.productCatalog.findMany({
-        where: { name: { contains: search, mode: 'insensitive' } },
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-        take: limit,
-        orderBy: { name: 'asc' },
+      if (!search || search.trim().length === 0) {
+        return {
+          success: true,
+          data: [],
+        }
+      }
+
+      // Split search terms and clean them
+      const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(term => term.length > 0)
+      
+      // Build WHERE conditions for flexible matching
+      const whereConditions: any[] = []
+
+      // 1. Exact match (highest priority)
+      whereConditions.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { upc: { contains: search, mode: 'insensitive' as const } },
+        ],
       })
+
+      // 2. All words present in any order
+      if (searchTerms.length > 1) {
+        whereConditions.push({
+          AND: searchTerms.map(term => ({
+            name: { contains: term, mode: 'insensitive' as const }
+          }))
+        })
+      }
+
+      // 3. Individual word matches (fallback)
+      searchTerms.forEach(term => {
+        if (term.length >= 3) { // Only match words with 3+ characters
+          whereConditions.push({
+            name: { contains: term, mode: 'insensitive' as const }
+          })
+        }
+      })
+
+      // Execute searches with different strategies and combine results
+      const results = await Promise.all(
+        whereConditions.map(where =>
+          fastify.prisma.productCatalog.findMany({
+            where,
+            include: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+            take: limit,
+          })
+        )
+      )
+
+      // Combine and deduplicate results while preserving order
+      const seenIds = new Set<string>()
+      const combinedResults = []
+      
+      for (const resultSet of results) {
+        for (const item of resultSet) {
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id)
+            
+            // Calculate relevance score
+            let score = 0
+            const itemNameLower = item.name.toLowerCase()
+            
+            // Exact substring match gets highest score
+            if (itemNameLower.includes(search.toLowerCase())) {
+              score += 100
+            }
+            
+            // All search terms present
+            if (searchTerms.every(term => itemNameLower.includes(term))) {
+              score += 50
+            }
+            
+            // Individual term matches
+            searchTerms.forEach(term => {
+              if (itemNameLower.includes(term)) {
+                score += 10
+              }
+            })
+            
+            // Word boundary matches (more relevant)
+            searchTerms.forEach(term => {
+              const regex = new RegExp(`\\b${term}`, 'i')
+              if (regex.test(item.name)) {
+                score += 5
+              }
+            })
+            
+            combinedResults.push({ ...item, _score: score })
+          }
+        }
+      }
+
+      // Sort by relevance score and then by name
+      combinedResults.sort((a, b) => {
+        if (b._score !== a._score) {
+          return b._score - a._score
+        }
+        return a.name.localeCompare(b.name)
+      })
+
+      // Remove the internal score field and limit results
+      const finalResults = combinedResults
+        .slice(0, limit)
+        .map(({ _score, ...item }) => item)
 
       return {
         success: true,
-        data: catalogMatches,
+        data: finalResults,
       }
     }
   )

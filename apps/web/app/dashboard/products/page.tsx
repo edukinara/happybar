@@ -2,6 +2,7 @@
 
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import AddProductDialog from '@/components/dashboard/Products/AddProductDialog'
+import BulkCatalogMatchingDialog from '@/components/dashboard/Products/BulkCatalogMatchingDialog'
 import BulkSupplierDialog from '@/components/dashboard/Products/BulkSupplierDialog'
 import ImportFromPOS from '@/components/dashboard/Products/ImportFromPOS'
 import { HappBarLoader } from '@/components/HappyBarLoader'
@@ -47,12 +48,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { bulkUpdateProducts } from '@/lib/api/products'
 import {
   useCategories,
   useDeleteProduct,
   useProducts,
 } from '@/lib/queries/products'
-import type { InventoryProduct } from '@happy-bar/types'
+import type { CatalogProduct, InventoryProduct } from '@happy-bar/types'
 import {
   AlertTriangle,
   Building2,
@@ -71,6 +73,7 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -83,6 +86,7 @@ export default function ProductsPage() {
     new Set()
   )
   const [showBulkSupplierDialog, setShowBulkSupplierDialog] = useState(false)
+  const [showBulkMatchingDialog, setShowBulkMatchingDialog] = useState(false)
 
   // Use hooks for data fetching and mutations
   const {
@@ -186,6 +190,62 @@ export default function ProductsPage() {
     }
     setSelectedProducts(newSelected)
   }
+
+  const handleBulkMatchingComplete = async (
+    matches: Array<{
+      product: InventoryProduct
+      selectedMatch: CatalogProduct | null
+      status: 'matched' | 'skipped' | 'pending'
+    }>
+  ) => {
+    const matchedProducts = matches.filter(
+      (m) => m.status === 'matched' && m.selectedMatch
+    )
+
+    if (matchedProducts.length === 0) {
+      toast.info('No products were matched')
+      return
+    }
+
+    try {
+      // Bulk Update matched products with catalog data
+      await bulkUpdateProducts({
+        updates: matchedProducts
+          .filter((m) => !!m.selectedMatch)
+          .map((match) => ({
+            id: match.product.id,
+            data: {
+              name: match.selectedMatch!.name,
+              categoryId:
+                match.selectedMatch!.categoryId || match.product.categoryId,
+              costPerUnit:
+                match.selectedMatch!.costPerUnit || match.product.costPerUnit,
+              costPerCase:
+                match.selectedMatch!.costPerCase || match.product.costPerCase,
+              image: match.selectedMatch!.image || match.product.image,
+              upc: match.selectedMatch!.upc || match.product.upc,
+            },
+          })),
+      })
+
+      toast.success(
+        `Successfully updated ${matchedProducts.length} products with catalog data`
+      )
+
+      // Clear selection after matching
+      setSelectedProducts(new Set())
+      // Refetch products to get updated data
+      refetch()
+    } catch (error) {
+      console.error('Failed to update products:', error)
+      toast.error('Failed to update some products. Please try again.')
+    }
+  }
+
+  // Get selected product objects for the dialog
+  const selectedProductObjects = (products?.products || []).filter(
+    (p: InventoryProduct) => selectedProducts.has(p.id)
+  )
 
   const isAllSelected =
     paginatedProducts.length > 0 &&
@@ -373,6 +433,15 @@ export default function ProductsPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
+                            setShowBulkMatchingDialog(true)
+                          }}
+                        >
+                          <Search className='size-4 mr-2' />
+                          Match with Catalog
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
                             if (
                               confirm(
                                 `Are you sure you want to delete ${selectedProducts.size} products?`
@@ -477,7 +546,9 @@ export default function ProductsPage() {
                                   className='object-contain'
                                   sizes='40px'
                                   onError={(_e) => {
-                                    console.warn(`Failed to load image: ${product.image}`)
+                                    console.warn(
+                                      `Failed to load image: ${product.image}`
+                                    )
                                   }}
                                 />
                               </div>
@@ -600,6 +671,14 @@ export default function ProductsPage() {
             setSelectedProducts(new Set())
             refetch()
           }}
+        />
+
+        {/* Bulk Catalog Matching Dialog */}
+        <BulkCatalogMatchingDialog
+          open={showBulkMatchingDialog}
+          onOpenChange={setShowBulkMatchingDialog}
+          selectedProducts={selectedProductObjects}
+          onMatchingComplete={handleBulkMatchingComplete}
         />
       </div>
     </div>

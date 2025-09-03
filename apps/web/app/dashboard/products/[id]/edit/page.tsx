@@ -23,8 +23,13 @@ import { Switch } from '@/components/ui/switch'
 import { categoriesApi } from '@/lib/api/categories'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
-import { useProducts } from '@/lib/queries'
-import type { CatalogProduct, InventoryProduct } from '@happy-bar/types'
+import { useProducts, useUpdateProduct } from '@/lib/queries'
+import type {
+  CatalogProduct,
+  InventoryProduct,
+  ProductContainer,
+  ProductUnit,
+} from '@happy-bar/types'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -62,6 +67,7 @@ export default function EditProductPage() {
   const router = useRouter()
   const productId = params.id as string
   const { isStale: _ } = useProducts()
+  const { mutateAsync: updateProduct } = useUpdateProduct()
 
   const [product, setProduct] = useState<InventoryProduct | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -174,16 +180,23 @@ export default function EditProductPage() {
 
       const data = {
         ...formData,
+        unit: (formData.unit as ProductUnit) || undefined,
+        container: (formData.container as ProductContainer) || undefined,
+        costPerUnit: formData.costPerUnit || undefined,
         costPerCase: formData.costPerCase || undefined,
         sellPrice: formData.sellPrice || undefined,
         alcoholContent: formData.alcoholContent || undefined,
         // supplierId: formData.supplierId || undefined,
         sku: formData.sku || undefined,
         upc: formData.upc || undefined,
-        container: formData.container || undefined,
       }
 
-      await inventoryApi.updateProduct(productId, data)
+      // await inventoryApi.updateProduct(productId, data)
+      await updateProduct({
+        id: productId,
+        data,
+      })
+      toast.success('Product updated successfully')
       router.push('/dashboard/products')
     } catch (error) {
       console.warn('Failed to update product:', error)

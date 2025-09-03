@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seed...')
 
-  const backup = fs.readFileSync(
-    '../../backups/complete-backup-2025-08-20T22-22-04-440Z.json'
-  )
+  // const backup = fs.readFileSync(
+  //   '../../backups/complete-backup-2025-08-20T22-22-04-440Z.json'
+  // )
   const catalog = fs.readFileSync('../../backups/catalog.json', 'utf-8')
 
   // const data = JSON.parse(backup.toString()) as any
@@ -190,28 +190,29 @@ async function main() {
   // console.log('  Password: demo123')
   // console.log('  Domain: demo')
 
+  // const prods = await prisma.productCatalog.findMany()
+  // fs.writeFileSync('../../backups/catalog.json', JSON.stringify(prods))
+
   // await prisma.productCatalog.createMany({
   //   data: JSON.parse(catalog),
   //   skipDuplicates: true,
   // })
 
-  // const imgs = fs.readFileSync('../../backups/dnlds.txt', 'utf-8')
-  // const ids = imgs.split('\n')
-
-  // for await (const id of ids) {
-  //   await prisma.productCatalog
-  //     .update({
-  //       where: {
-  //         id,
-  //       },
-  //       data: {
-  //         image: `https://happy-bar-catalog.s3.us-east-2.amazonaws.com/${id}`,
-  //       },
-  //     })
-  //     .catch(() => {
-  //       console.error(id)
-  //     })
-  // }
+  for await (const product of JSON.parse(catalog)) {
+    const { id, name } = product
+    await prisma.productCatalog
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+        },
+      })
+      .catch(() => {
+        console.error(id)
+      })
+  }
 
   // console.log('🎉 Database seed completed successfully!')
 }
