@@ -24,10 +24,11 @@ import { Switch } from '@/components/ui/switch'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
 import { useCategories } from '@/lib/queries'
-import { ProductUnit } from '@happy-bar/types'
+import { ProductUnit, type CatalogProduct } from '@happy-bar/types'
 import { Building2, Loader2, Plus, Save, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import CatalogSearch from './CatalogSearch'
 
 interface ProductSupplier {
   supplierId: string
@@ -91,6 +92,25 @@ export default function AddProductDialog({
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCatalogSelect = (catalogProduct: CatalogProduct) => {
+    // Auto-fill form with catalog product data
+    setFormData(prev => ({
+      ...prev,
+      name: catalogProduct.name,
+      upc: catalogProduct.upc || prev.upc,
+      categoryId: catalogProduct.categoryId || prev.categoryId,
+      unit: catalogProduct.unit || prev.unit,
+      container: catalogProduct.container || prev.container,
+      unitSize: catalogProduct.unitSize || prev.unitSize,
+      caseSize: catalogProduct.caseSize || prev.caseSize,
+      costPerUnit: catalogProduct.costPerUnit || prev.costPerUnit,
+      costPerCase: catalogProduct.costPerCase || prev.costPerCase,
+      image: catalogProduct.image || prev.image,
+    }))
+    
+    toast.success('Product details loaded from catalog')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -279,6 +299,19 @@ export default function AddProductDialog({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className='space-y-6 p-2'>
+              {/* Catalog Search */}
+              <div className='space-y-2'>
+                <Label>Search Product Catalog</Label>
+                <CatalogSearch
+                  onSelect={handleCatalogSelect}
+                  placeholder='Search catalog to auto-fill product details...'
+                  className='w-full'
+                />
+                <p className='text-xs text-muted-foreground'>
+                  Search the product catalog to quickly fill in product details
+                </p>
+              </div>
+
               {/* Basic Information */}
               <div className='space-y-4'>
                 <h3 className='text-sm font-semibold'>Basic Information</h3>
@@ -313,6 +346,20 @@ export default function AddProductDialog({
                       placeholder='e.g., 123456789012'
                     />
                   </div>
+                </div>
+
+                <div className='space-y-2'>
+                  <Label htmlFor='image'>Image URL</Label>
+                  <Input
+                    id='image'
+                    value={formData.image}
+                    onChange={(e) => handleInputChange('image', e.target.value)}
+                    placeholder='https://example.com/product-image.jpg'
+                    type='url'
+                  />
+                  <p className='text-xs text-muted-foreground'>
+                    Optional: URL to product image
+                  </p>
                 </div>
 
                 <div className='space-y-2'>

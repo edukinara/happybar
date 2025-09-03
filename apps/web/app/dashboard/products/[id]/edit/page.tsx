@@ -1,5 +1,6 @@
 'use client'
 
+import CatalogSearch from '@/components/dashboard/Products/CatalogSearch'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +24,7 @@ import { categoriesApi } from '@/lib/api/categories'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
 import { useProducts } from '@/lib/queries'
-import type { InventoryProduct } from '@happy-bar/types'
+import type { CatalogProduct, InventoryProduct } from '@happy-bar/types'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -32,6 +33,7 @@ import {
   Save,
   X,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -143,6 +145,25 @@ export default function EditProductPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCatalogSelect = (catalogProduct: CatalogProduct) => {
+    // Auto-fill form with catalog product data
+    setFormData((prev) => ({
+      ...prev,
+      name: catalogProduct.name,
+      upc: catalogProduct.upc || prev.upc,
+      categoryId: catalogProduct.categoryId || prev.categoryId,
+      unit: catalogProduct.unit || prev.unit,
+      container: catalogProduct.container || prev.container,
+      unitSize: catalogProduct.unitSize || prev.unitSize,
+      caseSize: catalogProduct.caseSize || prev.caseSize,
+      costPerUnit: catalogProduct.costPerUnit || prev.costPerUnit,
+      costPerCase: catalogProduct.costPerCase || prev.costPerCase,
+      image: catalogProduct.image || prev.image,
+    }))
+
+    toast.success('Product details updated from catalog')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -385,6 +406,23 @@ export default function EditProductPage() {
         </Card>
       )}
 
+      {/* Catalog Search */}
+      <Card>
+        <CardContent className='pt-6'>
+          <div className='space-y-2'>
+            <Label>Update from Product Catalog</Label>
+            <CatalogSearch
+              onSelect={handleCatalogSelect}
+              placeholder='Search catalog to update product details...'
+              className='w-full'
+            />
+            <p className='text-xs text-muted-foreground'>
+              Search the product catalog to update this product&apos;s details
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <div className='grid gap-6 lg:grid-cols-2'>
@@ -397,36 +435,85 @@ export default function EditProductPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='name'>Product Name *</Label>
-                <Input
-                  id='name'
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder='e.g., Budweiser Beer'
-                  required
-                />
+              <div
+                className={`flex gap-6 ${formData.image ? 'items-start' : ''}`}
+              >
+                {/* Product Image Display - Left Side */}
+                {formData.image && (
+                  <div className='flex-shrink-0'>
+                    <div className='space-y-2'>
+                      <div className='relative w-24 h-34 rounded-lg overflow-hidden border bg-muted'>
+                        <Image
+                          src={formData.image}
+                          alt={formData.name || 'Product image'}
+                          fill
+                          className='object-contain'
+                          sizes='128px'
+                          onError={(_e) => {
+                            console.warn(
+                              `Failed to load product image: ${formData.image}`
+                            )
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Form Fields - Right Side */}
+                <div className='flex-1 space-y-4'>
+                  <div className='space-y-2'>
+                    <Label htmlFor='name'>Product Name *</Label>
+                    <Input
+                      id='name'
+                      value={formData.name}
+                      onChange={(e) =>
+                        handleInputChange('name', e.target.value)
+                      }
+                      placeholder='e.g., Budweiser Beer'
+                      required
+                    />
+                  </div>
+
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='sku'>SKU</Label>
+                      <Input
+                        id='sku'
+                        value={formData.sku}
+                        onChange={(e) =>
+                          handleInputChange('sku', e.target.value)
+                        }
+                        placeholder='e.g., BUD-001'
+                      />
+                    </div>
+                    <div className='space-y-2'>
+                      <Label htmlFor='upc'>UPC/Barcode</Label>
+                      <Input
+                        id='upc'
+                        value={formData.upc}
+                        onChange={(e) =>
+                          handleInputChange('upc', e.target.value)
+                        }
+                        placeholder='e.g., 123456789012'
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='sku'>SKU</Label>
-                  <Input
-                    id='sku'
-                    value={formData.sku}
-                    onChange={(e) => handleInputChange('sku', e.target.value)}
-                    placeholder='e.g., BUD-001'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='upc'>UPC/Barcode</Label>
-                  <Input
-                    id='upc'
-                    value={formData.upc}
-                    onChange={(e) => handleInputChange('upc', e.target.value)}
-                    placeholder='e.g., 123456789012'
-                  />
-                </div>
+              <div className='space-y-2'>
+                <Label htmlFor='image'>Image URL</Label>
+                <Input
+                  id='image'
+                  value={formData.image}
+                  onChange={(e) => handleInputChange('image', e.target.value)}
+                  placeholder='https://example.com/product-image.jpg'
+                  type='url'
+                />
+                <p className='text-xs text-muted-foreground'>
+                  Optional: URL to product image
+                </p>
               </div>
 
               <div className='space-y-2'>

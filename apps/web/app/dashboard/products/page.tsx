@@ -68,6 +68,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -435,6 +436,7 @@ export default function ProductsPage() {
                           aria-label='Select all'
                         />
                       </TableHead>
+                      <TableHead className='w-[60px]'></TableHead>
                       <TableHead>Product</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Unit</TableHead>
@@ -464,6 +466,26 @@ export default function ProductsPage() {
                               }
                               aria-label={`Select ${product.name}`}
                             />
+                          </TableCell>
+                          <TableCell className='w-[60px] p-2'>
+                            {product.image ? (
+                              <div className='relative w-10 h-10 rounded-md overflow-hidden border bg-muted'>
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  fill
+                                  className='object-contain'
+                                  sizes='40px'
+                                  onError={(_e) => {
+                                    console.warn(`Failed to load image: ${product.image}`)
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div className='w-10 h-10 rounded-md border bg-muted flex items-center justify-center'>
+                                <Package className='w-4 h-4 text-muted-foreground' />
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell className='max-w-0 min-w-[150px]'>
                             <TooltipProvider>

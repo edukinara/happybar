@@ -114,7 +114,7 @@ export interface CatalogProduct {
   id: string
   name: string
   upc: string | null
-  unit: string | null
+  unit: ProductUnit | null
   unitSize: number | null
   caseSize: number | null
   costPerUnit: number | null
