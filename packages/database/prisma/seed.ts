@@ -9,8 +9,9 @@ async function main() {
   const backup = fs.readFileSync(
     '../../backups/complete-backup-2025-08-20T22-22-04-440Z.json'
   )
+  const catalog = fs.readFileSync('../../backups/catalog.json', 'utf-8')
 
-  const data = JSON.parse(backup.toString()) as any
+  // const data = JSON.parse(backup.toString()) as any
 
   // await prisma.location.createMany({
   //   data: data.locations,
@@ -188,6 +189,31 @@ async function main() {
   // console.log('  Email: admin@demo.com')
   // console.log('  Password: demo123')
   // console.log('  Domain: demo')
+
+  // await prisma.productCatalog.createMany({
+  //   data: JSON.parse(catalog),
+  //   skipDuplicates: true,
+  // })
+
+  // const imgs = fs.readFileSync('../../backups/dnlds.txt', 'utf-8')
+  // const ids = imgs.split('\n')
+
+  // for await (const id of ids) {
+  //   await prisma.productCatalog
+  //     .update({
+  //       where: {
+  //         id,
+  //       },
+  //       data: {
+  //         image: `https://happy-bar-catalog.s3.us-east-2.amazonaws.com/${id}`,
+  //       },
+  //     })
+  //     .catch(() => {
+  //       console.error(id)
+  //     })
+  // }
+
+  // console.log('🎉 Database seed completed successfully!')
 }
 
 main()

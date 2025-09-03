@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useDebounce } from '@/hooks/use-debounce'
 import { type Supplier } from '@/lib/api/suppliers'
 import { useSuppliers, useUpdateSupplier } from '@/lib/queries/suppliers'
 import { cn } from '@/lib/utils'
@@ -50,9 +51,7 @@ import {
   Truck,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { useDebounce } from '@/hooks/use-debounce'
-import { toast } from 'sonner'
+import { useState } from 'react'
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -67,10 +66,15 @@ export default function SuppliersPage() {
 
   // Use hooks for data fetching and mutations
   const { data: suppliers = [], isLoading: loading } = useSuppliers({
-    active: statusFilter === 'ACTIVE' ? true : statusFilter === 'INACTIVE' ? false : undefined,
+    includeInactive:
+      statusFilter === 'ACTIVE'
+        ? true
+        : statusFilter === 'INACTIVE'
+          ? false
+          : undefined,
     search: debouncedSearchTerm || undefined,
   })
-  
+
   const updateSupplierMutation = useUpdateSupplier()
 
   const toggleSupplierStatus = (id: string, isActive: boolean) => {

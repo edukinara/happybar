@@ -58,6 +58,7 @@ const createProductSchema = z.object({
   costPerCase: z.number().min(0).optional(),
   sellPrice: z.number().min(0).optional(),
   alcoholContent: z.number().optional(),
+  image: z.string().optional(),
   supplierId: z.string().optional(),
 })
 
@@ -99,6 +100,7 @@ const updateProductSchema = z.object({
   costPerCase: z.number().min(0).optional(),
   sellPrice: z.number().min(0).optional(),
   alcoholContent: z.number().optional(),
+  image: z.string().optional(),
   supplierId: z.string().optional(),
   isActive: z.boolean().optional(),
 })

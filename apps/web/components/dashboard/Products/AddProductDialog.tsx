@@ -69,6 +69,7 @@ export default function AddProductDialog({
     costPerCase: 0,
     sellPrice: 0,
     alcoholContent: 0,
+    image: '',
   })
 
   useEffect(() => {
@@ -147,6 +148,7 @@ export default function AddProductDialog({
         costPerCase: 0,
         sellPrice: 0,
         alcoholContent: 0,
+        image: '',
       })
       setProductSuppliers([])
       setSelectedSupplierId('')

@@ -147,6 +147,7 @@ export function useUpdateInventoryItem() {
         costPerCase?: number
         sellPrice?: number
         alcoholContent?: number
+        image?: string
         supplierId?: string
       }
     }) => inventoryApi.updateProduct(id, data),

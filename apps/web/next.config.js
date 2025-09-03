@@ -9,6 +9,11 @@ module.exports = {
         port: '3001',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'happy-bar-catalog.s3.us-east-2.amazonaws.com',
+        pathname: '/**',
+      },
     ],
   },
   env: {

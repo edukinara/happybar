@@ -58,6 +58,7 @@ export interface Product {
   costPerCase: number | null
   sellPrice: number | null
   alcoholContent: number | null
+  image: string | null
   isActive: boolean
   posProductId: string | null
   createdAt: Date
@@ -107,4 +108,22 @@ export interface Integration {
   selectedGroupGuids: any | null
   createdAt: Date
   updatedAt: Date
+}
+
+export interface CatalogProduct {
+  id: string
+  name: string
+  upc: string | null
+  unit: string | null
+  unitSize: number | null
+  caseSize: number | null
+  costPerUnit: number | null
+  costPerCase: number | null
+  image: string | null
+  container: string | null
+  categoryId: string
+  category: {
+    id: string
+    name: string
+  }
 }

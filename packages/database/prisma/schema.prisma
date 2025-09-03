@@ -11,23 +11,23 @@ datasource db {
 }
 
 model Location {
-  id                 String           @id @default(cuid())
+  id                 String                   @id @default(cuid())
   organizationId     String
   name               String
   code               String?
-  type               LocationType     @default(STORAGE)
+  type               LocationType             @default(STORAGE)
   address            String?
   description        String?
-  isActive           Boolean          @default(true)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  isActive           Boolean                  @default(true)
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
   alertRules         AlertRule[]
   countItems         CountItem[]
   inventoryCounts    InventoryCount[]
   inventoryItems     InventoryItem[]
-  organization       Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  stockMovementsFrom StockMovement[]  @relation("FromLocation")
-  stockMovementsTo   StockMovement[]  @relation("ToLocation")
+  organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockMovementsFrom StockMovement[]          @relation("FromLocation")
+  stockMovementsTo   StockMovement[]          @relation("ToLocation")
   zones              Zone[]
   userAssignments    UserLocationAssignment[]
 
@@ -113,19 +113,20 @@ model Bin {
 }
 
 model Category {
-  id             String       @id @default(cuid())
+  id             String           @id @default(cuid())
   organizationId String
   name           String
   parentId       String?
-  sortOrder      Int          @default(0)
-  isActive       Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  sortOrder      Int              @default(0)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   alertRules     AlertRule[]
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  parent         Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children       Category[]   @relation("CategoryHierarchy")
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent         Category?        @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children       Category[]       @relation("CategoryHierarchy")
   products       Product[]
+  ProductCatalog ProductCatalog[]
 
   @@unique([organizationId, name])
   @@map("categories")
@@ -145,6 +146,7 @@ model Product {
   costPerCase         Float?
   sellPrice           Float?
   alcoholContent      Float?
+  image               String?
   isActive            Boolean              @default(true)
   posProductId        String?
   createdAt           DateTime             @default(now())
@@ -173,17 +175,17 @@ model Supplier {
   id                String            @id @default(cuid())
   organizationId    String
   name              String
-  accountNumber     String?           // Account number with the supplier
+  accountNumber     String? // Account number with the supplier
   address           String?
   terms             String?
   isActive          Boolean           @default(true)
   // Order scheduling fields
-  orderCutoffTime   String?           // Time of day for order cutoffs (e.g., "14:30" for 2:30 PM)
+  orderCutoffTime   String? // Time of day for order cutoffs (e.g., "14:30" for 2:30 PM)
   orderCutoffDays   Int[]             @default([]) // Days of week (0=Sunday, 1=Monday, etc.)
   deliveryDays      Int[]             @default([]) // Days of week for deliveries
-  deliveryTimeStart String?           // Delivery window start (e.g., "08:00")
-  deliveryTimeEnd   String?           // Delivery window end (e.g., "12:00")
-  minimumOrderValue Float?            // Minimum order value required
+  deliveryTimeStart String? // Delivery window start (e.g., "08:00")
+  deliveryTimeEnd   String? // Delivery window end (e.g., "12:00")
+  minimumOrderValue Float? // Minimum order value required
   deliveryFee       Float?            @default(0) // Delivery fee
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -213,23 +215,23 @@ model SupplierContact {
 }
 
 model ProductSupplier {
-  id              String        @id @default(cuid())
-  productId       String
-  supplierId      String
-  supplierSku     String?
+  id               String        @id @default(cuid())
+  productId        String
+  supplierId       String
+  supplierSku      String?
   // Pricing and ordering preferences
-  orderingUnit    OrderingUnit  @default(UNIT) // UNIT or CASE
-  costPerUnit     Float
-  costPerCase     Float?
-  minimumOrder    Int           @default(1) // In ordering units
+  orderingUnit     OrderingUnit  @default(UNIT) // UNIT or CASE
+  costPerUnit      Float
+  costPerCase      Float?
+  minimumOrder     Int           @default(1) // In ordering units
   minimumOrderUnit OrderingUnit? // Override for minimum (e.g., must order by case)
-  packSize        Int?          // Units per pack if different from product case size
-  leadTimeDays    Int           @default(3)
-  isPreferred     Boolean       @default(false)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  supplier        Supplier      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  packSize         Int? // Units per pack if different from product case size
+  leadTimeDays     Int           @default(3)
+  isPreferred      Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  product          Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier         Supplier      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
   @@unique([productId, supplierId])
   @@map("product_suppliers")
@@ -327,18 +329,18 @@ model Order {
 }
 
 model OrderItem {
-  id               String        @id @default(cuid())
+  id               String       @id @default(cuid())
   orderId          String
   productId        String
   quantityOrdered  Float
-  quantityReceived Float         @default(0)
-  orderingUnit     OrderingUnit  @default(UNIT) // Track if ordered by unit or case
-  unitCost         Float         // Cost per ordering unit
+  quantityReceived Float        @default(0)
+  orderingUnit     OrderingUnit @default(UNIT) // Track if ordered by unit or case
+  unitCost         Float // Cost per ordering unit
   totalCost        Float
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  order            Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product          Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  order            Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, productId])
   @@map("order_items")
@@ -391,16 +393,16 @@ model Sale {
 }
 
 model SaleItem {
-  id            String  @id @default(cuid())
-  saleId        String
-  posProductId  String  // References external POS product ID
-  productId     String? // Optional: direct product mapping
-  recipeId      String? // Optional: recipe-based mapping
-  itemName      String  // Name from POS system for audit trail
-  quantity      Float
-  unitPrice     Float
-  totalPrice    Float   // Calculated: quantity * unitPrice
-  
+  id           String  @id @default(cuid())
+  saleId       String
+  posProductId String // References external POS product ID
+  productId    String? // Optional: direct product mapping
+  recipeId     String? // Optional: recipe-based mapping
+  itemName     String // Name from POS system for audit trail
+  quantity     Float
+  unitPrice    Float
+  totalPrice   Float // Calculated: quantity * unitPrice
+
   // Relations
   sale       Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)
   posProduct POSProduct @relation(fields: [posProductId], references: [id], onDelete: Cascade)
@@ -433,8 +435,8 @@ model POSIntegration {
   type               POSType
   credentials        Json
   isActive           Boolean            @default(true)
-  lastSyncAt         DateTime?          // For product/menu sync
-  lastSalesSyncAt    DateTime?          // For sales sync
+  lastSyncAt         DateTime? // For product/menu sync
+  lastSalesSyncAt    DateTime? // For sales sync
   syncStatus         SyncStatus         @default(NEVER_SYNCED)
   syncErrors         Json?
   selectedGroupGuids Json?
@@ -515,23 +517,23 @@ model IntegrationGroup {
 }
 
 model User {
-  id                    String               @id @default(cuid())
-  email                 String               @unique
-  emailVerified         Boolean              @default(false)
-  name                  String?
-  image                 String?
-  role                  String?              @default("user")
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
-  accounts              Account[]
-  counts                Count[]
-  countedInventoryItems InventoryCountItem[] @relation("CountedItems")
-  approvedCounts        InventoryCount[]     @relation("ApprovedCounts")
-  invitations           Invitation[]
-  members               Member[]
-  sessions              Session[]
-  stockMovements        StockMovement[]
-  locationAssignments   UserLocationAssignment[] @relation("UserLocationAccess")
+  id                     String                   @id @default(cuid())
+  email                  String                   @unique
+  emailVerified          Boolean                  @default(false)
+  name                   String?
+  image                  String?
+  role                   String?                  @default("user")
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  accounts               Account[]
+  counts                 Count[]
+  countedInventoryItems  InventoryCountItem[]     @relation("CountedItems")
+  approvedCounts         InventoryCount[]         @relation("ApprovedCounts")
+  invitations            Invitation[]
+  members                Member[]
+  sessions               Session[]
+  stockMovements         StockMovement[]
+  locationAssignments    UserLocationAssignment[] @relation("UserLocationAccess")
   assignedLocationAccess UserLocationAssignment[] @relation("AssignedLocationAccess")
 
   @@map("user")
@@ -585,42 +587,42 @@ model Verification {
 }
 
 model Organization {
-  id                String             @id @default(cuid())
-  name              String
-  slug              String?            @unique
-  logo              String?
-  metadata          Json?
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  aisles            Aisle[]
-  alertRules        AlertRule[]
-  alerts            Alert[]
-  analytics         Analytics[]
-  auditLogs         AuditLog[]
-  bins              Bin[]
-  categories        Category[]
-  counts            Count[]
-  integrationGroups IntegrationGroup[]
-  inventoryCounts   InventoryCount[]
-  inventoryItems    InventoryItem[]
-  inventorySettings InventorySettings?
-  invitations       Invitation[]
-  locations         Location[]
-  members           Member[]
-  orders            Order[]
-  posIntegrations   POSIntegration[]
-  posProducts       POSProduct[]
-  productMappings   ProductMapping[]
-  products          Product[]
-  recipePOSMappings RecipePOSMapping[]
-  recipes           Recipe[]
-  sales             Sale[]
-  shelves           Shelf[]
-  stockMovements    StockMovement[]
-  suppliers         Supplier[]
-  syncLogs          SyncLog[]
-  zones             Zone[]
+  id                      String                   @id @default(cuid())
+  name                    String
+  slug                    String?                  @unique
+  logo                    String?
+  metadata                Json?
+  isActive                Boolean                  @default(true)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  aisles                  Aisle[]
+  alertRules              AlertRule[]
+  alerts                  Alert[]
+  analytics               Analytics[]
+  auditLogs               AuditLog[]
+  bins                    Bin[]
+  categories              Category[]
+  counts                  Count[]
+  integrationGroups       IntegrationGroup[]
+  inventoryCounts         InventoryCount[]
+  inventoryItems          InventoryItem[]
+  inventorySettings       InventorySettings?
+  invitations             Invitation[]
+  locations               Location[]
+  members                 Member[]
+  orders                  Order[]
+  posIntegrations         POSIntegration[]
+  posProducts             POSProduct[]
+  productMappings         ProductMapping[]
+  products                Product[]
+  recipePOSMappings       RecipePOSMapping[]
+  recipes                 Recipe[]
+  sales                   Sale[]
+  shelves                 Shelf[]
+  stockMovements          StockMovement[]
+  suppliers               Supplier[]
+  syncLogs                SyncLog[]
+  zones                   Zone[]
   userLocationAssignments UserLocationAssignment[]
 
   @@map("organization")
@@ -639,23 +641,23 @@ model Member {
 }
 
 model UserLocationAssignment {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   organizationId String
   userId         String
   locationId     String
-  canRead        Boolean      @default(true)
-  canWrite       Boolean      @default(false)
-  canManage      Boolean      @default(false)
-  assignedAt     DateTime     @default(now())
+  canRead        Boolean  @default(true)
+  canWrite       Boolean  @default(false)
+  canManage      Boolean  @default(false)
+  assignedAt     DateTime @default(now())
   assignedById   String
-  isActive       Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  
-  assignedBy     User         @relation("AssignedLocationAccess", fields: [assignedById], references: [id])
-  location       Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User         @relation("UserLocationAccess", fields: [userId], references: [id], onDelete: Cascade)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  assignedBy   User         @relation("AssignedLocationAccess", fields: [assignedById], references: [id])
+  location     Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("UserLocationAccess", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId, locationId])
   @@index([userId, organizationId])
@@ -846,7 +848,7 @@ model InventorySettings {
   webhookPolicy               Json
   cronSyncPolicy              Json
   manualPolicy                Json
-  varianceAlertPolicy         Json?        // Configuration for variance alerts
+  varianceAlertPolicy         Json? // Configuration for variance alerts
   enableAutoConversion        Boolean      @default(true)
   conversionFallback          String       @default("warn")
   enableOverDepletionLogging  Boolean      @default(true)
@@ -882,18 +884,18 @@ model AuditLog {
 }
 
 model AdminUser {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  emailVerified     Boolean   @default(false)
-  name              String?
-  image             String?
-  role              AdminRole @default(SUPPORT)
-  isActive          Boolean   @default(true)
-  lastLoginAt       DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  adminSessions     AdminSession[]
-  adminAccounts     AdminAccount[]
+  id            String         @id @default(cuid())
+  email         String         @unique
+  emailVerified Boolean        @default(false)
+  name          String?
+  image         String?
+  role          AdminRole      @default(SUPPORT)
+  isActive      Boolean        @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  adminSessions AdminSession[]
+  adminAccounts AdminAccount[]
 
   @@map("admin_users")
 }
@@ -1072,21 +1074,39 @@ enum SyncType {
 }
 
 model SyncLog {
-  id                String       @id @default(cuid())
-  organizationId    String
-  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  syncType          SyncType
-  status            SyncStatus
-  recordsProcessed  Int?
-  recordsFailed     Int?
-  errorMessage      String?
-  startDate         DateTime?
-  endDate           DateTime?
-  completedAt       DateTime
-  createdAt         DateTime     @default(now())
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  syncType         SyncType
+  status           SyncStatus
+  recordsProcessed Int?
+  recordsFailed    Int?
+  errorMessage     String?
+  startDate        DateTime?
+  endDate          DateTime?
+  completedAt      DateTime
+  createdAt        DateTime     @default(now())
 
   @@index([organizationId])
   @@index([syncType])
   @@index([status])
   @@index([completedAt])
+}
+
+model ProductCatalog {
+  id          String   @id @default(cuid())
+  name        String
+  upc         String?
+  image       String?
+  caseSize    Float?
+  unitSize    Float?
+  unit        String?
+  costPerUnit Float?
+  costPerCase Float?
+  container   String?
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  @@index([name])
+  @@map("product_catalog")
 }

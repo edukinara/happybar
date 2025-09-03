@@ -89,7 +89,13 @@ export default function ProductsPage() {
     isLoading: loading,
     error,
     refetch,
+    isStale,
   } = useProducts()
+  useEffect(() => {
+    if (!loading && (isStale || !products?.products)) {
+      refetch()
+    }
+  }, [loading, isStale, products?.products])
   const deleteProductMutation = useDeleteProduct()
 
   // Track product usage with new Autumn system

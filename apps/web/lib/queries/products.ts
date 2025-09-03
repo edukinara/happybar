@@ -43,6 +43,22 @@ export function useProducts(params?: {
   return useQuery({
     queryKey: productKeys.list(stableParams),
     queryFn: () => productsApi.getProducts(params),
+    staleTime: 5 * 60 * 1000, // 2 minutes - balanced caching
+  })
+}
+
+export function useCatalog(params?: { limit?: number; search?: string }) {
+  // Create stable query key by only including defined params
+  const stableParams = params
+    ? {
+        ...(params.limit !== undefined && { limit: params.limit }),
+        ...(params.search !== undefined && { search: params.search }),
+      }
+    : {}
+
+  return useQuery({
+    queryKey: productKeys.list(stableParams),
+    queryFn: () => productsApi.searchCatalog(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }

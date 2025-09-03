@@ -586,6 +586,7 @@ export interface InventoryProduct {
   costPerCase: number | null
   sellPrice: number | null
   alcoholContent: number | null
+  image: string | null
   isActive: boolean
   posProductId: string | null
   createdAt: Date

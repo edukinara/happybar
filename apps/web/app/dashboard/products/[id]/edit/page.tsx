@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch'
 import { categoriesApi } from '@/lib/api/categories'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
+import { useProducts } from '@/lib/queries'
 import type { InventoryProduct } from '@happy-bar/types'
 import {
   AlertTriangle,
@@ -58,6 +59,7 @@ export default function EditProductPage() {
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
+  const { isStale: _ } = useProducts()
 
   const [product, setProduct] = useState<InventoryProduct | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -82,6 +84,7 @@ export default function EditProductPage() {
     costPerCase: 0,
     sellPrice: 0,
     alcoholContent: 0,
+    image: '',
     // supplierId: '',
   })
 
@@ -118,6 +121,7 @@ export default function EditProductPage() {
         costPerCase: productData.costPerCase || 0,
         sellPrice: productData.sellPrice || 0,
         alcoholContent: productData.alcoholContent || 0,
+        image: productData.image || '',
       })
 
       const currentSuppliers = productSuppliersData.map((ps) => ({

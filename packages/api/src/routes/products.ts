@@ -51,6 +51,7 @@ const productSchema = z.object({
   costPerCase: z.number().min(0).optional(),
   sellPrice: z.number().min(0).optional(),
   alcoholContent: z.number().min(0).max(100).optional(),
+  image: z.string().optional(),
   isActive: z.boolean().default(true),
 })
 
@@ -389,16 +390,16 @@ export async function productRoutes(fastify: FastifyInstance) {
       await fastify.prisma.$transaction([
         // Delete inventory count items first
         fastify.prisma.inventoryCountItem.deleteMany({
-          where: { productId: id }
+          where: { productId: id },
         }),
         // Delete audit logs
         fastify.prisma.auditLog.deleteMany({
-          where: { productId: id }
+          where: { productId: id },
         }),
         // Then delete the product
         fastify.prisma.product.delete({
           where: { id },
-        })
+        }),
       ])
 
       return { success: true }
@@ -1094,6 +1095,42 @@ export async function productRoutes(fastify: FastifyInstance) {
       },
     }
   })
+
+  // Search Product Catalog
+  fastify.get(
+    '/catalog',
+    {
+      preHandler: [authMiddleware, requirePermission('products', 'read')],
+    },
+    async (request: any, reply) => {
+      const query = request.query as {
+        limit?: string
+        search?: string
+      }
+
+      const limit = !!query.limit ? parseInt(query.limit || '25', 10) : 25
+      const search = query.search
+
+      const catalogMatches = await fastify.prisma.productCatalog.findMany({
+        where: { name: { contains: search, mode: 'insensitive' } },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        take: limit,
+        orderBy: { name: 'asc' },
+      })
+
+      return {
+        success: true,
+        data: catalogMatches,
+      }
+    }
+  )
 }
 
 // Helper function to auto-map products

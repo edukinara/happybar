@@ -234,6 +234,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
               costPerCase: number | null
               sellPrice: number | null
               alcoholContent: number | null
+              image: string | null
               posProductId: string | null
               container: string | null
               category: {
@@ -594,12 +595,16 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
           string,
           Map<string, { units: number; revenue: number }>
         >()
-        
+
         // Create a set of all dates in the range to ensure we include zero-demand days
         const startDate = sixtyDaysAgo
         const endDate = new Date()
         const allDates = new Set<string>()
-        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        for (
+          let d = new Date(startDate);
+          d <= endDate;
+          d.setDate(d.getDate() + 1)
+        ) {
           allDates.add(d.toISOString().split('T')[0]!)
         }
 
@@ -612,11 +617,11 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
             }
           })
         })
-        
+
         // Initialize all products with zero demand for all dates
-        productsWithSales.forEach(productId => {
+        productsWithSales.forEach((productId) => {
           const dailyMap = new Map<string, { units: number; revenue: number }>()
-          allDates.forEach(date => {
+          allDates.forEach((date) => {
             dailyMap.set(date, { units: 0, revenue: 0 })
           })
           productDailyDemand.set(productId, dailyMap)
@@ -668,7 +673,10 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
 
               const dailyMap = productDailyDemand.get(item.productId)
               if (dailyMap) {
-                const existing = dailyMap.get(dateKey) || { units: 0, revenue: 0 }
+                const existing = dailyMap.get(dateKey) || {
+                  units: 0,
+                  revenue: 0,
+                }
                 dailyMap.set(dateKey, {
                   units: existing.units + itemQty,
                   revenue: existing.revenue + item.totalPrice,

@@ -341,6 +341,7 @@ export const inventoryApi = {
     costPerCase?: number
     sellPrice?: number
     alcoholContent?: number
+    image?: string
     supplierId?: string
   }): Promise<InventoryProduct> {
     const response = await apiClient.post<APIRes<InventoryProduct>>(
@@ -368,6 +369,7 @@ export const inventoryApi = {
       costPerCase?: number
       sellPrice?: number
       alcoholContent?: number
+      image?: string
       supplierId?: string
     }
   ): Promise<InventoryProduct> {

@@ -50,9 +50,13 @@ export async function getProducts(params?: {
     }
   )
 
-  // Handle both wrapped and unwrapped response formats
-  if (response.success && response.data) {
+  // The apiClient already unwraps response.data, so response is the actual data
+  // Check if we have a success response with data
+  if (response && 'success' in response && response.success && response.data) {
     return response.data
+  } else if (response && 'products' in response) {
+    // Already unwrapped format
+    return response as ProductsResponse
   } else {
     throw new Error('Failed to fetch products')
   }
@@ -145,7 +149,7 @@ export async function getPOSProducts(params?: {
   )
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to fetch POS products')
@@ -174,7 +178,7 @@ export async function importPOSProducts(data: {
   >('/api/products/import-pos-products', data)
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to import POS products')
@@ -192,7 +196,7 @@ export async function getProductMappings(params?: {
   >('/api/products/mappings', { params })
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to fetch product mappings')
@@ -211,7 +215,7 @@ export async function createProductMapping(mapping: {
   >('/api/products/mappings', mapping)
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to create product mapping')
@@ -233,7 +237,7 @@ export async function updateProductMapping(
   >(`/api/products/mappings/${id}`, mapping)
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to update product mapping')
@@ -264,7 +268,7 @@ export async function getMappingSuggestions(
   >(`/api/products/mapping-suggestions/${integrationId}`)
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     // Wrapped format: { success: true, data: { suggestions: [] } }
     return response.data
   } else {
@@ -302,7 +306,7 @@ export async function bulkCreateProductsFromPOS(data: {
   >('/api/products/bulk-create-from-pos', data)
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to bulk create products from POS')
@@ -315,7 +319,7 @@ export async function getCategories(): Promise<{ categories: Category[] }> {
   )
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to fetch categories')
@@ -335,7 +339,7 @@ export async function updatePOSProductServing(
   )
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to update POS product serving information')
@@ -357,7 +361,7 @@ export async function searchCatalog(params?: {
   )
 
   // Handle both wrapped and unwrapped response formats
-  if (response && 'success' in response && response.success && response.data) {
+  if (response.success && response.data) {
     return response.data
   } else {
     throw new Error('Failed to search product catalog')
