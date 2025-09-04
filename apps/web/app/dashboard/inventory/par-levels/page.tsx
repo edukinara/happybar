@@ -9,7 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { CustomPagination } from '@/components/ui/custom-pagination'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -50,6 +60,10 @@ interface ParLevelItem {
     container?: string
     image?: string
     upc?: string
+    category?: {
+      id: string
+      name: string
+    }
   }
   location: {
     id: string
@@ -63,7 +77,12 @@ export default function ParLevelsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false)
+  const [bulkParLevel, setBulkParLevel] = useState<number>(0)
+  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
   const [pendingChanges, setPendingChanges] = useState<Record<string, number>>(
     {}
   )
@@ -135,6 +154,10 @@ export default function ParLevelsPage() {
               container: product.container || undefined,
               image: product.image || undefined,
               upc: product.upc || undefined,
+              category: product.category ? {
+                id: product.category.id,
+                name: product.category.name,
+              } : undefined,
             },
             location: {
               id: location.id,
@@ -145,6 +168,18 @@ export default function ParLevelsPage() {
       }
 
       setItems(allItems)
+
+      // Extract unique categories for filtering
+      const uniqueCategories = new Map<string, {id: string, name: string}>()
+      productsData.forEach(product => {
+        if (product.category) {
+          uniqueCategories.set(product.category.id, {
+            id: product.category.id,
+            name: product.category.name
+          })
+        }
+      })
+      setCategories(Array.from(uniqueCategories.values()).sort((a, b) => a.name.localeCompare(b.name)))
     } catch (error) {
       console.error('Failed to fetch inventory items:', error)
     } finally {
@@ -157,6 +192,45 @@ export default function ParLevelsPage() {
       ...prev,
       [itemId]: newParLevel,
     }))
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(new Set(filteredItems.map(item => item.id)))
+    } else {
+      setSelectedItems(new Set())
+    }
+  }
+
+  const handleSelectItem = (itemId: string, checked: boolean) => {
+    const newSelected = new Set(selectedItems)
+    if (checked) {
+      newSelected.add(itemId)
+    } else {
+      newSelected.delete(itemId)
+    }
+    setSelectedItems(newSelected)
+  }
+
+  const handleBulkUpdate = async () => {
+    try {
+      setSaving(true)
+      
+      // Apply bulk update to all selected items
+      const newChanges = { ...pendingChanges }
+      selectedItems.forEach(itemId => {
+        newChanges[itemId] = bulkParLevel
+      })
+      
+      setPendingChanges(newChanges)
+      setShowBulkUpdateDialog(false)
+      setSelectedItems(new Set())
+      setBulkParLevel(0)
+    } catch (error) {
+      console.error('Failed to apply bulk update:', error)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const saveChanges = async () => {
@@ -193,10 +267,18 @@ export default function ParLevelsPage() {
   }
 
   const filteredItems = items.filter(
-    (item) =>
-      item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.product.upc?.toLowerCase().includes(searchTerm.toLowerCase())
+    (item) => {
+      // Search filter
+      const matchesSearch = item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.product.upc?.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      // Category filter
+      const matchesCategory = selectedCategory === 'all' || 
+        item.product.category?.id === selectedCategory
+      
+      return matchesSearch && matchesCategory
+    }
   )
 
   const hasChanges = Object.keys(pendingChanges).length > 0
@@ -260,40 +342,112 @@ export default function ParLevelsPage() {
       </div>
 
       {/* Controls */}
-      <div className='flex flex-col sm:flex-row gap-4'>
-        <div className='flex-1 space-y-2'>
-          <Label htmlFor='location'>Location</Label>
-          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-            <SelectTrigger>
-              <SelectValue placeholder='Select a location' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Locations</SelectItem>
-              {locations.map((location) => (
-                <SelectItem key={location.id} value={location.id}>
-                  {location.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className='flex flex-col gap-4'>
+        <div className='flex flex-col sm:flex-row gap-4'>
+          <div className='flex-1 space-y-2'>
+            <Label htmlFor='location'>Location</Label>
+            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+              <SelectTrigger>
+                <SelectValue placeholder='Select a location' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Locations</SelectItem>
+                {locations.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className='flex-1 space-y-2'>
-          <Label htmlFor='search'>Search Products</Label>
-          <div className='relative'>
-            <Search className='absolute left-3 top-3 size-4 text-muted-foreground' />
-            <Input
-              id='search'
-              placeholder='Search by name or SKU...'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className='pl-10'
-            />
+          <div className='flex-1 space-y-2'>
+            <Label htmlFor='category'>Category</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder='Select category' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='flex-1 space-y-2'>
+            <Label htmlFor='search'>Search Products</Label>
+            <div className='relative'>
+              <Search className='absolute left-3 top-3 size-4 text-muted-foreground' />
+              <Input
+                id='search'
+                placeholder='Search by name or SKU...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='pl-10'
+              />
+            </div>
           </div>
         </div>
 
+        {/* Bulk Actions */}
+        {selectedItems.size > 0 && (
+          <div className='flex items-center gap-4 p-4 bg-muted rounded-lg'>
+            <span className='text-sm font-medium'>
+              {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
+            </span>
+            <Dialog open={showBulkUpdateDialog} onOpenChange={setShowBulkUpdateDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Target className='size-4 mr-2' />
+                  Bulk Update Par Levels
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Bulk Update Par Levels</DialogTitle>
+                  <DialogDescription>
+                    Set the minimum quantity (par level) for {selectedItems.size} selected items.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className='space-y-4'>
+                  <div className='space-y-2'>
+                    <Label htmlFor='bulkParLevel'>Par Level</Label>
+                    <Input
+                      id='bulkParLevel'
+                      type='number'
+                      value={bulkParLevel}
+                      onChange={(e) => setBulkParLevel(Number(e.target.value))}
+                      placeholder='Enter par level'
+                      min='0'
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowBulkUpdateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleBulkUpdate} disabled={bulkParLevel < 0}>
+                    Update {selectedItems.size} Items
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setSelectedItems(new Set())}
+            >
+              Clear Selection
+            </Button>
+          </div>
+        )}
+
         {hasChanges && (
-          <div className='flex items-end'>
+          <div className='flex items-center justify-end'>
             <Button onClick={saveChanges} disabled={saving}>
               <Save className='size-4 mr-2' />
               {saving
@@ -326,6 +480,12 @@ export default function ParLevelsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className='w-[50px]'>
+                      <Checkbox
+                        checked={selectedItems.size === paginatedItems.length && paginatedItems.length > 0}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead />
                     <TableHead>Product</TableHead>
                     <TableHead>Location</TableHead>
@@ -346,6 +506,12 @@ export default function ParLevelsPage() {
 
                     return (
                       <TableRow key={item.id}>
+                        <TableCell className='w-[50px]'>
+                          <Checkbox
+                            checked={selectedItems.has(item.id)}
+                            onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
+                          />
+                        </TableCell>
                         <TableCell className='w-[34px] p-2'>
                           {item.product.image ? (
                             <div className='relative size-8 overflow-hidden'>
