@@ -1,23 +1,22 @@
 import type {
-  Recipe,
   CreateRecipeRequest,
-  UpdateRecipeRequest,
+  Recipe,
   RecipeCostBreakdown,
-  RecipesResponse,
   RecipeSearchParams,
+  RecipesResponse,
+  UpdateRecipeRequest,
 } from '@happy-bar/types'
 import { apiClient } from './client'
-
-interface APIRes<T> {
-  success: boolean
-  data: T
-}
+import type { APIRes } from './types'
 
 export const recipesApi = {
   async getRecipes(params?: RecipeSearchParams): Promise<RecipesResponse> {
-    const response = await apiClient.get<APIRes<RecipesResponse>>('/api/recipes', {
-      params,
-    })
+    const response = await apiClient.get<APIRes<RecipesResponse>>(
+      '/api/recipes',
+      {
+        params,
+      }
+    )
     if (!response.success || !response.data) {
       throw new Error('Failed to get recipes')
     }
@@ -41,7 +40,10 @@ export const recipesApi = {
   },
 
   async updateRecipe(id: string, data: UpdateRecipeRequest): Promise<Recipe> {
-    const response = await apiClient.put<APIRes<Recipe>>(`/api/recipes/${id}`, data)
+    const response = await apiClient.put<APIRes<Recipe>>(
+      `/api/recipes/${id}`,
+      data
+    )
     if (!response.success || !response.data) {
       throw new Error('Failed to update recipe')
     }
@@ -49,7 +51,9 @@ export const recipesApi = {
   },
 
   async deleteRecipe(id: string): Promise<void> {
-    const response = await apiClient.delete<APIRes<{ message: string }>>(`/api/recipes/${id}`)
+    const response = await apiClient.delete<APIRes<{ message: string }>>(
+      `/api/recipes/${id}`
+    )
     if (!response.success) {
       throw new Error('Failed to delete recipe')
     }
@@ -66,39 +70,46 @@ export const recipesApi = {
   },
 
   // Recipe POS Mapping functions
-  async getRecipeMappingSuggestions(integrationId: string): Promise<RecipeMappingSuggestion[]> {
-    const response = await apiClient.get<APIRes<{ suggestions: RecipeMappingSuggestion[] }>>(
-      `/api/recipes/mapping-suggestions/${integrationId}`
-    )
+  async getRecipeMappingSuggestions(
+    integrationId: string
+  ): Promise<RecipeMappingSuggestion[]> {
+    const response = await apiClient.get<
+      APIRes<{ suggestions: RecipeMappingSuggestion[] }>
+    >(`/api/recipes/mapping-suggestions/${integrationId}`)
     if (!response.success || !response.data) {
       throw new Error('Failed to get recipe mapping suggestions')
     }
     return response.data.suggestions
   },
 
-  async getRecipePOSMappings(params?: RecipePOSMappingSearchParams): Promise<RecipePOSMapping[]> {
-    const response = await apiClient.get<APIRes<{ mappings: RecipePOSMapping[] }>>(
-      '/api/recipes/pos-mappings',
-      { params }
-    )
+  async getRecipePOSMappings(
+    params?: RecipePOSMappingSearchParams
+  ): Promise<RecipePOSMapping[]> {
+    const response = await apiClient.get<
+      APIRes<{ mappings: RecipePOSMapping[] }>
+    >('/api/recipes/pos-mappings', { params })
     if (!response.success || !response.data) {
       throw new Error('Failed to get recipe POS mappings')
     }
     return response.data.mappings
   },
 
-  async createRecipePOSMapping(data: CreateRecipePOSMappingRequest): Promise<RecipePOSMapping> {
-    const response = await apiClient.post<APIRes<{ mapping: RecipePOSMapping }>>(
-      '/api/recipes/pos-mappings',
-      data
-    )
+  async createRecipePOSMapping(
+    data: CreateRecipePOSMappingRequest
+  ): Promise<RecipePOSMapping> {
+    const response = await apiClient.post<
+      APIRes<{ mapping: RecipePOSMapping }>
+    >('/api/recipes/pos-mappings', data)
     if (!response.success || !response.data) {
       throw new Error('Failed to create recipe POS mapping')
     }
     return response.data.mapping
   },
 
-  async updateRecipePOSMapping(id: string, data: UpdateRecipePOSMappingRequest): Promise<RecipePOSMapping> {
+  async updateRecipePOSMapping(
+    id: string,
+    data: UpdateRecipePOSMappingRequest
+  ): Promise<RecipePOSMapping> {
     const response = await apiClient.put<APIRes<{ mapping: RecipePOSMapping }>>(
       `/api/recipes/pos-mappings/${id}`,
       data
@@ -110,7 +121,9 @@ export const recipesApi = {
   },
 
   async deleteRecipePOSMapping(id: string): Promise<void> {
-    const response = await apiClient.delete<APIRes<void>>(`/api/recipes/pos-mappings/${id}`)
+    const response = await apiClient.delete<APIRes<void>>(
+      `/api/recipes/pos-mappings/${id}`
+    )
     if (!response.success) {
       throw new Error('Failed to delete recipe POS mapping')
     }

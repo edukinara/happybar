@@ -12,6 +12,7 @@ import type {
   StockMovement,
 } from '@happy-bar/types'
 import { apiClient } from './client'
+import type { APIRes } from './types'
 
 export interface UsageAnalysisResponse {
   summary: {
@@ -65,11 +66,6 @@ interface DashboardStats {
   lowStockItems: number
   totalValue: number
   recentCounts: RecentCount[]
-}
-
-interface APIRes<T> {
-  success: boolean
-  data: T
 }
 
 interface InventoryCountResponse {

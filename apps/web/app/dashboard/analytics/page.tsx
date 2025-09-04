@@ -25,13 +25,13 @@ import React, { useEffect, useState } from 'react'
 import { type DateRange } from 'react-day-picker'
 
 // Components
-import { FinancialMetricsV2 } from '@/components/analytics/FinancialMetricsV2'
-import { ForecastingDashboardV2 } from '@/components/analytics/ForecastingDashboardV2'
-import { MenuEngineeringV2 } from '@/components/analytics/MenuEngineeringV2'
-import { OperationalMetricsV2 } from '@/components/analytics/OperationalMetricsV2'
-import { PurchasingAnalyticsV2 } from '@/components/analytics/PurchasingAnalyticsV2'
-import { VarianceAnalysis } from '@/components/analytics/VarianceAnalysisV2'
-import { WasteAnalysisV2 } from '@/components/analytics/WasteAnalysisV2'
+import { FinancialMetricsV2 } from '@/components/analytics/FinancialMetrics'
+import { ForecastingDashboardV2 } from '@/components/analytics/ForecastingDashboard'
+import { MenuEngineeringV2 } from '@/components/analytics/MenuEngineering'
+import { OperationalMetricsV2 } from '@/components/analytics/OperationalMetrics'
+import { PurchasingAnalyticsV2 } from '@/components/analytics/PurchasingAnalytics'
+import { VarianceAnalysis } from '@/components/analytics/VarianceAnalysis'
+import { WasteAnalysisV2 } from '@/components/analytics/WasteAnalysis'
 
 interface AnalyticsSummary {
   totalRevenue: number

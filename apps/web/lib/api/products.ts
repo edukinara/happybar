@@ -7,6 +7,7 @@ import type {
   ProductMappingResponse,
 } from '@happy-bar/types'
 import { apiClient } from './client'
+import type { APIRes } from './types'
 
 // Re-export types for convenience
 export type { Category, POSProduct, Product, ProductMappingResponse }
@@ -28,11 +29,6 @@ export interface ProductsResponse {
     total: number
     pages: number
   }
-}
-
-interface APIRes<T> {
-  success: boolean
-  data: T
 }
 
 // Product API functions
