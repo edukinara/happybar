@@ -53,6 +53,7 @@ async function cleanupDeselectedGroups(
     },
     include: {
       mappings: true,
+      recipePOSMappings: true,
     },
   })
 
@@ -63,7 +64,9 @@ async function cleanupDeselectedGroups(
   if (productsToDelete.length > 0) {
     // IMPORTANT: Check for products with mappings and warn
     const productsWithMappings = productsToDelete.filter(
-      (p: any) => p.mappings && p.mappings.length > 0
+      (p: any) => 
+        (p.mappings && p.mappings.length > 0) || 
+        (p.recipePOSMappings && p.recipePOSMappings.length > 0)
     )
 
     if (productsWithMappings.length > 0) {
@@ -71,12 +74,16 @@ async function cleanupDeselectedGroups(
         `⚠️ WARNING: ${productsWithMappings.length} products have mappings that would be deleted:`
       )
       productsWithMappings.forEach((p: any) => {
-        console.log(`   - "${p.name}" has ${p.mappings.length} mappings`)
+        const productMappingCount = p.mappings?.length || 0
+        const recipeMappingCount = p.recipePOSMappings?.length || 0
+        console.log(`   - "${p.name}" has ${productMappingCount} product mappings and ${recipeMappingCount} recipe mappings`)
       })
 
-      // For safety, only delete products WITHOUT mappings
+      // For safety, only delete products WITHOUT any mappings
       const safeProductsToDelete = productsToDelete.filter(
-        (p: any) => !p.mappings || p.mappings.length === 0
+        (p: any) => 
+          (!p.mappings || p.mappings.length === 0) && 
+          (!p.recipePOSMappings || p.recipePOSMappings.length === 0)
       )
 
       if (safeProductsToDelete.length > 0) {
@@ -95,7 +102,7 @@ async function cleanupDeselectedGroups(
       // Mark products with mappings as inactive instead of deleting
       if (productsWithMappings.length > 0) {
         console.log(
-          `🔒 Marking ${productsWithMappings.length} products with mappings as inactive`
+          `🔒 Marking ${productsWithMappings.length} products with product/recipe mappings as inactive`
         )
 
         for (const product of productsWithMappings) {

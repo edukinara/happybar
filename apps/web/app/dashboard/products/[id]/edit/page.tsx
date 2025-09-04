@@ -402,14 +402,14 @@ export default function EditProductPage() {
       {/* POS Warning */}
       {isPOSLinked && (
         <Card className='border-yellow-200 bg-yellow-50'>
-          <CardContent className='p-4'>
+          <CardContent className='py-0'>
             <div className='flex items-start gap-3'>
               <AlertTriangle className='size-5 text-yellow-600 mt-0.5' />
               <div>
                 <h3 className='font-medium text-yellow-800'>
                   POS-Linked Product
                 </h3>
-                <p className='text-sm text-yellow-700 mt-1'>
+                <p className='text-sm text-yellow-700 mt-0.5'>
                   This product is linked to your POS system. Sell price will be
                   automatically synced from POS and cannot be edited manually.
                 </p>
@@ -449,27 +449,23 @@ export default function EditProductPage() {
             </CardHeader>
             <CardContent className='space-y-4'>
               <div
-                className={`flex gap-6 ${formData.image ? 'items-start' : ''}`}
+                className={`flex gap-6 ${formData.image ? 'items-end' : ''}`}
               >
                 {/* Product Image Display - Left Side */}
                 {formData.image && (
-                  <div className='flex-shrink-0'>
-                    <div className='space-y-2'>
-                      <div className='relative w-24 h-34 rounded-lg overflow-hidden border bg-muted'>
-                        <Image
-                          src={formData.image}
-                          alt={formData.name || 'Product image'}
-                          fill
-                          className='object-contain'
-                          sizes='128px'
-                          onError={(_e) => {
-                            console.warn(
-                              `Failed to load product image: ${formData.image}`
-                            )
-                          }}
-                        />
-                      </div>
-                    </div>
+                  <div className='relative w-24 h-34 overflow-hidden'>
+                    <Image
+                      src={formData.image}
+                      alt={formData.name || 'Product image'}
+                      fill
+                      className='object-contain'
+                      sizes='128px'
+                      onError={(_e) => {
+                        console.warn(
+                          `Failed to load product image: ${formData.image}`
+                        )
+                      }}
+                    />
                   </div>
                 )}
 
@@ -488,7 +484,7 @@ export default function EditProductPage() {
                     />
                   </div>
 
-                  <div className='grid grid-cols-2 gap-4'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                     <div className='space-y-2'>
                       <Label htmlFor='sku'>SKU</Label>
                       <Input
@@ -515,40 +511,42 @@ export default function EditProductPage() {
                 </div>
               </div>
 
-              <div className='space-y-2'>
-                <Label htmlFor='image'>Image URL</Label>
-                <Input
-                  id='image'
-                  value={formData.image}
-                  onChange={(e) => handleInputChange('image', e.target.value)}
-                  placeholder='https://example.com/product-image.jpg'
-                  type='url'
-                />
-                <p className='text-xs text-muted-foreground'>
-                  Optional: URL to product image
-                </p>
-              </div>
+              <div className='flex flex-col sm:flex-row gap-2'>
+                <div className='space-y-2 flex-1'>
+                  <Label htmlFor='image'>Image URL</Label>
+                  <Input
+                    id='image'
+                    value={formData.image}
+                    onChange={(e) => handleInputChange('image', e.target.value)}
+                    placeholder='https://example.com/product-image.jpg'
+                    type='url'
+                  />
+                  <p className='text-xs text-muted-foreground'>
+                    Optional: URL to product image
+                  </p>
+                </div>
 
-              <div className='space-y-2'>
-                <Label htmlFor='category'>Category *</Label>
-                <Select
-                  value={formData.categoryId}
-                  onValueChange={(value) =>
-                    handleInputChange('categoryId', value)
-                  }
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select a category' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className='space-y-2'>
+                  <Label htmlFor='category'>Category *</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(value) =>
+                      handleInputChange('categoryId', value)
+                    }
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select a category' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>

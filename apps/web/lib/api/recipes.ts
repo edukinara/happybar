@@ -64,4 +64,105 @@ export const recipesApi = {
     }
     return response.data
   },
+
+  // Recipe POS Mapping functions
+  async getRecipeMappingSuggestions(integrationId: string): Promise<RecipeMappingSuggestion[]> {
+    const response = await apiClient.get<APIRes<{ suggestions: RecipeMappingSuggestion[] }>>(
+      `/api/recipes/mapping-suggestions/${integrationId}`
+    )
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get recipe mapping suggestions')
+    }
+    return response.data.suggestions
+  },
+
+  async getRecipePOSMappings(params?: RecipePOSMappingSearchParams): Promise<RecipePOSMapping[]> {
+    const response = await apiClient.get<APIRes<{ mappings: RecipePOSMapping[] }>>(
+      '/api/recipes/pos-mappings',
+      { params }
+    )
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get recipe POS mappings')
+    }
+    return response.data.mappings
+  },
+
+  async createRecipePOSMapping(data: CreateRecipePOSMappingRequest): Promise<RecipePOSMapping> {
+    const response = await apiClient.post<APIRes<{ mapping: RecipePOSMapping }>>(
+      '/api/recipes/pos-mappings',
+      data
+    )
+    if (!response.success || !response.data) {
+      throw new Error('Failed to create recipe POS mapping')
+    }
+    return response.data.mapping
+  },
+
+  async updateRecipePOSMapping(id: string, data: UpdateRecipePOSMappingRequest): Promise<RecipePOSMapping> {
+    const response = await apiClient.put<APIRes<{ mapping: RecipePOSMapping }>>(
+      `/api/recipes/pos-mappings/${id}`,
+      data
+    )
+    if (!response.success || !response.data) {
+      throw new Error('Failed to update recipe POS mapping')
+    }
+    return response.data.mapping
+  },
+
+  async deleteRecipePOSMapping(id: string): Promise<void> {
+    const response = await apiClient.delete<APIRes<void>>(`/api/recipes/pos-mappings/${id}`)
+    if (!response.success) {
+      throw new Error('Failed to delete recipe POS mapping')
+    }
+  },
+}
+
+// Types for recipe mapping
+export interface RecipeMappingSuggestion {
+  recipeId: string
+  posProductId: string
+  recipeName: string
+  posProductName: string
+  confidence: number
+  reasons: string[]
+}
+
+export interface RecipePOSMapping {
+  id: string
+  organizationId: string
+  recipeId: string
+  posProductId: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  recipe: Recipe
+  posProduct: {
+    id: string
+    name: string
+    category?: string
+    integration: {
+      id: string
+      name: string
+      type: string
+    }
+  }
+}
+
+export interface RecipePOSMappingSearchParams {
+  integrationId?: string
+  recipeId?: string
+  posProductId?: string
+  isActive?: boolean
+}
+
+export interface CreateRecipePOSMappingRequest {
+  recipeId: string
+  posProductId: string
+  isActive?: boolean
+}
+
+export interface UpdateRecipePOSMappingRequest {
+  recipeId: string
+  posProductId: string
+  isActive: boolean
 }

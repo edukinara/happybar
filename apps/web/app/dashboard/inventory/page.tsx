@@ -43,16 +43,17 @@ import {
   Package,
   Search,
 } from 'lucide-react'
+import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useMemo, useState } from 'react'
 
 export default function InventoryPage() {
   // Use query hooks for data fetching
   const { data: inventory = [], isLoading: loading, error } = useInventory()
-  
+
   // Use global location state
   const { selectedLocationId } = useSelectedLocation()
-  
+
   const [searchTerm, setSearchTerm] = useState('')
 
   // Pagination state
@@ -79,14 +80,14 @@ export default function InventoryPage() {
       return matchesSearch && matchesLocation
     })
   }, [inventory, searchTerm, selectedLocationId])
-  
+
   // Calculate pagination values
   const totalItems = filteredInventory.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
   const paginatedInventory = filteredInventory.slice(startIndex, endIndex)
-  
+
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
@@ -148,7 +149,9 @@ export default function InventoryPage() {
           <h2 className='text-xl font-semibold mb-2'>
             Failed to load inventory
           </h2>
-          <p className='text-muted-foreground mb-4'>{error?.message || 'Unknown error occurred'}</p>
+          <p className='text-muted-foreground mb-4'>
+            {error?.message || 'Unknown error occurred'}
+          </p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
@@ -253,9 +256,7 @@ export default function InventoryPage() {
                 className='md:max-w-sm xs:w-full xs:max-w-full'
               />
             </div>
-            <LocationFilter
-              useGlobalState={true}
-            />
+            <LocationFilter useGlobalState={true} />
           </div>
 
           {totalItems === 0 ? (
@@ -269,6 +270,7 @@ export default function InventoryPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead />
                     <TableHead>Product</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Location</TableHead>
@@ -299,6 +301,28 @@ export default function InventoryPage() {
                           toggleOpen(true)
                         }}
                       >
+                        <TableCell className='w-[60px] p-2'>
+                          {item.product.image ? (
+                            <div className='relative size-8 overflow-hidden'>
+                              <Image
+                                src={item.product.image}
+                                alt={item.product.name}
+                                fill
+                                className='object-contain'
+                                sizes='40px'
+                                onError={(_e) => {
+                                  console.warn(
+                                    `Failed to load image: ${item.product.image}`
+                                  )
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className='size-8 flex items-center justify-center'>
+                              <Package className='w-4 h-4 text-muted-foreground' />
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className='max-w-0'>
                           <TooltipProvider>
                             <Tooltip delayDuration={500}>

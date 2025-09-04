@@ -55,6 +55,7 @@ import {
 } from '@/lib/api/products'
 import { recipePOSMappingsApi } from '@/lib/api/recipe-pos-mappings'
 import { recipesApi } from '@/lib/api/recipes'
+import { RecipeMappingSuggestions } from '@/components/dashboard/Recipes/RecipeMappingSuggestions'
 import { getServingUnitOptions } from '@/lib/constants/product-options'
 import {
   ProductUnit,
@@ -1633,6 +1634,13 @@ export default function ProductMappingsPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Recipe Mapping Suggestions */}
+              <RecipeMappingSuggestions
+                integrationId={selectedIntegration}
+                integrationName={integrations.find(i => i.id === selectedIntegration)?.name || 'POS'}
+                onMappingCreated={fetchRecipeMappings}
+              />
 
               {/* Create Dialog */}
               <div className='flex w-full justify-end'>

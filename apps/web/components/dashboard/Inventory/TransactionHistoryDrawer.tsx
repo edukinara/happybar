@@ -23,6 +23,7 @@ import {
   Package,
   ShoppingCart,
 } from 'lucide-react'
+import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useState } from 'react'
 
@@ -136,16 +137,40 @@ export function TransactionHistoryDrawer({
             View transaction history for this inventory item
           </SheetDescription>
         </SheetHeader>
-        <div className='space-y-1 mt-4'>
-          <div className='font-bold text-foreground'>
-            {inventoryItem.product.name}
+        <div className='space-x-2 flex flex-row items-center'>
+          <div className='w-[36px]'>
+            {inventoryItem.product.image ? (
+              <div className='relative size-10 overflow-hidden'>
+                <Image
+                  src={inventoryItem.product.image}
+                  alt={inventoryItem.product.name}
+                  fill
+                  className='object-contain'
+                  sizes='40px'
+                  onError={(_e) => {
+                    console.warn(
+                      `Failed to load image: ${inventoryItem.product.image}`
+                    )
+                  }}
+                />
+              </div>
+            ) : (
+              <div className='size-8 flex items-center justify-center'>
+                <Package className='w-4 h-4 text-muted-foreground' />
+              </div>
+            )}
           </div>
-          <div className='text-sm text-muted-foreground'>
-            {inventoryItem.location.name} • Current:{' '}
-            {+inventoryItem.currentQuantity.toFixed(2)}{' '}
-            {inventoryItem.currentQuantity !== 1
-              ? pluralize(inventoryItem.product.container || 'unit')
-              : inventoryItem.product.container || 'unit'}
+          <div className='space-y-1'>
+            <div className='font-bold text-foreground'>
+              {inventoryItem.product.name}
+            </div>
+            <div className='text-sm text-muted-foreground'>
+              {inventoryItem.location.name} • Current:{' '}
+              {+inventoryItem.currentQuantity.toFixed(2)}{' '}
+              {inventoryItem.currentQuantity !== 1
+                ? pluralize(inventoryItem.product.container || 'unit')
+                : inventoryItem.product.container || 'unit'}
+            </div>
           </div>
         </div>
 

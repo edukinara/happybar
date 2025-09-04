@@ -54,7 +54,11 @@ import {
   useDeleteProduct,
   useProducts,
 } from '@/lib/queries/products'
-import type { CatalogProduct, InventoryProduct } from '@happy-bar/types'
+import type {
+  CatalogProduct,
+  InventoryProduct,
+  ProductContainer,
+} from '@happy-bar/types'
 import {
   AlertTriangle,
   Building2,
@@ -216,6 +220,11 @@ export default function ProductsPage() {
             id: match.product.id,
             data: {
               name: match.selectedMatch!.name,
+              unitSize: match.selectedMatch!.unitSize || match.product.unitSize,
+              caseSize: match.selectedMatch!.caseSize || match.product.caseSize,
+              container:
+                (match.selectedMatch!.container as ProductContainer) ||
+                match.product.container,
               categoryId:
                 match.selectedMatch!.categoryId || match.product.categoryId,
               costPerUnit:
@@ -538,7 +547,7 @@ export default function ProductsPage() {
                           </TableCell>
                           <TableCell className='w-[60px] p-2'>
                             {product.image ? (
-                              <div className='relative w-10 h-10 rounded-md overflow-hidden border bg-muted'>
+                              <div className='relative size-8 overflow-hidden'>
                                 <Image
                                   src={product.image}
                                   alt={product.name}
@@ -553,7 +562,7 @@ export default function ProductsPage() {
                                 />
                               </div>
                             ) : (
-                              <div className='w-10 h-10 rounded-md border bg-muted flex items-center justify-center'>
+                              <div className='size-8 flex items-center justify-center'>
                                 <Package className='w-4 h-4 text-muted-foreground' />
                               </div>
                             )}

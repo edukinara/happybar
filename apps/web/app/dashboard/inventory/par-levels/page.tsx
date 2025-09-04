@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { CustomPagination } from '@/components/ui/custom-pagination'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -28,7 +29,8 @@ import {
 } from '@/components/ui/table'
 import { inventoryApi } from '@/lib/api/inventory'
 import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
-import { AlertTriangle, Save, Search, Target } from 'lucide-react'
+import { AlertTriangle, Package, Save, Search, Target } from 'lucide-react'
+import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useState } from 'react'
 
@@ -45,6 +47,8 @@ interface ParLevelItem {
     sku?: string
     unit: string
     container?: string
+    image?: string
+    upc?: string
   }
   location: {
     id: string
@@ -127,6 +131,8 @@ export default function ParLevelsPage() {
               sku: product.sku || undefined,
               unit: product.unit,
               container: product.container || undefined,
+              image: product.image || undefined,
+              upc: product.upc || undefined,
             },
             location: {
               id: location.id,
@@ -187,10 +193,36 @@ export default function ParLevelsPage() {
   const filteredItems = items.filter(
     (item) =>
       item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+      item.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.product.upc?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const hasChanges = Object.keys(pendingChanges).length > 0
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
+
+  // Calculate pagination values
+  const totalItems = filteredItems.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
+  const paginatedItems = filteredItems.slice(startIndex, endIndex)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filteredItems.length])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1)
+  }
 
   const getStockStatus = (
     current: number,
@@ -288,93 +320,132 @@ export default function ParLevelsPage() {
               <div className='animate-spin rounded-full size-8 border-b-2 border-primary'></div>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Current Stock</TableHead>
-                  <TableHead>Par Level</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Max Level</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.map((item) => {
-                  const currentParLevel =
-                    pendingChanges[item.id] ?? item.minimumQuantity
-                  const stockStatus = getStockStatus(
-                    item.currentQuantity,
-                    currentParLevel
-                  )
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead />
+                    <TableHead>Product</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Current Stock</TableHead>
+                    <TableHead>Par Level</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Max Level</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedItems.map((item) => {
+                    const currentParLevel =
+                      pendingChanges[item.id] ?? item.minimumQuantity
+                    const stockStatus = getStockStatus(
+                      item.currentQuantity,
+                      currentParLevel
+                    )
 
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <div>
-                          <div className='font-medium'>{item.product.name}</div>
-                          <div className='text-sm text-muted-foreground'>
-                            {item.product.sku && `SKU: ${item.product.sku} • `}
-                            {item.product.container || 'unit'}
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className='w-[60px] p-2'>
+                          {item.product.image ? (
+                            <div className='relative size-8 overflow-hidden'>
+                              <Image
+                                src={item.product.image}
+                                alt={item.product.name}
+                                fill
+                                className='object-contain'
+                                sizes='40px'
+                                onError={(_e) => {
+                                  console.warn(
+                                    `Failed to load image: ${item.product.image}`
+                                  )
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className='size-8 flex items-center justify-center'>
+                              <Package className='w-4 h-4 text-muted-foreground' />
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className='font-medium'>
+                              {item.product.name}
+                            </div>
+                            <div className='text-sm text-muted-foreground'>
+                              {item.product.sku &&
+                                `SKU: ${item.product.sku} • `}
+                              {item.product.container || 'unit'}
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{item.location.name}</TableCell>
-                      <TableCell>
-                        <div className='font-medium text-md'>
-                          {+item.currentQuantity.toFixed(2)}{' '}
-                          <span className='text-sm text-muted-foreground font-normal'>
-                            {pluralize(
-                              item.product.container || 'unit',
-                              item.maximumQuantity
-                            )}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type='number'
-                          min='0'
-                          step='0.1'
-                          value={currentParLevel}
-                          onChange={(e) =>
-                            updateParLevel(
-                              item.id,
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className='w-20 font-semibold'
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={stockStatus.color}>
-                          {stockStatus.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className='text-sm text-muted-foreground'>
-                          {item.maximumQuantity
-                            ? `${item.maximumQuantity} ${pluralize(item.product.container || 'unit', item.maximumQuantity)}`
-                            : 'Not set'}
-                        </div>
+                        </TableCell>
+                        <TableCell>{item.location.name}</TableCell>
+                        <TableCell>
+                          <div className='font-medium text-md'>
+                            {+item.currentQuantity.toFixed(2)}{' '}
+                            <span className='text-sm text-muted-foreground font-normal'>
+                              {pluralize(
+                                item.product.container || 'unit',
+                                item.maximumQuantity
+                              )}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type='number'
+                            min='0'
+                            step='0.1'
+                            value={currentParLevel}
+                            onChange={(e) =>
+                              updateParLevel(
+                                item.id,
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            className='w-20 font-semibold'
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={stockStatus.color}>
+                            {stockStatus.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className='text-sm text-muted-foreground'>
+                            {item.maximumQuantity
+                              ? `${item.maximumQuantity} ${pluralize(item.product.container || 'unit', item.maximumQuantity)}`
+                              : 'Not set'}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                  {filteredItems.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className='text-center py-8'>
+                        <AlertTriangle className='size-8 text-muted-foreground mx-auto mb-2' />
+                        <p className='text-muted-foreground'>
+                          {searchTerm
+                            ? 'No products found matching your search.'
+                            : 'No inventory items found. Add some products first.'}
+                        </p>
                       </TableCell>
                     </TableRow>
-                  )
-                })}
-                {filteredItems.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className='text-center py-8'>
-                      <AlertTriangle className='size-8 text-muted-foreground mx-auto mb-2' />
-                      <p className='text-muted-foreground'>
-                        {searchTerm
-                          ? 'No products found matching your search.'
-                          : 'No inventory items found. Add some products first.'}
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+
+              <div className='mt-6'>
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

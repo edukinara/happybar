@@ -38,7 +38,6 @@ export default function InventoryCountDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [approving, setApproving] = useState(false)
-  const [applying, setApplying] = useState(false)
 
   const countId = params.id as string
 
@@ -65,13 +64,25 @@ export default function InventoryCountDetailPage() {
   }
 
   const handleApproveCount = async () => {
-    if (!count) return
+    if (!count || approving) return
+
+    // Confirm the action since this will update inventory levels
+    const confirmed = window.confirm(
+      'Approving this count will immediately update your inventory levels based on the count results.\n\nThis action cannot be undone.\n\nAre you sure you want to approve and apply this count?'
+    )
+    
+    if (!confirmed) return
 
     try {
       setApproving(true)
+      setError(null) // Clear any previous errors
+      
       await inventoryApi.updateInventoryCount(count.id, {
         status: InventoryCountStatus.APPROVED,
       })
+
+      // Show success message
+      alert('✅ Count approved successfully!\n\nYour inventory levels have been updated based on the count results.')
 
       // Refresh the count data to show updated status
       await fetchCount()
@@ -83,26 +94,6 @@ export default function InventoryCountDetailPage() {
     }
   }
 
-  const handleApplyToInventory = async () => {
-    if (!count) return
-
-    try {
-      setApplying(true)
-      await inventoryApi.applyCountToInventory(count.id)
-
-      // Show success message
-      alert('Count results have been successfully applied to inventory levels!')
-    } catch (err) {
-      console.error('Failed to apply count to inventory:', err)
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to apply count to inventory'
-      )
-    } finally {
-      setApplying(false)
-    }
-  }
 
   const getStatusColor = (status: InventoryCountStatus) => {
     switch (status) {
@@ -232,18 +223,14 @@ export default function InventoryCountDetailPage() {
           {count.status === InventoryCountStatus.COMPLETED && (
             <Button onClick={handleApproveCount} disabled={approving}>
               <CheckCircle className='size-4 mr-2' />
-              {approving ? 'Approving...' : 'Approve Count'}
+              {approving ? 'Approving...' : 'Approve & Apply to Inventory'}
             </Button>
           )}
           {count.status === InventoryCountStatus.APPROVED && (
-            <Button
-              onClick={handleApplyToInventory}
-              disabled={applying}
-              variant='outline'
-            >
-              <BarChart3 className='size-4 mr-2' />
-              {applying ? 'Applying...' : 'Apply to Inventory'}
-            </Button>
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle className='size-5' />
+              <span className="font-medium">Count Approved & Applied</span>
+            </div>
           )}
         </div>
       </div>

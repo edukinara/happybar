@@ -45,8 +45,8 @@ const productSchema = z.object({
       'glass',
     ])
     .optional(),
-  unitSize: z.number().positive().default(1),
-  caseSize: z.number().positive().default(1),
+  unitSize: z.number().positive().optional(),
+  caseSize: z.number().positive().optional(),
   costPerUnit: z.number().min(0).default(0),
   costPerCase: z.number().min(0).optional(),
   sellPrice: z.number().min(0).optional(),
@@ -1261,8 +1261,12 @@ export async function productRoutes(fastify: FastifyInstance) {
       }
 
       // Split search terms and clean them
-      const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(term => term.length > 0)
-      
+      const searchTerms = search
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((term) => term.length > 0)
+
       // Build WHERE conditions for flexible matching
       const whereConditions: any[] = []
 
@@ -1277,24 +1281,25 @@ export async function productRoutes(fastify: FastifyInstance) {
       // 2. All words present in any order
       if (searchTerms.length > 1) {
         whereConditions.push({
-          AND: searchTerms.map(term => ({
-            name: { contains: term, mode: 'insensitive' as const }
-          }))
+          AND: searchTerms.map((term) => ({
+            name: { contains: term, mode: 'insensitive' as const },
+          })),
         })
       }
 
       // 3. Individual word matches (fallback)
-      searchTerms.forEach(term => {
-        if (term.length >= 3) { // Only match words with 3+ characters
+      searchTerms.forEach((term) => {
+        if (term.length >= 3) {
+          // Only match words with 3+ characters
           whereConditions.push({
-            name: { contains: term, mode: 'insensitive' as const }
+            name: { contains: term, mode: 'insensitive' as const },
           })
         }
       })
 
       // Execute searches with different strategies and combine results
       const results = await Promise.all(
-        whereConditions.map(where =>
+        whereConditions.map((where) =>
           fastify.prisma.productCatalog.findMany({
             where,
             include: {
@@ -1313,41 +1318,41 @@ export async function productRoutes(fastify: FastifyInstance) {
       // Combine and deduplicate results while preserving order
       const seenIds = new Set<string>()
       const combinedResults = []
-      
+
       for (const resultSet of results) {
         for (const item of resultSet) {
           if (!seenIds.has(item.id)) {
             seenIds.add(item.id)
-            
+
             // Calculate relevance score
             let score = 0
             const itemNameLower = item.name.toLowerCase()
-            
+
             // Exact substring match gets highest score
             if (itemNameLower.includes(search.toLowerCase())) {
               score += 100
             }
-            
+
             // All search terms present
-            if (searchTerms.every(term => itemNameLower.includes(term))) {
+            if (searchTerms.every((term) => itemNameLower.includes(term))) {
               score += 50
             }
-            
+
             // Individual term matches
-            searchTerms.forEach(term => {
+            searchTerms.forEach((term) => {
               if (itemNameLower.includes(term)) {
                 score += 10
               }
             })
-            
+
             // Word boundary matches (more relevant)
-            searchTerms.forEach(term => {
+            searchTerms.forEach((term) => {
               const regex = new RegExp(`\\b${term}`, 'i')
               if (regex.test(item.name)) {
                 score += 5
               }
             })
-            
+
             combinedResults.push({ ...item, _score: score })
           }
         }
