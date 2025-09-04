@@ -1,8 +1,8 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
 import { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
+import { authMiddleware, requirePermission } from '../middleware/auth-simple'
 import { AuditLoggingService } from '../services/audit-logging'
-import { authMiddleware, requirePermission, AuthenticatedRequest } from '../middleware/auth-simple'
 
 // Helper to get organization ID or throw error
 function getOrganizationId(request: any): string {
@@ -29,38 +29,42 @@ const auditLogs: FastifyPluginAsync = async (fastify) => {
   const auditService = new AuditLoggingService(fastify.prisma)
 
   // Get audit logs for the current organization
-  fastify.get('/', {
-    preHandler: [authMiddleware, requirePermission('admin', 'audit_logs')]
-  }, async (request: any, reply) => {
-    try {
-      const query = auditLogsQuerySchema.parse(request.query)
-      const organizationId = getOrganizationId(request)
+  fastify.get(
+    '/',
+    {
+      preHandler: [authMiddleware, requirePermission('admin', 'audit_logs')],
+    },
+    async (request: any, reply) => {
+      try {
+        const query = auditLogsQuerySchema.parse(request.query)
+        const organizationId = getOrganizationId(request)
 
-      const options = {
-        ...query,
-        startDate: query.startDate ? new Date(query.startDate) : undefined,
-        endDate: query.endDate ? new Date(query.endDate) : undefined,
+        const options = {
+          ...query,
+          startDate: query.startDate ? new Date(query.startDate) : undefined,
+          endDate: query.endDate ? new Date(query.endDate) : undefined,
+        }
+
+        const logs = await auditService.getAuditLogs(organizationId, options)
+
+        reply.send({
+          success: true,
+          data: logs.logs,
+          pagination: {
+            limit: query.limit,
+            offset: query.offset,
+            total: logs.count,
+          },
+        })
+      } catch (error) {
+        console.error('Error fetching audit logs:', error)
+        reply.status(500).send({
+          success: false,
+          error: 'Failed to fetch audit logs',
+        })
       }
-
-      const logs = await auditService.getAuditLogs(organizationId, options)
-
-      reply.send({
-        success: true,
-        data: logs,
-        pagination: {
-          limit: query.limit,
-          offset: query.offset,
-          total: logs.length,
-        },
-      })
-    } catch (error) {
-      console.error('Error fetching audit logs:', error)
-      reply.status(500).send({
-        success: false,
-        error: 'Failed to fetch audit logs',
-      })
     }
-  })
+  )
 
   // Clean up old audit logs for the current organization
   fastify.post('/cleanup', async (request, reply) => {

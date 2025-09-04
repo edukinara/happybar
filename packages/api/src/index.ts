@@ -435,7 +435,7 @@ async function buildServer() {
       prefix: '/api/inventory-counts',
     })
     await fastify.register(inventoryReportsRoutes, {
-      prefix: '/api/inventory',
+      prefix: '/api/inventory/reports',
     })
     await fastify.register(inventorySettingsRoutes, {
       prefix: '/api/inventory-settings',
@@ -472,7 +472,8 @@ async function buildServer() {
       prefix: '/api/admin/platform',
     })
 
-    // Register Autumn SDK endpoints
+    // Register Autumn SDK endpoints (public product listing)
+    // Note: /api/autumn/products is used by pricing pages for public access
     await fastify.register(subscriptionRoutes, { prefix: '/api/autumn' })
 
     await fastify.register(webhookRoutes, { prefix: '/webhooks' })

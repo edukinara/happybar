@@ -34,6 +34,7 @@ export interface StockMovement {
     name: string
     sku?: string
     unit: string
+    container?: string
   }
   fromLocation: {
     id: string

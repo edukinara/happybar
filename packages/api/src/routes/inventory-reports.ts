@@ -12,7 +12,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
 ) => {
   // Get theoretical vs actual usage analysis
   fastify.get(
-    '/reports/usage-analysis',
+    '/usage-analysis',
     {
       preHandler: [
         authMiddleware,
@@ -300,7 +300,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
 
   // Get variance analysis report
   fastify.get(
-    '/reports/variance-analysis',
+    '/variance-analysis',
     {
       preHandler: [
         authMiddleware,
@@ -468,7 +468,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
   )
 
   // Get inventory valuation report
-  fastify.get('/reports/valuation', async (request, reply) => {
+  fastify.get('/valuation', async (request, reply) => {
     const organizationId = request.organization?.id
     if (!organizationId) {
       return reply.code(401).send({ error: 'Unauthorized' })
@@ -622,7 +622,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
   })
 
   // Get movement history report
-  fastify.get('/reports/movement-history', async (request, reply) => {
+  fastify.get('/movement-history', async (request, reply) => {
     const organizationId = request.organization?.id
     if (!organizationId) {
       return reply.code(401).send({ error: 'Unauthorized' })
@@ -743,7 +743,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
   })
 
   // Get count summary report
-  fastify.get('/reports/count-summary', async (request, reply) => {
+  fastify.get('/count-summary', async (request, reply) => {
     const organizationId = request.organization?.id
     if (!organizationId) {
       return reply.code(401).send({ error: 'Unauthorized' })

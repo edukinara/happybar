@@ -51,9 +51,13 @@ export class AuditLoggingService {
   private prisma: PrismaClient
   private settingsService: InventorySettingsService
 
-  constructor(prisma: PrismaClient, settingsService?: InventorySettingsService) {
+  constructor(
+    prisma: PrismaClient,
+    settingsService?: InventorySettingsService
+  ) {
     this.prisma = prisma
-    this.settingsService = settingsService || new InventorySettingsService(prisma)
+    this.settingsService =
+      settingsService || new InventorySettingsService(prisma)
   }
 
   /**
@@ -72,7 +76,7 @@ export class AuditLoggingService {
   ): Promise<void> {
     try {
       const settings = await this.settingsService.getSettings(organizationId)
-      
+
       if (!settings.enableOverDepletionLogging) {
         return // Logging disabled
       }
@@ -144,7 +148,7 @@ export class AuditLoggingService {
   ): Promise<void> {
     try {
       const settings = await this.settingsService.getSettings(organizationId)
-      
+
       if (!settings.enableUnitConversionLogging) {
         return // Logging disabled
       }
@@ -181,10 +185,10 @@ export class AuditLoggingService {
   ): Promise<void> {
     try {
       const settings = await this.settingsService.getSettings(organizationId)
-      
+
       // For now, always log inventory adjustments (they're important for auditing)
       // This could be made configurable in the future if needed
-      
+
       await this.prisma.auditLog.create({
         data: {
           organizationId,
@@ -260,7 +264,8 @@ export class AuditLoggingService {
     if (options?.recipeId) where.recipeId = options.recipeId
     if (options?.userId) where.userId = options.userId
     if (options?.source) where.source = options.source
-    if (options?.externalOrderId) where.externalOrderId = options.externalOrderId
+    if (options?.externalOrderId)
+      where.externalOrderId = options.externalOrderId
 
     if (options?.startDate || options?.endDate) {
       where.createdAt = {}
@@ -268,20 +273,22 @@ export class AuditLoggingService {
       if (options.endDate) where.createdAt.lte = options.endDate
     }
 
-    return await this.prisma.auditLog.findMany({
+    const logs = await this.prisma.auditLog.findMany({
       where,
       include: {
         product: {
-          select: { name: true, sku: true }
+          select: { name: true, sku: true },
         },
         recipe: {
-          select: { name: true }
-        }
+          select: { name: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: options?.limit || 100,
       skip: options?.offset || 0,
     })
+    const count = await this.prisma.auditLog.count({ where })
+    return { logs, count }
   }
 
   /**
@@ -291,7 +298,9 @@ export class AuditLoggingService {
     try {
       const settings = await this.settingsService.getSettings(organizationId)
       const retentionDate = new Date()
-      retentionDate.setDate(retentionDate.getDate() - settings.auditLogRetentionDays)
+      retentionDate.setDate(
+        retentionDate.getDate() - settings.auditLogRetentionDays
+      )
 
       const result = await this.prisma.auditLog.deleteMany({
         where: {
@@ -312,16 +321,18 @@ export class AuditLoggingService {
   /**
    * Run cleanup for all organizations (can be called from a cron job)
    */
-  async cleanupAllOrganizations(): Promise<{ [organizationId: string]: number }> {
+  async cleanupAllOrganizations(): Promise<{
+    [organizationId: string]: number
+  }> {
     try {
       // Get all organizations that have audit logs
       const organizations = await this.prisma.organization.findMany({
         where: {
           auditLogs: {
-            some: {}
-          }
+            some: {},
+          },
         },
-        select: { id: true }
+        select: { id: true },
       })
 
       const results: { [organizationId: string]: number } = {}
@@ -332,7 +343,10 @@ export class AuditLoggingService {
 
       return results
     } catch (error) {
-      console.error('Failed to cleanup audit logs for all organizations:', error)
+      console.error(
+        'Failed to cleanup audit logs for all organizations:',
+        error
+      )
       return {}
     }
   }

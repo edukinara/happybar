@@ -1,11 +1,5 @@
 import { apiClient } from './client'
-
-interface APIRes<T> {
-  success: boolean
-  data: T
-  error?: string
-  message?: string
-}
+import { APIRes, apiRequest } from './types'
 
 export interface SupplierContact {
   id: string

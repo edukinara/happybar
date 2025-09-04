@@ -1,6 +1,4 @@
-import { POSProduct, POSSyncStatus } from '.'
-
-export type POSType = 'TOAST' | 'SQUARE' | 'CLOVER' | 'SHOPIFY' | 'LIGHTSPEED'
+import { POSProduct, POSSyncStatus, POSType } from '.'
 
 // Product unit options
 export enum ProductUnit {

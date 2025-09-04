@@ -41,6 +41,7 @@ import { useEffect, useState } from 'react'
 import { CustomPagination } from '@/components/ui/custom-pagination'
 import type { InventoryLevel, InventoryProduct } from '@happy-bar/types'
 import { format } from 'date-fns'
+import pluralize from 'pluralize'
 import { toast } from 'sonner'
 
 export default function StockTransfersPage() {
@@ -404,7 +405,10 @@ export default function StockTransfersPage() {
                         Quantity:
                       </span>
                       <p className='font-medium'>
-                        {movement.quantity} {movement.product.unit}
+                        {movement.quantity}{' '}
+                        {movement.product.container && movement.quantity > 1
+                          ? pluralize(movement.product.container)
+                          : movement.product.container || ''}
                       </p>
                     </div>
                   </div>
