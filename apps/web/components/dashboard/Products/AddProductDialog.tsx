@@ -26,6 +26,7 @@ import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
 import { useCategories } from '@/lib/queries'
 import { ProductUnit, type CatalogProduct } from '@happy-bar/types'
+import { PRODUCT_UNIT_OPTIONS, PRODUCT_CONTAINER_OPTIONS } from '@/lib/constants/product-options'
 import { Building2, Plus, Save, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -245,41 +246,6 @@ export default function AddProductDialog({
     )
   }
 
-  const units = [
-    'ml',
-    'L',
-    'fl oz',
-    'gal',
-    'g',
-    'kg',
-    'lb',
-    'count',
-    'cl',
-    'oz',
-  ]
-
-  const containers = [
-    'can',
-    'bottle',
-    'keg',
-    'box',
-    'bag',
-    'carton',
-    'unit',
-    'firkin',
-    'cask',
-    'growler',
-    'mini keg',
-    'pouch',
-    'jar',
-    'beer ball',
-    'reserved',
-    'decanter',
-    'cartridge',
-    'fiasco',
-    'bucket',
-    'glass',
-  ]
 
   return (
     <Dialog
@@ -446,9 +412,9 @@ export default function AddProductDialog({
                         <SelectValue placeholder='Select unit' />
                       </SelectTrigger>
                       <SelectContent>
-                        {units.map((unit) => (
-                          <SelectItem key={unit} value={unit}>
-                            {unit}
+                        {PRODUCT_UNIT_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.label}>
+                            {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -466,9 +432,9 @@ export default function AddProductDialog({
                         <SelectValue placeholder='Select container' />
                       </SelectTrigger>
                       <SelectContent>
-                        {containers.map((container) => (
-                          <SelectItem key={container} value={container}>
-                            {container}
+                        {PRODUCT_CONTAINER_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.label}>
+                            {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>

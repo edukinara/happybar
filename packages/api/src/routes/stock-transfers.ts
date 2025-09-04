@@ -319,7 +319,6 @@ export default async function stockTransferRoutes(fastify: FastifyInstance) {
             },
           },
           location: true,
-          zone: true,
         },
         orderBy: [{ product: { name: 'asc' } }],
       })
@@ -331,7 +330,7 @@ export default async function stockTransferRoutes(fastify: FastifyInstance) {
       ).length
       const totalValue = inventory.reduce(
         (sum, item) =>
-          sum + (item.currentQuantity * (item.product as any).costPerUnit || 0),
+          sum + (item.currentQuantity * (item.product?.costPerUnit || 0)),
         0
       )
 
@@ -462,7 +461,6 @@ export default async function stockTransferRoutes(fastify: FastifyInstance) {
         },
         include: {
           location: true,
-          zone: true,
         },
         orderBy: [{ location: { name: 'asc' } }],
       })

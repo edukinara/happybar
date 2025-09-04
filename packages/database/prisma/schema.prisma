@@ -28,7 +28,6 @@ model Location {
   organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   stockMovementsFrom StockMovement[]          @relation("FromLocation")
   stockMovementsTo   StockMovement[]          @relation("ToLocation")
-  zones              Zone[]
   userAssignments    UserLocationAssignment[]
 
   @@unique([organizationId, name])
@@ -36,81 +35,9 @@ model Location {
   @@map("locations")
 }
 
-model Zone {
-  id             String          @id @default(cuid())
-  organizationId String
-  locationId     String
-  name           String
-  code           String
-  description    String?
-  temperature    String?
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  aisles         Aisle[]
-  inventoryItems InventoryItem[]
-  location       Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, locationId, code])
-  @@map("zones")
-}
 
-model Aisle {
-  id             String          @id @default(cuid())
-  organizationId String
-  zoneId         String
-  name           String
-  code           String
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  zone           Zone            @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-  inventoryItems InventoryItem[]
-  shelves        Shelf[]
 
-  @@unique([organizationId, zoneId, code])
-  @@map("aisles")
-}
-
-model Shelf {
-  id             String          @id @default(cuid())
-  organizationId String
-  aisleId        String
-  name           String
-  code           String
-  level          Int             @default(1)
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  bins           Bin[]
-  inventoryItems InventoryItem[]
-  aisle          Aisle           @relation(fields: [aisleId], references: [id], onDelete: Cascade)
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, aisleId, code])
-  @@map("shelves")
-}
-
-model Bin {
-  id             String          @id @default(cuid())
-  organizationId String
-  shelfId        String
-  name           String
-  code           String
-  barcode        String?
-  maxCapacity    Float?
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  shelf          Shelf           @relation(fields: [shelfId], references: [id], onDelete: Cascade)
-  inventoryItems InventoryItem[]
-
-  @@unique([organizationId, shelfId, code])
-  @@map("bins")
-}
 
 model Category {
   id             String           @id @default(cuid())
@@ -242,28 +169,19 @@ model InventoryItem {
   organizationId   String
   productId        String
   locationId       String
-  zoneId           String?
-  aisleId          String?
-  shelfId          String?
-  binId            String?
   currentQuantity  Float        @default(0)
   minimumQuantity  Float        @default(0)
   maximumQuantity  Float?
   lastCountDate    DateTime?
   lastReceivedDate DateTime?
-  binLocationCode  String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   alerts           Alert[]
-  aisle            Aisle?       @relation(fields: [aisleId], references: [id])
-  bin              Bin?         @relation(fields: [binId], references: [id])
   location         Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   product          Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  shelf            Shelf?       @relation(fields: [shelfId], references: [id])
-  zone             Zone?        @relation(fields: [zoneId], references: [id])
 
-  @@unique([organizationId, productId, locationId, zoneId, aisleId, shelfId, binId])
+  @@unique([organizationId, productId, locationId])
   @@map("inventory_items")
 }
 
@@ -595,12 +513,10 @@ model Organization {
   isActive                Boolean                  @default(true)
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
-  aisles                  Aisle[]
   alertRules              AlertRule[]
   alerts                  Alert[]
   analytics               Analytics[]
   auditLogs               AuditLog[]
-  bins                    Bin[]
   categories              Category[]
   counts                  Count[]
   integrationGroups       IntegrationGroup[]
@@ -618,11 +534,9 @@ model Organization {
   recipePOSMappings       RecipePOSMapping[]
   recipes                 Recipe[]
   sales                   Sale[]
-  shelves                 Shelf[]
   stockMovements          StockMovement[]
   suppliers               Supplier[]
   syncLogs                SyncLog[]
-  zones                   Zone[]
   userLocationAssignments UserLocationAssignment[]
 
   @@map("organization")

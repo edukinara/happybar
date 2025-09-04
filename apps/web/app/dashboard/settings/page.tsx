@@ -21,7 +21,6 @@ import ToastIcon from '@/components/pos/toastIcon'
 import { POSIntegrationsGate } from '@/components/subscription/feature-gate'
 import { PricingModal } from '@/components/subscription/PricingModal'
 import {
-  useLocationUsageTracker,
   usePOSIntegrationUsageTracker,
   useTeamMemberUsageTracker,
 } from '@/components/subscription/usage-tracker'
@@ -52,7 +51,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
 import { posApi } from '@/lib/api/pos'
 import { subscriptionApi } from '@/lib/api/subscription'
 import { organization } from '@/lib/auth/client'
@@ -98,7 +96,6 @@ interface POSIntegration {
 }
 
 export default function SettingsPage() {
-  const [locations, setLocations] = useState<LocationsResponse>([])
   const [integrations, setIntegrations] = useState<POSIntegration[]>([])
   const [loading, setLoading] = useState(true)
   const [changingPlans, setChangingPlan] = useState(false)
@@ -130,38 +127,20 @@ export default function SettingsPage() {
     trackDecrement: trackPOSIntegrationDeletion,
   } = usePOSIntegrationUsageTracker()
   const { setUsage: setTeamMemberUsage } = useTeamMemberUsageTracker()
-  const { setUsage: setLocationUsage } = useLocationUsageTracker()
 
-  const trackUsersAndLocations = async () => {
+  const trackTeamMembers = async () => {
     try {
       setLoading(true)
-      await locationsApi.getLocations().then((res) => {
-        setLocations(res)
-        void setLocationUsage(res?.length || 0)
-      })
       await organization.listMembers().then((res) => {
         if (res.data) void setTeamMemberUsage(res.data.total)
       })
     } catch (error) {
-      console.error('Error setting Location and user usage:', error)
+      console.error('Error setting team member usage:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchLocations = async () => {
-    try {
-      setLoading(true)
-      await locationsApi.getLocations().then((res) => {
-        setLocations(res)
-        void setLocationUsage(res?.length || 0)
-      })
-    } catch (error) {
-      console.error('Error setting Location usage:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   useEffect(() => {
     // Only load integrations data on initial load since that's the default tab
@@ -176,7 +155,7 @@ export default function SettingsPage() {
 
       // Load data for the specific tab
       if (value === 'organization') {
-        void trackUsersAndLocations()
+        void trackTeamMembers()
       }
     }
   }
@@ -610,11 +589,7 @@ export default function SettingsPage() {
                       </Card>
                     }
                   >
-                    <LocationsCard
-                      locations={locations}
-                      loading={loading}
-                      fetchLocations={fetchLocations}
-                    />
+                    <LocationsCard />
                   </ManagerOnly>
 
                   {/* User Management - Requires users.read permission */}

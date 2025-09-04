@@ -85,7 +85,7 @@ const happyBarStatements = {
   admin: [
     "settings",       // Organization settings
     "integrations",   // Manage integrations (POS, webhooks)
-    "locations",      // Manage locations/warehouses
+    "locations",      // Manage locations
     "audit_logs",     // Access audit logs
     "alerts",         // Configure alert rules
     "billing"         // Access billing/subscription management
@@ -95,7 +95,6 @@ const happyBarStatements = {
   locations: [
     "all",            // Access all locations
     "assigned_only",  // Only assigned locations
-    "specific_zones"  // Specific zones within locations
   ],
 
   // Organization Management (for Better Auth organization plugin)

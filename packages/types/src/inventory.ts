@@ -13,16 +13,11 @@ export interface InventoryItem {
   organizationId: string
   productId: string
   locationId: string
-  zoneId: string | null
-  aisleId: string | null
-  shelfId: string | null
-  binId: string | null
   currentQuantity: number
   minimumQuantity: number
   maximumQuantity: number | null
   lastCountDate: Date | null
   lastReceivedDate: Date | null
-  binLocationCode: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -65,16 +60,11 @@ export interface InventoryItemWithBasicProduct {
   updatedAt: Date
   productId: string
   locationId: string
-  zoneId: string | null
-  aisleId: string | null
-  shelfId: string | null
-  binId: string | null
   currentQuantity: number
   minimumQuantity: number
   maximumQuantity: number | null
   lastCountDate: Date | null
   lastReceivedDate: Date | null
-  binLocationCode: string | null
   product: {
     id: string
     name: string

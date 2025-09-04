@@ -73,7 +73,6 @@ export interface LocationInventoryItem {
   maximumQuantity?: number
   lastCountDate?: string
   lastReceivedDate?: string
-  binLocationCode?: string
   product: {
     id: string
     name: string
@@ -90,11 +89,6 @@ export interface LocationInventoryItem {
     name: string
     code?: string
     type: string
-  }
-  zone?: {
-    id: string
-    name: string
-    code: string
   }
 }
 
