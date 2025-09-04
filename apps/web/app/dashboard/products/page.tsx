@@ -514,7 +514,7 @@ export default function ProductsPage() {
                           aria-label='Select all'
                         />
                       </TableHead>
-                      <TableHead className='w-[60px]'></TableHead>
+                      <TableHead className='w-[34px]'></TableHead>
                       <TableHead>Product</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Unit</TableHead>
@@ -545,7 +545,7 @@ export default function ProductsPage() {
                               aria-label={`Select ${product.name}`}
                             />
                           </TableCell>
-                          <TableCell className='w-[60px] p-2'>
+                          <TableCell className='w-[34px] p-2'>
                             {product.image ? (
                               <div className='relative size-8 overflow-hidden'>
                                 <Image

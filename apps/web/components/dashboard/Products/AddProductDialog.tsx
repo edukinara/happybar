@@ -1,5 +1,6 @@
 'use client'
 
+import { HappBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +26,8 @@ import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
 import { useCategories } from '@/lib/queries'
 import { ProductUnit, type CatalogProduct } from '@happy-bar/types'
-import { Building2, Loader2, Plus, Save, X } from 'lucide-react'
+import { Building2, Plus, Save, X } from 'lucide-react'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import CatalogSearch from './CatalogSearch'
@@ -79,6 +81,28 @@ export default function AddProductDialog({
     }
   }, [open])
 
+  const reset = () => {
+    // Reset form
+    setFormData({
+      name: '',
+      sku: '',
+      upc: '',
+      categoryId: '',
+      unit: ProductUnit.ML,
+      container: 'bottle',
+      unitSize: 750,
+      caseSize: 12,
+      costPerUnit: 0,
+      costPerCase: 0,
+      sellPrice: 0,
+      alcoholContent: 0,
+      image: '',
+    })
+    setProductSuppliers([])
+    setSelectedSupplierId('')
+    setShowSupplierForm(false)
+  }
+
   const fetchInitialData = async () => {
     try {
       setLoading(true)
@@ -96,7 +120,7 @@ export default function AddProductDialog({
 
   const handleCatalogSelect = (catalogProduct: CatalogProduct) => {
     // Auto-fill form with catalog product data
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       name: catalogProduct.name,
       upc: catalogProduct.upc || prev.upc,
@@ -109,8 +133,6 @@ export default function AddProductDialog({
       costPerCase: catalogProduct.costPerCase || prev.costPerCase,
       image: catalogProduct.image || prev.image,
     }))
-    
-    toast.success('Product details loaded from catalog')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,7 +164,8 @@ export default function AddProductDialog({
               costPerCase: supplier.costPerCase,
               packSize: formData.caseSize || undefined,
               minimumOrder: supplier.minimumOrder,
-              isPreferred: supplier.isPreferred,
+              isPreferred:
+                productSuppliers[0]?.supplierId === supplier.supplierId,
             })
           } catch (error) {
             console.warn(
@@ -154,25 +177,7 @@ export default function AddProductDialog({
         }
       }
 
-      // Reset form
-      setFormData({
-        name: '',
-        sku: '',
-        upc: '',
-        categoryId: '',
-        unit: ProductUnit.ML,
-        container: 'bottle',
-        unitSize: 750,
-        caseSize: 12,
-        costPerUnit: 0,
-        costPerCase: 0,
-        sellPrice: 0,
-        alcoholContent: 0,
-        image: '',
-      })
-      setProductSuppliers([])
-      setSelectedSupplierId('')
-      setShowSupplierForm(false)
+      reset()
 
       setOpen(false)
       onComplete()
@@ -277,14 +282,20 @@ export default function AddProductDialog({
   ]
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) reset()
+        setOpen(open)
+      }}
+    >
       <DialogTrigger asChild>
         <Button className='btn-brand-primary'>
           <Plus className='mr-2 size-4' />
           Add Product
         </Button>
       </DialogTrigger>
-      <DialogContent className='max-w-3xl max-h-[85vh] p-3'>
+      <DialogContent className='md:min-w-2xl  max-h-[85vh] p-3'>
         <DialogHeader className='p-2'>
           <DialogTitle>Add New Product</DialogTitle>
           <DialogDescription>
@@ -295,7 +306,7 @@ export default function AddProductDialog({
         <ScrollArea className='max-h-[calc(85vh-120px)] pr-4'>
           {loading ? (
             <div className='flex items-center justify-center py-4'>
-              <Loader2 className='size-6 animate-spin' />
+              <HappBarLoader />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className='space-y-6 p-2'>
@@ -315,73 +326,105 @@ export default function AddProductDialog({
               {/* Basic Information */}
               <div className='space-y-4'>
                 <h3 className='text-sm font-semibold'>Basic Information</h3>
+                <div
+                  className={`flex gap-4 ${formData.image ? 'items-end' : ''}`}
+                >
+                  {/* Product Image Display - Left Side */}
+                  {formData.image && (
+                    <div className='relative w-24 h-34 overflow-hidden'>
+                      <Image
+                        src={formData.image}
+                        alt={formData.name || 'Product image'}
+                        fill
+                        className='object-contain'
+                        sizes='128px'
+                        onError={(_e) => {
+                          console.warn(
+                            `Failed to load product image: ${formData.image}`
+                          )
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className='flex-1 space-y-2'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='name'>Product Name *</Label>
+                      <Input
+                        id='name'
+                        value={formData.name}
+                        onChange={(e) =>
+                          handleInputChange('name', e.target.value)
+                        }
+                        placeholder='e.g., Budweiser Beer'
+                        required
+                      />
+                    </div>
 
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>Product Name *</Label>
-                  <Input
-                    id='name'
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder='e.g., Budweiser Beer'
-                    required
-                  />
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='sku'>SKU</Label>
-                    <Input
-                      id='sku'
-                      value={formData.sku}
-                      onChange={(e) => handleInputChange('sku', e.target.value)}
-                      placeholder='e.g., BUD-001'
-                    />
+                    <div className='grid grid-cols-2 gap-4'>
+                      <div className='space-y-2'>
+                        <Label htmlFor='sku'>SKU</Label>
+                        <Input
+                          id='sku'
+                          value={formData.sku}
+                          onChange={(e) =>
+                            handleInputChange('sku', e.target.value)
+                          }
+                          placeholder='e.g., BUD-001'
+                        />
+                      </div>
+                      <div className='space-y-2'>
+                        <Label htmlFor='upc'>UPC/Barcode</Label>
+                        <Input
+                          id='upc'
+                          value={formData.upc}
+                          onChange={(e) =>
+                            handleInputChange('upc', e.target.value)
+                          }
+                          placeholder='e.g., 123456789012'
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='upc'>UPC/Barcode</Label>
+                </div>
+
+                <div className='flex flex-col sm:flex-row gap-2'>
+                  <div className='space-y-2 flex-1'>
+                    <Label htmlFor='image'>Image URL</Label>
                     <Input
-                      id='upc'
-                      value={formData.upc}
-                      onChange={(e) => handleInputChange('upc', e.target.value)}
-                      placeholder='e.g., 123456789012'
+                      id='image'
+                      value={formData.image}
+                      onChange={(e) =>
+                        handleInputChange('image', e.target.value)
+                      }
+                      placeholder='https://example.com/product-image.jpg'
+                      type='url'
                     />
+                    <p className='text-xs text-muted-foreground'>
+                      Optional: URL to product image
+                    </p>
                   </div>
-                </div>
 
-                <div className='space-y-2'>
-                  <Label htmlFor='image'>Image URL</Label>
-                  <Input
-                    id='image'
-                    value={formData.image}
-                    onChange={(e) => handleInputChange('image', e.target.value)}
-                    placeholder='https://example.com/product-image.jpg'
-                    type='url'
-                  />
-                  <p className='text-xs text-muted-foreground'>
-                    Optional: URL to product image
-                  </p>
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='category'>Category *</Label>
-                  <Select
-                    value={formData.categoryId}
-                    onValueChange={(value) =>
-                      handleInputChange('categoryId', value)
-                    }
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder='Select a category' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories?.categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className='space-y-2'>
+                    <Label htmlFor='category'>Category *</Label>
+                    <Select
+                      value={formData.categoryId}
+                      onValueChange={(value) =>
+                        handleInputChange('categoryId', value)
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a category' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories?.categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 

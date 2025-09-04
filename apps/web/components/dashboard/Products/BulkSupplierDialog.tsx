@@ -122,7 +122,7 @@ export default function BulkSupplierDialog({
                   product.costPerCase || product.costPerUnit * product.caseSize,
                 packSize: product.caseSize,
                 minimumOrder: orderingPreferences.minimumOrder,
-                isPreferred: false,
+                isPreferred: existingSuppliers.length === 0,
               })
               successCount++
             }

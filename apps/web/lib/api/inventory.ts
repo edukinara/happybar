@@ -109,16 +109,6 @@ export interface TransactionHistoryResponse {
 }
 
 export const inventoryApi = {
-  async getProducts(): Promise<InventoryProduct[]> {
-    const response = await apiClient.get<APIRes<InventoryProduct[]>>(
-      '/api/inventory/products'
-    )
-    if (!response.success || !response.data) {
-      throw new Error('Failed to get products')
-    }
-    return response.data
-  },
-
   async getInventoryProducts(): Promise<InventoryItemWithBasicProduct[]> {
     const response = await apiClient.get<
       APIRes<InventoryItemWithBasicProduct[]>
@@ -319,13 +309,13 @@ export const inventoryApi = {
   },
 
   async getProduct(id: string): Promise<InventoryProduct> {
-    const response = await apiClient.get<APIRes<InventoryProduct>>(
-      `/api/inventory/products/${id}`
+    const response = await apiClient.get<APIRes<{ product: InventoryProduct }>>(
+      `/api/products/${id}`
     )
     if (!response.success || !response.data) {
       throw new Error('Failed to get product')
     }
-    return response.data
+    return response.data.product
   },
 
   async createProduct(data: {
@@ -345,7 +335,7 @@ export const inventoryApi = {
     supplierId?: string
   }): Promise<InventoryProduct> {
     const response = await apiClient.post<APIRes<InventoryProduct>>(
-      '/api/inventory/products',
+      '/api/products',
       data
     )
     if (!response.success || !response.data) {
@@ -374,7 +364,7 @@ export const inventoryApi = {
     }
   ): Promise<InventoryProduct> {
     const response = await apiClient.put<APIRes<InventoryProduct>>(
-      `/api/inventory/products/${id}`,
+      `/api/products/${id}`,
       data
     )
     if (!response.success || !response.data) {
@@ -385,7 +375,7 @@ export const inventoryApi = {
 
   async deleteProduct(id: string): Promise<void> {
     const response = await apiClient.delete<APIRes<{ message: string }>>(
-      `/api/inventory/products/${id}`
+      `/api/products/${id}`
     )
     if (!response.success) {
       throw new Error('Failed to delete product')

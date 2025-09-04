@@ -1,5 +1,6 @@
 'use client'
 
+import { RecipeMappingSuggestions } from '@/components/dashboard/Recipes/RecipeMappingSuggestions'
 import { MenuGroupSelector } from '@/components/pos/menu-group-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CustomPagination } from '@/components/ui/custom-pagination'
 import {
   Dialog,
   DialogContent,
@@ -55,7 +57,6 @@ import {
 } from '@/lib/api/products'
 import { recipePOSMappingsApi } from '@/lib/api/recipe-pos-mappings'
 import { recipesApi } from '@/lib/api/recipes'
-import { RecipeMappingSuggestions } from '@/components/dashboard/Recipes/RecipeMappingSuggestions'
 import { getServingUnitOptions } from '@/lib/constants/product-options'
 import {
   ProductUnit,
@@ -77,6 +78,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -642,6 +644,26 @@ export default function ProductMappingsPage() {
 
     return matchesSearch && matchesConfirmation && matchesCategory
   })
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
+
+  // Calculate pagination values
+  const totalItems = filteredMappings.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
+  const paginatedMappings = filteredMappings.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1)
+  }
 
   // Filter recipe mappings based on search
   const filteredRecipeMappings = recipeMappings.filter((mapping) => {
@@ -1420,7 +1442,7 @@ export default function ProductMappingsPage() {
                   )}
                 </CardHeader>
                 <CardContent>
-                  {filteredMappings.length === 0 ? (
+                  {paginatedMappings.length === 0 ? (
                     <div className='text-center py-8 text-muted-foreground'>
                       {mappingSearch ||
                       confirmationFilter !== 'all' ||
@@ -1429,162 +1451,206 @@ export default function ProductMappingsPage() {
                         : 'No product mappings found. Create your first mapping above.'}
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className='w-[50px]'>
-                            <Checkbox
-                              checked={
-                                selectedMappings.size > 0 &&
-                                selectedMappings.size ===
-                                  filteredMappings.length
-                              }
-                              onCheckedChange={(checked) =>
-                                handleSelectAllMappings(checked as boolean)
-                              }
-                            />
-                          </TableHead>
-                          <TableHead>Internal Product</TableHead>
-                          <TableHead>POS Product</TableHead>
-                          <TableHead>Serving Info</TableHead>
-                          <TableHead>Integration</TableHead>
-                          <TableHead>Confidence</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className='w-[100px]'>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredMappings.map((mapping) => (
-                          <TableRow key={mapping.id}>
-                            <TableCell>
+                    <>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className='w-[50px]'>
                               <Checkbox
-                                checked={selectedMappings.has(mapping.id)}
+                                checked={
+                                  selectedMappings.size > 0 &&
+                                  selectedMappings.size ===
+                                    filteredMappings.length
+                                }
                                 onCheckedChange={(checked) =>
-                                  handleSelectMapping(
-                                    mapping.id,
-                                    checked as boolean
-                                  )
+                                  handleSelectAllMappings(checked as boolean)
                                 }
                               />
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className='font-medium'>
-                                  {mapping.product?.name}
-                                </div>
-                                {mapping.product?.sku && (
-                                  <div className='text-sm text-muted-foreground'>
-                                    SKU: {mapping.product.sku}
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className='flex flex-col gap-0'>
+                            </TableHead>
+                            <TableHead>Internal Product</TableHead>
+                            <TableHead>POS Product</TableHead>
+                            <TableHead>Serving Info</TableHead>
+                            <TableHead>Integration</TableHead>
+                            <TableHead>Confidence</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className='w-[100px]'>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedMappings.map((mapping) => (
+                            <TableRow key={mapping.id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedMappings.has(mapping.id)}
+                                  onCheckedChange={(checked) =>
+                                    handleSelectMapping(
+                                      mapping.id,
+                                      checked as boolean
+                                    )
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell>
                                 <div>
                                   <div className='font-medium'>
-                                    {mapping.posProduct?.name}
+                                    {mapping.product?.name}
                                   </div>
-                                  {mapping.posProduct?.sku && (
+                                  {mapping.product?.sku && (
                                     <div className='text-sm text-muted-foreground'>
-                                      SKU: {mapping.posProduct.sku}
+                                      SKU: {mapping.product.sku}
                                     </div>
                                   )}
                                 </div>
-                                <p className='text-xs text-muted-foreground'>
-                                  {mapping.posProduct?.category}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {mapping.servingUnit || mapping.servingSize ? (
-                                mapping.servingUnit && (
-                                  <div className='flex flex-row items-center'>
-                                    <p className='text-sm'>
-                                      {mapping.servingSize || 1}
+                              </TableCell>
+                              <TableCell>
+                                <div className='flex flex-row items-center gap-2'>
+                                  {mapping.product?.image ? (
+                                    <div className='relative size-7 overflow-hidden'>
+                                      <Image
+                                        src={mapping.product.image}
+                                        alt={mapping.product.name}
+                                        fill
+                                        className='object-contain'
+                                        sizes='28px'
+                                        onError={(_e) => {
+                                          console.warn(
+                                            `Failed to load image: ${mapping.product.image}`
+                                          )
+                                        }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className='size-8 flex items-center justify-center'>
+                                      <Package className='w-4 h-4 text-muted-foreground' />
+                                    </div>
+                                  )}
+                                  <div className='flex flex-col gap-0'>
+                                    <div>
+                                      <div className='font-medium'>
+                                        {mapping.posProduct?.name}
+                                      </div>
+                                      {mapping.posProduct?.sku && (
+                                        <div className='text-sm text-muted-foreground'>
+                                          SKU: {mapping.posProduct.sku}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <p className='text-xs text-muted-foreground'>
+                                      {mapping.posProduct?.category}
                                     </p>
-                                    <Badge variant='secondary' className='ml-2'>
-                                      {mapping.servingUnit}
-                                    </Badge>
                                   </div>
-                                )
-                              ) : mapping.posProduct?.servingUnit ||
-                                mapping.posProduct?.servingSize ? (
-                                mapping.posProduct?.servingUnit && (
-                                  <div className='flex flex-row items-center'>
-                                    <p className='text-sm'>
-                                      {mapping.posProduct.servingSize || 1}
-                                    </p>
-                                    <Badge variant='secondary' className='ml-2'>
-                                      {mapping.posProduct.servingUnit}
-                                    </Badge>
-                                  </div>
-                                )
-                              ) : (
-                                <span className='text-muted-foreground'>-</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant='outline'>
-                                {mapping.posProduct?.integration?.name}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  mapping.confidence > 0.8
-                                    ? 'default'
-                                    : 'secondary'
-                                }
-                              >
-                                {(mapping.confidence * 100).toFixed(0)}%
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  mapping.isConfirmed ? 'default' : 'secondary'
-                                }
-                              >
-                                {mapping.isConfirmed ? (
-                                  <>
-                                    <CheckCircle className='size-3 mr-1' />
-                                    Confirmed
-                                  </>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {mapping.servingUnit || mapping.servingSize ? (
+                                  mapping.servingUnit && (
+                                    <div className='flex flex-row items-center'>
+                                      <p className='text-sm'>
+                                        {mapping.servingSize || 1}
+                                      </p>
+                                      <Badge
+                                        variant='secondary'
+                                        className='ml-2'
+                                      >
+                                        {mapping.servingUnit}
+                                      </Badge>
+                                    </div>
+                                  )
+                                ) : mapping.posProduct?.servingUnit ||
+                                  mapping.posProduct?.servingSize ? (
+                                  mapping.posProduct?.servingUnit && (
+                                    <div className='flex flex-row items-center'>
+                                      <p className='text-sm'>
+                                        {mapping.posProduct.servingSize || 1}
+                                      </p>
+                                      <Badge
+                                        variant='secondary'
+                                        className='ml-2'
+                                      >
+                                        {mapping.posProduct.servingUnit}
+                                      </Badge>
+                                    </div>
+                                  )
                                 ) : (
-                                  <>
-                                    <AlertCircle className='size-3 mr-1' />
-                                    Auto-mapped
-                                  </>
+                                  <span className='text-muted-foreground'>
+                                    -
+                                  </span>
                                 )}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className='flex items-center gap-1'>
-                                <Button
-                                  size='sm'
-                                  variant='ghost'
-                                  onClick={() => handleEditMapping(mapping)}
-                                  title='Edit mapping'
-                                >
-                                  <Edit className='size-4' />
-                                </Button>
-                                <Button
-                                  size='sm'
-                                  variant='ghost'
-                                  onClick={() =>
-                                    handleDeleteMapping(mapping.id)
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant='outline'>
+                                  {mapping.posProduct?.integration?.name}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    mapping.confidence > 0.8
+                                      ? 'default'
+                                      : 'secondary'
                                   }
-                                  title='Delete mapping'
                                 >
-                                  <Trash2 className='size-4' />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                                  {(mapping.confidence * 100).toFixed(0)}%
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    mapping.isConfirmed
+                                      ? 'default'
+                                      : 'secondary'
+                                  }
+                                >
+                                  {mapping.isConfirmed ? (
+                                    <>
+                                      <CheckCircle className='size-3 mr-1' />
+                                      Confirmed
+                                    </>
+                                  ) : (
+                                    <>
+                                      <AlertCircle className='size-3 mr-1' />
+                                      Auto-mapped
+                                    </>
+                                  )}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className='flex items-center gap-1'>
+                                  <Button
+                                    size='sm'
+                                    variant='ghost'
+                                    onClick={() => handleEditMapping(mapping)}
+                                    title='Edit mapping'
+                                  >
+                                    <Edit className='size-4' />
+                                  </Button>
+                                  <Button
+                                    size='sm'
+                                    variant='ghost'
+                                    onClick={() =>
+                                      handleDeleteMapping(mapping.id)
+                                    }
+                                    title='Delete mapping'
+                                  >
+                                    <Trash2 className='size-4' />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      <div className='mt-6'>
+                        <CustomPagination
+                          currentPage={currentPage}
+                          totalPages={totalPages}
+                          totalItems={totalItems}
+                          itemsPerPage={itemsPerPage}
+                          onPageChange={handlePageChange}
+                          onItemsPerPageChange={handleItemsPerPageChange}
+                        />
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -1638,7 +1704,10 @@ export default function ProductMappingsPage() {
               {/* Recipe Mapping Suggestions */}
               <RecipeMappingSuggestions
                 integrationId={selectedIntegration}
-                integrationName={integrations.find(i => i.id === selectedIntegration)?.name || 'POS'}
+                integrationName={
+                  integrations.find((i) => i.id === selectedIntegration)
+                    ?.name || 'POS'
+                }
                 onMappingCreated={fetchRecipeMappings}
               />
 

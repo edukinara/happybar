@@ -35,6 +35,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { inventoryApi } from '@/lib/api/inventory'
+import { getProducts } from '@/lib/api/products'
 import { recipesApi } from '@/lib/api/recipes'
 import type {
   CreateRecipeRequest,
@@ -94,12 +95,12 @@ export default function RecipesPage() {
           limit: pagination.limit,
           search: searchTerm || undefined,
         }),
-        inventoryApi.getProducts(),
+        getProducts(),
       ])
 
       setRecipes(recipesData.recipes)
       setPagination(recipesData.pagination)
-      setProducts(productsData)
+      setProducts(productsData.products)
     } catch (error) {
       console.error('Failed to fetch data:', error)
       toast.error('Failed to load recipes')

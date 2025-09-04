@@ -13,6 +13,7 @@ import {
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { inventoryApi } from '@/lib/api/inventory'
+import { getProducts } from '@/lib/api/products'
 import {
   type CountArea,
   type InventoryCountItem,
@@ -146,10 +147,11 @@ export default function CountExecutionPage() {
 
   const fetchProducts = async (locationId?: string) => {
     try {
-      const [productsData, inventoryLevels] = await Promise.all([
-        inventoryApi.getProducts(),
+      const [productsResponse, inventoryLevels] = await Promise.all([
+        getProducts(),
         inventoryApi.getInventoryLevels(),
       ])
+      const productsData = productsResponse.products
 
       // Create a map of product ID to par level (minimumQuantity) for this location
       const parLevelMap: Map<string, number> = new Map()

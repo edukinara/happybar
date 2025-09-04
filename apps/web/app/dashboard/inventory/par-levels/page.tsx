@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/table'
 import { inventoryApi } from '@/lib/api/inventory'
 import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
+import { getProducts } from '@/lib/api/products'
 import { AlertTriangle, Package, Save, Search, Target } from 'lucide-react'
 import Image from 'next/image'
 import pluralize from 'pluralize'
@@ -92,10 +93,11 @@ export default function ParLevelsPage() {
   const fetchInventoryItems = async () => {
     try {
       setLoading(true)
-      const [productsData, inventoryLevelsData] = await Promise.all([
-        inventoryApi.getProducts(),
+      const [productsResponse, inventoryLevelsData] = await Promise.all([
+        getProducts(),
         inventoryApi.getInventoryLevels(),
       ])
+      const productsData = productsResponse.products
 
       // Create a map of existing inventory items by productId + locationId
       const inventoryMap = new Map()
@@ -344,7 +346,7 @@ export default function ParLevelsPage() {
 
                     return (
                       <TableRow key={item.id}>
-                        <TableCell className='w-[60px] p-2'>
+                        <TableCell className='w-[34px] p-2'>
                           {item.product.image ? (
                             <div className='relative size-8 overflow-hidden'>
                               <Image

@@ -301,7 +301,7 @@ export default function InventoryPage() {
                           toggleOpen(true)
                         }}
                       >
-                        <TableCell className='w-[60px] p-2'>
+                        <TableCell className='w-[34px] p-2'>
                           {item.product.image ? (
                             <div className='relative size-8 overflow-hidden'>
                               <Image

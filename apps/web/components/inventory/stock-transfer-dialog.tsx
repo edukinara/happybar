@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import type { InventoryLevel, Location, Product } from '@happy-bar/types'
+import type { InventoryLevel, InventoryProduct, Location, Product } from '@happy-bar/types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   AlertTriangle,
@@ -61,7 +61,7 @@ type TransferFormData = z.infer<typeof transferSchema>
 
 interface StockTransferDialogProps {
   trigger?: React.ReactNode
-  products: Product[]
+  products: InventoryProduct[]
   locations: Location[]
   inventoryItems: InventoryLevel[]
   onTransfer: (data: TransferFormData) => Promise<void>

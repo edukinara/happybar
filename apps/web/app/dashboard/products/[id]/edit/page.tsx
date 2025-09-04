@@ -96,12 +96,6 @@ export default function EditProductPage() {
     // supplierId: '',
   })
 
-  useEffect(() => {
-    if (productId) {
-      fetchInitialData()
-    }
-  }, [productId])
-
   const fetchInitialData = async () => {
     try {
       setLoading(true)
@@ -153,6 +147,12 @@ export default function EditProductPage() {
     }
   }
 
+  useEffect(() => {
+    if (productId) {
+      fetchInitialData()
+    }
+  }, [productId])
+
   const handleCatalogSelect = (catalogProduct: CatalogProduct) => {
     // Auto-fill form with catalog product data
     setFormData((prev) => ({
@@ -168,8 +168,6 @@ export default function EditProductPage() {
       costPerCase: catalogProduct.costPerCase || prev.costPerCase,
       image: catalogProduct.image || prev.image,
     }))
-
-    toast.success('Product details updated from catalog')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -449,7 +447,7 @@ export default function EditProductPage() {
             </CardHeader>
             <CardContent className='space-y-4'>
               <div
-                className={`flex gap-6 ${formData.image ? 'items-end' : ''}`}
+                className={`flex gap-4 ${formData.image ? 'items-end' : ''}`}
               >
                 {/* Product Image Display - Left Side */}
                 {formData.image && (

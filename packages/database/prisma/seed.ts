@@ -1,4 +1,3 @@
-import * as fs from 'fs'
 import { PrismaClient } from '../dist/client'
 
 const prisma = new PrismaClient()
@@ -9,7 +8,9 @@ async function main() {
   // const backup = fs.readFileSync(
   //   '../../backups/complete-backup-2025-08-20T22-22-04-440Z.json'
   // )
-  const catalog = fs.readFileSync('../../backups/catalog.json', 'utf-8')
+  // const catalog = fs.readFileSync('../../backups/catalog.json', 'utf-8')
+  // const catalogna = fs.readFileSync('../../backups/catalog-na.json', 'utf-8')
+  // const dnlds = fs.readFileSync('../../backups/dnlds.txt', 'utf-8')
 
   // const data = JSON.parse(backup.toString()) as any
 
@@ -190,31 +191,62 @@ async function main() {
   // console.log('  Password: demo123')
   // console.log('  Domain: demo')
 
-  // const prods = await prisma.productCatalog.findMany()
-  // fs.writeFileSync('../../backups/catalog.json', JSON.stringify(prods))
+  // const prods = await prisma.productCatalog.findMany({
+  //   where: { categoryId: 'cmek26esd0003livta4nz094o' },
+  // })
+  // fs.writeFileSync('../../backups/catalogna.json', JSON.stringify(prods))
 
   // await prisma.productCatalog.createMany({
-  //   data: JSON.parse(catalog),
+  //   data: JSON.parse(catalogna),
   //   skipDuplicates: true,
   // })
 
-  for await (const product of JSON.parse(catalog)) {
-    const { id, name } = product
-    await prisma.productCatalog
-      .update({
-        where: {
-          id,
-        },
-        data: {
-          name,
-        },
-      })
-      .catch(() => {
-        console.error(id)
-      })
+  // for await (const product of JSON.parse(catalog)) {
+  //   const { id, name } = product
+  //   await prisma.productCatalog
+  //     .update({
+  //       where: {
+  //         id,
+  //       },
+  //       data: {
+  //         name,
+  //       },
+  //     })
+  //     .catch(() => {
+  //       console.error(id)
+  //     })
+  // }
+
+  // const images = dnlds.split('\n')
+  // for (const image of images) {
+  //   if (!image) continue
+  //   await prisma.productCatalog.update({
+  //     where: {
+  //       id: image,
+  //     },
+  //     data: {
+  //       image: `https://happy-bar-catalog.s3.us-east-2.amazonaws.com/${image}`,
+  //     },
+  //   })
+  // }
+  const p = await prisma.productCatalog.findMany()
+  for (const product of p) {
+    await prisma.productCatalog.update({
+      where: {
+        id: product.id,
+      },
+      data: {
+        costPerUnit: product.costPerUnit
+          ? Number(product.costPerUnit.toFixed(2))
+          : undefined,
+        costPerCase: product.costPerCase
+          ? Number(product.costPerCase.toFixed(2))
+          : undefined,
+      },
+    })
   }
 
-  // console.log('🎉 Database seed completed successfully!')
+  console.log('🎉 Database seed completed successfully!')
 }
 
 main()

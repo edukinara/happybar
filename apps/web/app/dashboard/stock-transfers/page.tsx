@@ -39,7 +39,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { CustomPagination } from '@/components/ui/custom-pagination'
-import type { InventoryLevel, Product } from '@happy-bar/types'
+import type { InventoryLevel, InventoryProduct } from '@happy-bar/types'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 
@@ -50,7 +50,7 @@ export default function StockTransfersPage() {
     []
   )
   const [locations, setLocations] = useState<LocationsResponse>([])
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<InventoryProduct[]>([])
   const [inventoryItems, setInventoryItems] = useState<InventoryLevel[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
