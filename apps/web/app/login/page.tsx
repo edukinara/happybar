@@ -20,7 +20,7 @@ function LoginPageContent() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -63,16 +63,20 @@ function LoginPageContent() {
 
     try {
       await login(email, password)
+      
       // After successful login, check for invitation or redirect parameter
       const invitationId = searchParams.get('invitation')
       const redirect = searchParams.get('redirect')
 
-      if (invitationId) {
-        router.push(`/accept-invitation/${invitationId}`)
-      } else if (redirect) {
-        router.push(redirect)
-      } else {
-        router.push('/dashboard')
+      // In production, use window.location for reliable navigation after login
+      if (typeof window !== 'undefined') {
+        if (invitationId) {
+          window.location.replace(`/accept-invitation/${invitationId}`)
+        } else if (redirect) {
+          window.location.replace(redirect)
+        } else {
+          window.location.replace('/dashboard')
+        }
       }
     } catch (err: unknown) {
       const errorMessage =

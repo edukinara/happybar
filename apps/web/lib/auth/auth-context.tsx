@@ -263,8 +263,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(result.error.message || 'Login failed')
       }
 
-      // Router push will be handled by the session effect above
-      router.push('/dashboard')
+      // Let the session effect handle navigation after user state is loaded
+      // The router.push will be handled by the login page after successful authentication
     } catch (error) {
       console.error('Login failed:', error)
       throw error
