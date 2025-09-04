@@ -217,7 +217,8 @@ export class POSSalesSyncService {
               const result = await this.processSale(
                 organizationId,
                 integrationId,
-                sale
+                sale,
+                options?.lastCountDate
               )
 
               totalProcessed++
@@ -329,7 +330,8 @@ export class POSSalesSyncService {
   private async processSale(
     organizationId: string,
     integrationId: string,
-    sale: POSSale
+    sale: POSSale,
+    lastCountDate?: Date
   ): Promise<{ isNew: boolean; saleId?: string }> {
     // Check if this sale has already been processed
     const existingSale = await this.prisma.sale.findFirst({
@@ -431,7 +433,17 @@ export class POSSalesSyncService {
       },
     })
 
+    // Check if we should deplete inventory for this sale
+    // Only deplete if the sale occurred after the last approved inventory count
+    const shouldDepleteInventory = !lastCountDate || sale.timestamp > lastCountDate
+    
+    if (!shouldDepleteInventory) {
+      console.log(`⏭️  Skipping inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred before last approved count (${lastCountDate?.toISOString()})`)
+      return { isNew: true, saleId: saleRecord.id }
+    }
+
     // Process inventory depletion for each aggregated sale item
+    console.log(`✅ Processing inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred after last approved count`)
     const inventoryResults = []
     const inventoryErrors = []
 

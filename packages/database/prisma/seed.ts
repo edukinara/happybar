@@ -9,6 +9,8 @@ async function main() {
   //   '../../backups/complete-backup-2025-08-20T22-22-04-440Z.json'
   // )
   // const catalog = fs.readFileSync('../../backups/catalog.json', 'utf-8')
+  // const product = fs.readFileSync('../../backups/product.json', 'utf-8')
+  // const recipe = fs.readFileSync('../../backups/recipe.json', 'utf-8')
   // const catalogna = fs.readFileSync('../../backups/catalog-na.json', 'utf-8')
   // const dnlds = fs.readFileSync('../../backups/dnlds.txt', 'utf-8')
 
@@ -191,13 +193,54 @@ async function main() {
   // console.log('  Password: demo123')
   // console.log('  Domain: demo')
 
-  // const prods = await prisma.productCatalog.findMany({
-  //   where: { categoryId: 'cmek26esd0003livta4nz094o' },
+  // const prods = await prisma.recipe.findMany({
+  //   omit: {
+  //     createdAt: true,
+  //     updatedAt: true,
+  //     id: true,
+  //     organizationId: true,
+  //   },
   // })
-  // fs.writeFileSync('../../backups/catalogna.json', JSON.stringify(prods))
+  // fs.writeFileSync('../../backups/recipe.json', JSON.stringify(prods))
 
-  // await prisma.productCatalog.createMany({
-  //   data: JSON.parse(catalogna),
+  // const rawData = JSON.parse(product) as (Product & {
+  //   category: {
+  //     name: string
+  //   }
+  // })[]
+  // const categories = await prisma.category.findMany()
+  // const organizationId = await prisma.organization
+  //   .findFirst()
+  //   .then((o) => o!.id)
+  // const otherCategoryId = categories.find(
+  //   (c) => c.name.toLowerCase() === 'other'
+  // )!.id
+
+  // const data = rawData.map((d) => {
+  //   const {
+  //     id,
+  //     categoryId,
+  //     category,
+  //     createdAt,
+  //     updatedAt,
+  //     organizationId: _,
+  //     ...rest
+  //   } = d
+  //   return {
+  //     ...rest,
+  //     organizationId,
+  //     categoryId:
+  //       categories.find(
+  //         (c) => c.name.toLowerCase() === category.name.toLowerCase()
+  //       )?.id || otherCategoryId,
+  //   }
+  // })
+  // const data = JSON.parse(recipe) as Recipe[]
+  // await prisma.recipe.createMany({
+  //   data: data.map((d) => ({
+  //     ...d,
+  //     organizationId,
+  //   })),
   //   skipDuplicates: true,
   // })
 
@@ -229,22 +272,22 @@ async function main() {
   //     },
   //   })
   // }
-  const p = await prisma.productCatalog.findMany()
-  for (const product of p) {
-    await prisma.productCatalog.update({
-      where: {
-        id: product.id,
-      },
-      data: {
-        costPerUnit: product.costPerUnit
-          ? Number(product.costPerUnit.toFixed(2))
-          : undefined,
-        costPerCase: product.costPerCase
-          ? Number(product.costPerCase.toFixed(2))
-          : undefined,
-      },
-    })
-  }
+  // const p = await prisma.productCatalog.findMany()
+  // for (const product of p) {
+  //   await prisma.productCatalog.update({
+  //     where: {
+  //       id: product.id,
+  //     },
+  //     data: {
+  //       costPerUnit: product.costPerUnit
+  //         ? Number(product.costPerUnit.toFixed(2))
+  //         : undefined,
+  //       costPerCase: product.costPerCase
+  //         ? Number(product.costPerCase.toFixed(2))
+  //         : undefined,
+  //     },
+  //   })
+  // }
 
   console.log('🎉 Database seed completed successfully!')
 }

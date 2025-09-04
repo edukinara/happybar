@@ -76,9 +76,11 @@ async function buildServer() {
         // Allow requests with no origin (like mobile apps, Postman, etc.)
         if (!origin) return callback(null, true)
 
+        // Get allowed origins from environment or use defaults
+        const baseUrl = env.APP_BASE_URL
         const allowedOrigins =
           env.NODE_ENV === 'production'
-            ? ['https://happybar.app', 'https://www.happybar.app']
+            ? [baseUrl, baseUrl.replace('https://', 'https://www.')]
             : ['http://localhost:3000', /^http:\/\/192\.168\.\d+\.\d+:3001$/]
 
         const isAllowed = allowedOrigins.some((allowed) =>
@@ -87,17 +89,27 @@ async function buildServer() {
             : allowed.test(origin)
         )
 
+        // Log CORS rejections for debugging
+        if (!isAllowed && env.NODE_ENV === 'production') {
+          console.warn(`CORS: Rejected request from origin: ${origin}`)
+        }
+
         callback(null, isAllowed)
       },
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',
         'X-Requested-With',
         'x-better-auth-token',
+        'Accept',
+        'Origin',
       ],
+      exposedHeaders: ['X-Total-Count', 'X-Page-Count'], // Headers the client can access
       credentials: true, // Enable credentials for web app cookies
-      maxAge: 86400, // 24 hours
+      maxAge: 86400, // 24 hours preflight cache
+      preflightContinue: false,
+      optionsSuccessStatus: 204
     })
 
     await fastify.register(jwt, {
