@@ -82,7 +82,9 @@ export default function ParLevelsPage() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false)
   const [bulkParLevel, setBulkParLevel] = useState<number>(0)
-  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([])
   const [pendingChanges, setPendingChanges] = useState<Record<string, number>>(
     {}
   )
@@ -154,10 +156,12 @@ export default function ParLevelsPage() {
               container: product.container || undefined,
               image: product.image || undefined,
               upc: product.upc || undefined,
-              category: product.category ? {
-                id: product.category.id,
-                name: product.category.name,
-              } : undefined,
+              category: product.category
+                ? {
+                    id: product.category.id,
+                    name: product.category.name,
+                  }
+                : undefined,
             },
             location: {
               id: location.id,
@@ -170,16 +174,20 @@ export default function ParLevelsPage() {
       setItems(allItems)
 
       // Extract unique categories for filtering
-      const uniqueCategories = new Map<string, {id: string, name: string}>()
-      productsData.forEach(product => {
+      const uniqueCategories = new Map<string, { id: string; name: string }>()
+      productsData.forEach((product) => {
         if (product.category) {
           uniqueCategories.set(product.category.id, {
             id: product.category.id,
-            name: product.category.name
+            name: product.category.name,
           })
         }
       })
-      setCategories(Array.from(uniqueCategories.values()).sort((a, b) => a.name.localeCompare(b.name)))
+      setCategories(
+        Array.from(uniqueCategories.values()).sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
+      )
     } catch (error) {
       console.error('Failed to fetch inventory items:', error)
     } finally {
@@ -196,7 +204,7 @@ export default function ParLevelsPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedItems(new Set(filteredItems.map(item => item.id)))
+      setSelectedItems(new Set(filteredItems.map((item) => item.id)))
     } else {
       setSelectedItems(new Set())
     }
@@ -215,13 +223,13 @@ export default function ParLevelsPage() {
   const handleBulkUpdate = async () => {
     try {
       setSaving(true)
-      
+
       // Apply bulk update to all selected items
       const newChanges = { ...pendingChanges }
-      selectedItems.forEach(itemId => {
+      selectedItems.forEach((itemId) => {
         newChanges[itemId] = bulkParLevel
       })
-      
+
       setPendingChanges(newChanges)
       setShowBulkUpdateDialog(false)
       setSelectedItems(new Set())
@@ -266,20 +274,20 @@ export default function ParLevelsPage() {
     }
   }
 
-  const filteredItems = items.filter(
-    (item) => {
-      // Search filter
-      const matchesSearch = item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product.upc?.toLowerCase().includes(searchTerm.toLowerCase())
-      
-      // Category filter
-      const matchesCategory = selectedCategory === 'all' || 
-        item.product.category?.id === selectedCategory
-      
-      return matchesSearch && matchesCategory
-    }
-  )
+  const filteredItems = items.filter((item) => {
+    // Search filter
+    const matchesSearch =
+      item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.product.upc?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Category filter
+    const matchesCategory =
+      selectedCategory === 'all' ||
+      item.product.category?.id === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
 
   const hasChanges = Object.keys(pendingChanges).length > 0
 
@@ -343,44 +351,10 @@ export default function ParLevelsPage() {
 
       {/* Controls */}
       <div className='flex flex-col gap-4'>
-        <div className='flex flex-col sm:flex-row gap-4'>
-          <div className='flex-1 space-y-2'>
-            <Label htmlFor='location'>Location</Label>
-            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select a location' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Locations</SelectItem>
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='flex-1 space-y-2'>
-            <Label htmlFor='category'>Category</Label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select category' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='flex-1 space-y-2'>
+        <div className='flex flex-col sm:flex-row sm:justify-between gap-4 w-full'>
+          <div className='flex flex-col space-y-2'>
             <Label htmlFor='search'>Search Products</Label>
-            <div className='relative'>
+            <div className='relative sm:min-w-sm'>
               <Search className='absolute left-3 top-3 size-4 text-muted-foreground' />
               <Input
                 id='search'
@@ -391,17 +365,62 @@ export default function ParLevelsPage() {
               />
             </div>
           </div>
+          <div className='flex gap-2 flex-wrap'>
+            <div className='space-y-2'>
+              <Label htmlFor='location'>Location</Label>
+              <Select
+                value={selectedLocation}
+                onValueChange={setSelectedLocation}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Select a location' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All Locations</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='flex-1 space-y-2'>
+              <Label htmlFor='category'>Category</Label>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Select category' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Bulk Actions */}
         {selectedItems.size > 0 && (
           <div className='flex items-center gap-4 p-4 bg-muted rounded-lg'>
             <span className='text-sm font-medium'>
-              {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
+              {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''}{' '}
+              selected
             </span>
-            <Dialog open={showBulkUpdateDialog} onOpenChange={setShowBulkUpdateDialog}>
+            <Dialog
+              open={showBulkUpdateDialog}
+              onOpenChange={setShowBulkUpdateDialog}
+            >
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant='outline' size='sm'>
                   <Target className='size-4 mr-2' />
                   Bulk Update Par Levels
                 </Button>
@@ -410,7 +429,8 @@ export default function ParLevelsPage() {
                 <DialogHeader>
                   <DialogTitle>Bulk Update Par Levels</DialogTitle>
                   <DialogDescription>
-                    Set the minimum quantity (par level) for {selectedItems.size} selected items.
+                    Set the minimum quantity (par level) for{' '}
+                    {selectedItems.size} selected items.
                   </DialogDescription>
                 </DialogHeader>
                 <div className='space-y-4'>
@@ -427,18 +447,24 @@ export default function ParLevelsPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowBulkUpdateDialog(false)}>
+                  <Button
+                    variant='outline'
+                    onClick={() => setShowBulkUpdateDialog(false)}
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={handleBulkUpdate} disabled={bulkParLevel < 0}>
+                  <Button
+                    onClick={handleBulkUpdate}
+                    disabled={bulkParLevel < 0}
+                  >
                     Update {selectedItems.size} Items
                   </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant='outline'
+              size='sm'
               onClick={() => setSelectedItems(new Set())}
             >
               Clear Selection
@@ -482,7 +508,10 @@ export default function ParLevelsPage() {
                   <TableRow>
                     <TableHead className='w-[50px]'>
                       <Checkbox
-                        checked={selectedItems.size === paginatedItems.length && paginatedItems.length > 0}
+                        checked={
+                          selectedItems.size === paginatedItems.length &&
+                          paginatedItems.length > 0
+                        }
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
@@ -509,7 +538,9 @@ export default function ParLevelsPage() {
                         <TableCell className='w-[50px]'>
                           <Checkbox
                             checked={selectedItems.has(item.id)}
-                            onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
+                            onCheckedChange={(checked) =>
+                              handleSelectItem(item.id, checked as boolean)
+                            }
                           />
                         </TableCell>
                         <TableCell className='w-[34px] p-2'>
