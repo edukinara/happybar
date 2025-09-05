@@ -7,7 +7,7 @@ echo "🔍 Checking for changes in web app and dependencies..."
 
 # Use turbo to check if web app needs rebuilding
 # This considers all dependencies automatically
-npx turbo run build --filter=web --dry=json > turbo-dry-run.json
+npx turbo run build --filter=@happy-bar/web --dry=json > turbo-dry-run.json
 
 # Check if any tasks would run (meaning there are changes)
 TASKS_TO_RUN=$(cat turbo-dry-run.json | grep -o '"tasks":\[[^]]*\]' | grep -v '"tasks":\[\]')
