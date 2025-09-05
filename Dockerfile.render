@@ -83,13 +83,16 @@ ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["sh", "-c", "echo '🚀 Starting Happy Bar API...' && \
      echo '📦 Node version:' && node --version && \
      echo '🔧 Environment: ' $NODE_ENV && \
-     cd packages/database && \
+     echo '📍 Current directory:' && pwd && \
+     echo '📂 Directory structure:' && ls -la && \
+     cd /app/packages/database && \
      echo '🗄️ Running database migrations...' && \
      npx prisma migrate deploy && \
      echo '✅ Migrations completed' && \
      echo '🔨 Generating Prisma client...' && \
      npx prisma generate && \
      echo '✅ Prisma client generated' && \
-     cd ../.. && \
+     cd /app && \
+     echo '📍 Back to app root:' && pwd && \
      echo '🌐 Starting API server on port' $PORT '...' && \
-     exec node packages/api/dist/start.js || exec node packages/api/dist/index.js"]
+     exec node /app/packages/api/dist/index.js"]
