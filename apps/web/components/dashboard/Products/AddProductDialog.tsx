@@ -24,9 +24,12 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
+import {
+  PRODUCT_CONTAINER_OPTIONS,
+  PRODUCT_UNIT_OPTIONS,
+} from '@/lib/constants/product-options'
 import { useCategories } from '@/lib/queries'
 import { ProductUnit, type CatalogProduct } from '@happy-bar/types'
-import { PRODUCT_UNIT_OPTIONS, PRODUCT_CONTAINER_OPTIONS } from '@/lib/constants/product-options'
 import { Building2, Plus, Save, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -149,7 +152,7 @@ export default function AddProductDialog({
         alcoholContent: formData.alcoholContent || undefined,
         sku: formData.sku || undefined,
         upc: formData.upc || undefined,
-        container: formData.container || undefined,
+        container: formData.container.toLowerCase() || undefined,
       }
 
       const createdProduct = await inventoryApi.createProduct(data)
@@ -245,7 +248,6 @@ export default function AddProductDialog({
       )
     )
   }
-
 
   return (
     <Dialog
