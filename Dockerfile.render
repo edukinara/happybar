@@ -51,11 +51,8 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/packages/api/package.json ./packages/api/
 COPY --from=builder /app/packages/api/dist ./packages/api/dist/
 
-# Copy database package (needed for migrations)
+# Copy database package (needed for migrations) 
 COPY --from=builder /app/packages/database ./packages/database/
-
-# Ensure Prisma client is generated with the production database package
-RUN cd packages/database && npx prisma generate
 
 # Copy other built packages
 COPY --from=builder /app/packages/types/package.json ./packages/types/
@@ -63,12 +60,14 @@ COPY --from=builder /app/packages/types/dist ./packages/types/dist/
 COPY --from=builder /app/packages/pos/package.json ./packages/pos/
 COPY --from=builder /app/packages/pos/dist ./packages/pos/dist/
 
+# Install Prisma CLI globally for migrations and client generation
+RUN npm install -g prisma@6.1.0 @prisma/client@6.1.0
+
 # Install production dependencies
-# Note: We need prisma CLI for migrations, so we can't ignore scripts completely
 RUN pnpm install --prod --frozen-lockfile
 
-# Install Prisma CLI globally for migrations
-RUN npm install -g prisma@latest
+# Generate Prisma client using global CLI
+RUN cd packages/database && prisma generate
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
