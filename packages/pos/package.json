@@ -22,6 +22,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./dist/toast/client": {
+      "import": "./dist/toast/client.js",
+      "require": "./dist/toast/client.js",
+      "types": "./dist/toast/client.d.ts"
     }
   }
 }
