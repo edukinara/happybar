@@ -79,6 +79,7 @@ export default function DashboardLayout({
   const userData = {
     name: user?.name || 'User',
     email: user?.email || 'user@example.com',
+    image: user?.image || '',
   }
 
   return (

@@ -2,7 +2,6 @@
 
 import { signIn, signOut, signUp, useSession } from '@/lib/auth/client'
 import type { HappyBarRole, Me, UserWithRole } from '@happy-bar/types'
-import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 interface AuthContextType {
@@ -30,7 +29,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserWithRole | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
   // Use Better Auth session hook
   const { data: session, isPending } = useSession()
@@ -84,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 id: session.user.id,
                 email: session.user.email,
                 name: session.user.name || '',
+                image: session.user.image || '',
                 role: role as HappyBarRole,
                 organizationId: session.session.activeOrganizationId,
                 permissions,

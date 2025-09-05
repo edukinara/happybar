@@ -56,6 +56,20 @@ export const auth: any = betterAuth({
 
           return { data: account }
         },
+        after: async (account: any) => {
+          if (account.idToken) {
+            // Decoded JWT Token
+            const decodedToken = decodeJWT(account.idToken)
+            if (decodedToken?.picture) {
+              await prisma.user.update({
+                where: { id: account.userId },
+                data: {
+                  image: decodedToken.picture,
+                },
+              })
+            }
+          }
+        },
       },
     },
     session: {
@@ -344,3 +358,28 @@ export type Member = {
 
 // Export roles and access controller for use in other files
 export { ac, roles } from './auth/roles'
+
+const decodeJWT = (token: string) => {
+  var segments = token.split('.')
+
+  if (segments.length !== 3) {
+    return undefined
+  }
+
+  // All segment should be base64
+  var headerSeg = segments[0]
+  var payloadSeg = segments[1]
+  var signatureSeg = segments[2]
+
+  // base64 decode and parse JSON
+  var payload = JSON.parse(
+    Buffer.from(base64urlUnescape(payloadSeg), 'base64').toString()
+  )
+
+  return payload
+}
+
+const base64urlUnescape = (str: string) => {
+  str += Array(5 - (str.length % 4)).join('=')
+  return str.replace(/\-/g, '+').replace(/_/g, '/')
+}

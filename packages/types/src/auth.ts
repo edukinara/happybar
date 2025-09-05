@@ -124,6 +124,7 @@ export interface UserWithRole {
   id: string
   email: string
   name: string
+  image?: string
   role: HappyBarRole
   organizationId: string | null
   permissions?: Perm[]
@@ -148,6 +149,7 @@ export interface BasicUser {
   id: string
   email: string
   name: string
+  image?: string
 }
 
 export interface BasicMember {
