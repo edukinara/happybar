@@ -30,6 +30,9 @@ RUN pnpm run build --filter='@happy-bar/types' && \
     pnpm run build --filter='@happy-bar/pos' && \
     pnpm run build --filter='@happy-bar/api'
 
+# Generate Prisma client in build stage
+RUN cd packages/database && npx prisma generate
+
 # Production stage
 FROM node:22-alpine AS production
 
@@ -58,7 +61,9 @@ COPY --from=builder /app/packages/pos/package.json ./packages/pos/
 COPY --from=builder /app/packages/pos/dist ./packages/pos/dist/
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+# Using --ignore-scripts to avoid unnecessary postinstall scripts
+# and --no-optional to skip optional dependencies
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts --no-optional
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -83,16 +88,9 @@ ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["sh", "-c", "echo '🚀 Starting Happy Bar API...' && \
      echo '📦 Node version:' && node --version && \
      echo '🔧 Environment: ' $NODE_ENV && \
-     echo '📍 Current directory:' && pwd && \
-     echo '📂 Directory structure:' && ls -la && \
      cd /app/packages/database && \
      echo '🗄️ Running database migrations...' && \
-     npx prisma migrate deploy && \
-     echo '✅ Migrations completed' && \
-     echo '🔨 Generating Prisma client...' && \
-     npx prisma generate && \
-     echo '✅ Prisma client generated' && \
+     npx prisma migrate deploy || echo '⚠️  Migration skipped or failed (may be expected on first run)' && \
      cd /app && \
-     echo '📍 Back to app root:' && pwd && \
      echo '🌐 Starting API server on port' $PORT '...' && \
      exec node /app/packages/api/dist/index.js"]

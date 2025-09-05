@@ -31,6 +31,8 @@ services:
         sync: false # Set manually
       - key: DATABASE_URL
         sync: false # Set manually
+      - key: DIRECT_URL
+        sync: false # Set manually
       - key: GOOGLE_CLIENT_ID
         sync: false # Set manually
       - key: GOOGLE_CLIENT_SECRET
