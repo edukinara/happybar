@@ -1,4 +1,9 @@
 {
+  "ignoreCommand": "bash vercel-ignore-build.sh",
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
   "crons": [
     {
       "path": "/api/cron/sync-pos-sales",

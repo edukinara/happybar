@@ -50,8 +50,12 @@ services:
       - key: UPSTASH_REDIS_REST_URL
         sync: false # Set manually
 
-    # Auto-deploy on push to main branch
+    # Auto-deploy on push to main branch, but only for relevant changes
     autoDeploy: true
+    
+    # Optional: You can also configure build filters manually in Render dashboard
+    # under Settings > Build & Deploy > Auto-Deploy
+    # Add path filters: packages/api, packages/database, packages/pos, packages/types, Dockerfile.render
 
     # Build and start commands are defined in Dockerfile
     # No need to specify here when using Docker
