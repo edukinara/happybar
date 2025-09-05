@@ -41,6 +41,12 @@ services:
         sync: false # Set manually
       - key: PORT
         sync: false # Set manually
+      - key: RESEND_API_KEY
+        sync: false # Set manually
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false # Set manually
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false # Set manually
 
     # Auto-deploy on push to main branch
     autoDeploy: true
