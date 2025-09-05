@@ -604,7 +604,7 @@ importers:
   packages/database:
     dependencies:
       '@prisma/client':
-        specifier: ^6.1.0
+        specifier: 6.14.0
         version: 6.14.0(prisma@6.14.0(typescript@5.9.2))(typescript@5.9.2)
       autumn-js:
         specifier: ^0.1.13
@@ -626,7 +626,7 @@ importers:
         specifier: ^2.4.3
         version: 2.4.3
       prisma:
-        specifier: ^6.1.0
+        specifier: 6.14.0
         version: 6.14.0(typescript@5.9.2)
       tsx:
         specifier: ^4.20.4
