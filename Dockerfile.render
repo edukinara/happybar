@@ -1,0 +1,95 @@
+# Optimized Multi-stage Docker build for Render deployment
+# This version includes better error handling and memory optimization
+
+FROM node:22-alpine AS base
+
+# Install pnpm and required tools
+RUN npm install -g pnpm@latest && \
+    apk add --no-cache python3 make g++
+
+WORKDIR /app
+
+# Copy workspace configuration files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY turbo.json tsconfig.base.json ./
+
+# Copy all packages
+COPY packages packages
+
+# Install ALL dependencies (including dev dependencies for building)
+RUN pnpm install --frozen-lockfile
+
+# Build stage
+FROM base AS builder
+
+WORKDIR /app
+
+# Build all backend packages
+RUN pnpm run build --filter='@happy-bar/types' && \
+    pnpm run build --filter='@happy-bar/database' && \
+    pnpm run build --filter='@happy-bar/pos' && \
+    pnpm run build --filter='@happy-bar/api'
+
+# Production stage
+FROM node:22-alpine AS production
+
+# Install pnpm and PostgreSQL client for migrations
+RUN npm install -g pnpm@latest && \
+    apk add --no-cache postgresql-client tini
+
+WORKDIR /app
+
+# Copy workspace files
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+
+# Copy built packages
+COPY --from=builder /app/packages/api/package.json ./packages/api/
+COPY --from=builder /app/packages/api/dist ./packages/api/dist/
+
+# Copy database package (needed for migrations)
+COPY --from=builder /app/packages/database ./packages/database/
+
+# Copy other built packages
+COPY --from=builder /app/packages/types/package.json ./packages/types/
+COPY --from=builder /app/packages/types/dist ./packages/types/dist/
+COPY --from=builder /app/packages/pos/package.json ./packages/pos/
+COPY --from=builder /app/packages/pos/dist ./packages/pos/dist/
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
+
+# Expose port (Render will override this with PORT env var)
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=5 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3001) + '/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Use tini to handle signals properly (helps prevent zombie processes)
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start script with better error handling
+CMD ["sh", "-c", "echo '🚀 Starting Happy Bar API...' && \
+     echo '📦 Node version:' && node --version && \
+     echo '🔧 Environment: ' $NODE_ENV && \
+     cd packages/database && \
+     echo '🗄️ Running database migrations...' && \
+     npx prisma migrate deploy && \
+     echo '✅ Migrations completed' && \
+     echo '🔨 Generating Prisma client...' && \
+     npx prisma generate && \
+     echo '✅ Prisma client generated' && \
+     cd ../.. && \
+     echo '🌐 Starting API server on port' $PORT '...' && \
+     exec node packages/api/dist/start.js || exec node packages/api/dist/index.js"]

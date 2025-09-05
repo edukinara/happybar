@@ -1,0 +1,49 @@
+# Render Blueprint Configuration for Happy Bar
+# This file defines the services and infrastructure for deployment on Render
+
+services:
+  # API Service - Fastify Backend
+  - type: web
+    name: happy-bar-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    repo: https://github.com/edukinara/happybar # Update with your repo URL
+    branch: main
+    region: virginia # Options: oregon, ohio, virginia, frankfurt, singapore
+    plan: free # Options: starter ($7/mo), standard ($25/mo), pro ($85/mo)
+
+    # Health check configuration
+    healthCheckPath: /health
+
+    # Environment variables for the API
+    envVars:
+      - key: ALLOWED_ORIGINS
+        sync: false # Set manually
+      - key: API_BASE_URL
+        sync: false # Set manually
+      - key: APP_BASE_URL
+        sync: false # Set manually
+      - key: AUTUMN_SECRET_KEY
+        sync: false # Set manually
+      - key: BETTER_AUTH_SECRET
+        sync: false # Set manually
+      - key: CRON_SECRET
+        sync: false # Set manually
+      - key: DATABASE_URL
+        sync: false # Set manually
+      - key: GOOGLE_CLIENT_ID
+        sync: false # Set manually
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # Set manually
+      - key: JWT_SECRET
+        sync: false # Set manually
+      - key: NODE_ENV
+        sync: false # Set manually
+      - key: PORT
+        sync: false # Set manually
+
+    # Auto-deploy on push to main branch
+    autoDeploy: true
+
+    # Build and start commands are defined in Dockerfile
+    # No need to specify here when using Docker
