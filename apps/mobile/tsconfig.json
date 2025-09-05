@@ -7,8 +7,17 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"],
-      "tailwind.config": ["./tailwind.config.js"]
+      "@/*": [
+        "./*"
+      ],
+      "tailwind.config": [
+        "./tailwind.config.js"
+      ]
     }
-  }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "nativewind-env.d.ts"
+  ]
 }
