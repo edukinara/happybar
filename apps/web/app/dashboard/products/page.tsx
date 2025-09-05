@@ -5,7 +5,7 @@ import AddProductDialog from '@/components/dashboard/Products/AddProductDialog'
 import BulkCatalogMatchingDialog from '@/components/dashboard/Products/BulkCatalogMatchingDialog'
 import BulkSupplierDialog from '@/components/dashboard/Products/BulkSupplierDialog'
 import ImportFromPOS from '@/components/dashboard/Products/ImportFromPOS'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { ProductsGate } from '@/components/subscription/feature-gate'
 import { useProductUsageTracker } from '@/components/subscription/usage-tracker'
 import { Badge } from '@/components/ui/badge'
@@ -289,7 +289,7 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }

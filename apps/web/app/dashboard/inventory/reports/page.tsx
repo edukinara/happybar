@@ -2,7 +2,7 @@
 
 import { UsageAlertsIntegration } from '@/components/alerts/UsageAlertsIntegration'
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -213,7 +213,7 @@ export default function InventoryReportsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }

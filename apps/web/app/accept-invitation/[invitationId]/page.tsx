@@ -1,6 +1,6 @@
 'use client'
 
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -167,7 +167,7 @@ export default function AcceptInvitationPage() {
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <Card className='w-full max-w-md'>
           <CardContent className='flex items-center justify-center py-8'>
-            <HappBarLoader showText={false} size='sm' />
+            <HappyBarLoader showText={false} size='sm' />
           </CardContent>
         </Card>
       </div>
@@ -309,7 +309,7 @@ export default function AcceptInvitationPage() {
             disabled={accepting}
             className='w-full'
           >
-            {accepting && <HappBarLoader size='sm' />}
+            {accepting && <HappyBarLoader size='sm' />}
             Accept Invitation
           </Button>
           <Button

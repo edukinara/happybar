@@ -2,7 +2,7 @@
 
 import { AlertSummaryCard } from '@/components/alerts/AlertSummary'
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -136,7 +136,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }
@@ -279,7 +279,7 @@ export default function DashboardPage() {
           <CardContent>
             {loadingLocationData ? (
               <div className='flex items-center justify-center py-8'>
-                <HappBarLoader
+                <HappyBarLoader
                   className='p-16'
                   text='Loading location data...'
                 />

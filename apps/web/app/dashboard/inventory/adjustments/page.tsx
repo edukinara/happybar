@@ -1,7 +1,7 @@
 'use client'
 
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -188,7 +188,7 @@ export default function InventoryAdjustmentsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }

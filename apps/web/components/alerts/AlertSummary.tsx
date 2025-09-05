@@ -17,7 +17,7 @@ import {
 import { AlertTriangle, Bell, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { HappBarLoader } from '../HappyBarLoader'
+import { HappyBarLoader } from '../HappyBarLoader'
 
 interface AlertSummaryProps {
   locationId?: string
@@ -80,7 +80,7 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
         </CardHeader>
         <CardContent>
           <div className='flex items-center justify-center py-4'>
-            <HappBarLoader />
+            <HappyBarLoader />
           </div>
         </CardContent>
       </Card>

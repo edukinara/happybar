@@ -1,6 +1,7 @@
 'use client'
 
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -126,8 +127,7 @@ export default function InventoryAlertsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <RefreshCw className='size-8 animate-spin mr-2' />
-        <span>Loading alerts...</span>
+        <HappyBarLoader text='Loading alerts...' />
       </div>
     )
   }

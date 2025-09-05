@@ -1,7 +1,7 @@
 'use client'
 
 import { NewLogo } from '@/components/brand/new-logo'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -356,7 +356,7 @@ export default function PricingPage() {
   if (loading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }

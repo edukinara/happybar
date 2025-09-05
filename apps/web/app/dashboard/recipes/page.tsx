@@ -1,6 +1,6 @@
 'use client'
 
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -34,7 +34,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { inventoryApi } from '@/lib/api/inventory'
 import { getProducts } from '@/lib/api/products'
 import { recipesApi } from '@/lib/api/recipes'
 import type {
@@ -269,7 +268,7 @@ export default function RecipesPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }

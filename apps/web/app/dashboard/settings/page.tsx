@@ -14,7 +14,7 @@ import InventorySettingsCard from '@/components/dashboard/Settings/InventorySett
 import LocationsCard from '@/components/dashboard/Settings/Locations'
 import OrganizationDetailsCard from '@/components/dashboard/Settings/OrganizationDetails'
 import { UserManagementCard } from '@/components/dashboard/Settings/UserManagement'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { SyncDialog } from '@/components/pos/sync-dialog'
 import { ToastIntegrationForm } from '@/components/pos/toast-integration-form'
 import ToastIcon from '@/components/pos/toastIcon'
@@ -141,7 +141,6 @@ export default function SettingsPage() {
     }
   }
 
-
   useEffect(() => {
     // Only load integrations data on initial load since that's the default tab
     void fetchIntegrations()
@@ -258,7 +257,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader />
+        <HappyBarLoader />
       </div>
     )
   }
@@ -615,7 +614,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <div className='flex items-center justify-center py-8'>
-                  <HappBarLoader />
+                  <HappyBarLoader />
                 </div>
               )}
             </TabsContent>
@@ -700,7 +699,7 @@ export default function SettingsPage() {
                         <CardContent>
                           {subscriptionLoading ? (
                             <div className='flex items-start justify-center py-0'>
-                              <HappBarLoader />
+                              <HappyBarLoader />
                             </div>
                           ) : customer ? (
                             <div className='space-y-4'>
@@ -1027,7 +1026,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <div className='flex items-center justify-center py-8'>
-                  <HappBarLoader />
+                  <HappyBarLoader />
                 </div>
               )}
             </TabsContent>
@@ -1058,7 +1057,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <div className='flex items-center justify-center py-8'>
-                  <HappBarLoader />
+                  <HappyBarLoader />
                 </div>
               )}
             </TabsContent>

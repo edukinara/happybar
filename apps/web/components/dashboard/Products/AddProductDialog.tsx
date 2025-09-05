@@ -1,6 +1,6 @@
 'use client'
 
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { inventoryApi } from '@/lib/api/inventory'
 import { suppliersApi, type Supplier } from '@/lib/api/suppliers'
 import {
@@ -33,7 +34,6 @@ import { ProductUnit, type CatalogProduct } from '@happy-bar/types'
 import { Building2, Plus, Save, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { toast } from 'sonner'
 import CatalogSearch from './CatalogSearch'
 
@@ -276,7 +276,7 @@ export default function AddProductDialog({
         <ScrollArea className='max-h-[calc(85vh-120px)] pr-4'>
           {loading ? (
             <div className='flex items-center justify-center py-4'>
-              <HappBarLoader />
+              <HappyBarLoader />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className='space-y-6 p-2'>

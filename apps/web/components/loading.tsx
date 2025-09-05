@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { HappBarLoader } from './HappyBarLoader'
+import { HappyBarLoader } from './HappyBarLoader'
 
 interface LoadingProps {
   message?: string
@@ -20,7 +20,7 @@ export function Loading({
 
   const LoadingContent = () => (
     <div className='flex items-center justify-center space-x-2'>
-      <HappBarLoader size={size} showText={!!message} text={message} />
+      <HappyBarLoader size={size} showText={!!message} text={message} />
       {message && <span className='text-muted-foreground'>{message}</span>}
     </div>
   )

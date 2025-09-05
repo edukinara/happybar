@@ -1,5 +1,6 @@
 'use client'
 
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,14 +38,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { inventoryApi } from '@/lib/api/inventory'
-import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
-import { getProducts } from '@/lib/api/products'
+import { useInventory, useLocations } from '@/lib/queries'
+import { useProducts } from '@/lib/queries/products'
 import { AlertTriangle, Package, Save, Search, Target } from 'lucide-react'
 import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useState } from 'react'
-import { useAlertDialog } from '@/hooks/use-alert-dialog'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface ParLevelItem {
   id: string
@@ -74,9 +76,14 @@ interface ParLevelItem {
 
 export default function ParLevelsPage() {
   const { showError } = useAlertDialog()
+  const queryClient = useQueryClient()
+  
+  // Use React Query hooks for data fetching
+  const { data: locationsData = [], isLoading: locationsLoading } = useLocations()
+  const { data: productsData, isLoading: productsLoading } = useProducts()
+  const { data: inventoryLevelsData = [], isLoading: inventoryLoading } = useInventory()
+  
   const [items, setItems] = useState<ParLevelItem[]>([])
-  const [locations, setLocations] = useState<LocationsResponse>([])
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<string>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -91,110 +98,92 @@ export default function ParLevelsPage() {
     {}
   )
 
+  const loading = locationsLoading || productsLoading || inventoryLoading
+
+  // Process data when React Query data is available
   useEffect(() => {
-    Promise.all([fetchLocations(), fetchInventoryItems()])
-  }, [])
-
-  useEffect(() => {
-    if (selectedLocation) {
-      fetchInventoryItems()
+    if (!productsData?.products || !locationsData.length || inventoryLoading) {
+      return
     }
-  }, [selectedLocation])
+    
+    processInventoryItems()
+  }, [productsData?.products, locationsData, inventoryLevelsData])
 
-  const fetchLocations = async () => {
-    try {
-      const data = await locationsApi.getLocations()
-      setLocations(data)
-      if (data.length === 1) {
-        setSelectedLocation(data[0]!.id)
-      }
-    } catch (error) {
-      console.error('Failed to fetch locations:', error)
+  const processInventoryItems = () => {
+    if (!productsData?.products || !locationsData.length) {
+      return
     }
-  }
 
-  const fetchInventoryItems = async () => {
-    try {
-      setLoading(true)
-      const [productsResponse, inventoryLevelsData] = await Promise.all([
-        getProducts(),
-        inventoryApi.getInventoryLevels(),
-      ])
-      const productsData = productsResponse.products
+    const products = productsData.products
+    const locations = locationsData
 
-      // Create a map of existing inventory items by productId + locationId
-      const inventoryMap = new Map()
-      inventoryLevelsData.forEach((item) => {
-        const key = `${item.productId}-${item.locationId}`
-        inventoryMap.set(key, item)
-      })
+    // Set default location if only one location exists
+    if (locations.length === 1 && selectedLocation === 'all') {
+      setSelectedLocation(locations[0]!.id)
+    }
 
-      // Get selected locations or all locations if 'all' is selected
-      const targetLocations =
-        selectedLocation === 'all' || !selectedLocation
-          ? locations
-          : locations.filter((loc) => loc.id === selectedLocation)
+    // Create a map of existing inventory items by productId + locationId
+    const inventoryMap = new Map()
+    inventoryLevelsData.forEach((item) => {
+      const key = `${item.productId}-${item.locationId}`
+      inventoryMap.set(key, item)
+    })
 
-      // Create items for all product-location combinations
-      const allItems: ParLevelItem[] = []
+    // Create items for all product-location combinations
+    const allItems: ParLevelItem[] = []
 
-      for (const product of productsData) {
-        for (const location of targetLocations) {
-          const key = `${product.id}-${location.id}`
-          const existingItem = inventoryMap.get(key)
+    for (const product of products) {
+      for (const location of locations) {
+        const key = `${product.id}-${location.id}`
+        const existingItem = inventoryMap.get(key)
 
-          allItems.push({
-            id: existingItem?.id || `new-${product.id}-${location.id}`, // Use 'new-' prefix for items that don't exist yet
-            productId: product.id,
-            locationId: location.id,
-            currentQuantity: existingItem?.currentQuantity || 0,
-            minimumQuantity: existingItem?.minimumQuantity || 0,
-            maximumQuantity: existingItem?.maximumQuantity,
-            product: {
-              id: product.id,
-              name: product.name,
-              sku: product.sku || undefined,
-              unit: product.unit,
-              container: product.container || undefined,
-              image: product.image || undefined,
-              upc: product.upc || undefined,
-              category: product.category
-                ? {
-                    id: product.category.id,
-                    name: product.category.name,
-                  }
-                : undefined,
-            },
-            location: {
-              id: location.id,
-              name: location.name,
-            },
-          })
-        }
+        allItems.push({
+          id: existingItem?.id || `new-${product.id}-${location.id}`, // Use 'new-' prefix for items that don't exist yet
+          productId: product.id,
+          locationId: location.id,
+          currentQuantity: existingItem?.currentQuantity || 0,
+          minimumQuantity: existingItem?.minimumQuantity || 0,
+          maximumQuantity: existingItem?.maximumQuantity,
+          product: {
+            id: product.id,
+            name: product.name,
+            sku: product.sku || undefined,
+            unit: product.unit,
+            container: product.container || undefined,
+            image: product.image || undefined,
+            upc: product.upc || undefined,
+            category: product.category
+              ? {
+                  id: product.category.id,
+                  name: product.category.name,
+                }
+              : undefined,
+          },
+          location: {
+            id: location.id,
+            name: location.name,
+          },
+        })
       }
+    }
 
-      setItems(allItems)
+    setItems(allItems)
 
-      // Extract unique categories for filtering
-      const uniqueCategories = new Map<string, { id: string; name: string }>()
-      productsData.forEach((product) => {
-        if (product.category) {
-          uniqueCategories.set(product.category.id, {
-            id: product.category.id,
-            name: product.category.name,
-          })
-        }
-      })
-      setCategories(
-        Array.from(uniqueCategories.values()).sort((a, b) =>
-          a.name.localeCompare(b.name)
-        )
+    // Extract unique categories for filtering
+    const uniqueCategories = new Map<string, { id: string; name: string }>()
+    products.forEach((product) => {
+      if (product.category) {
+        uniqueCategories.set(product.category.id, {
+          id: product.category.id,
+          name: product.category.name,
+        })
+      }
+    })
+    setCategories(
+      Array.from(uniqueCategories.values()).sort((a, b) =>
+        a.name.localeCompare(b.name)
       )
-    } catch (error) {
-      console.error('Failed to fetch inventory items:', error)
-    } finally {
-      setLoading(false)
-    }
+    )
   }
 
   const updateParLevel = (itemId: string, newParLevel: number) => {
@@ -267,7 +256,9 @@ export default function ParLevelsPage() {
 
       await Promise.all(updatePromises)
       setPendingChanges({})
-      await fetchInventoryItems() // Refresh data
+      
+      // Invalidate React Query cache to refresh data
+      queryClient.invalidateQueries({ queryKey: ['inventory'] })
     } catch (error) {
       console.error('Failed to save par level changes:', error)
       showError('Failed to save changes. Please try again.')
@@ -277,6 +268,10 @@ export default function ParLevelsPage() {
   }
 
   const filteredItems = items.filter((item) => {
+    // Location filter
+    const matchesLocation =
+      selectedLocation === 'all' || item.locationId === selectedLocation
+
     // Search filter
     const matchesSearch =
       item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -288,7 +283,7 @@ export default function ParLevelsPage() {
       selectedCategory === 'all' ||
       item.product.category?.id === selectedCategory
 
-    return matchesSearch && matchesCategory
+    return matchesLocation && matchesSearch && matchesCategory
   })
 
   const hasChanges = Object.keys(pendingChanges).length > 0
@@ -379,7 +374,7 @@ export default function ParLevelsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='all'>All Locations</SelectItem>
-                  {locations.map((location) => (
+                  {locationsData.map((location) => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
                     </SelectItem>
@@ -501,7 +496,7 @@ export default function ParLevelsPage() {
         <CardContent>
           {loading ? (
             <div className='flex items-center justify-center py-8'>
-              <div className='animate-spin rounded-full size-8 border-b-2 border-primary'></div>
+              <HappyBarLoader />
             </div>
           ) : (
             <>

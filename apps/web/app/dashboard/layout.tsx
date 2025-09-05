@@ -2,7 +2,7 @@
 
 import { AppSidebar } from '@/components/app-sidebar'
 import { ErrorBoundary } from '@/components/error-boundary'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { NavUser } from '@/components/nav-user'
 import { SimpleThemeToggle } from '@/components/theme-toggle'
 import {
@@ -68,7 +68,10 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <HappBarLoader className='p-16 text-nowrap' text='Loading Dashboard...' />
+      <HappyBarLoader
+        className='p-16 text-nowrap'
+        text='Loading Dashboard...'
+      />
     )
   }
 

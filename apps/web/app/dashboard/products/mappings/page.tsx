@@ -1,6 +1,7 @@
 'use client'
 
 import { RecipeMappingSuggestions } from '@/components/dashboard/Recipes/RecipeMappingSuggestions'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { MenuGroupSelector } from '@/components/pos/menu-group-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -206,18 +207,22 @@ export default function ProductMappingsPage() {
     }
   }
 
+  const [loadingMappings, setLoadingMappings] = useState(false)
+
   const fetchMappings = async () => {
     if (!selectedIntegration) return
-
+    setLoadingMappings(true)
     try {
       const response = await getProductMappings({
         integrationId: selectedIntegration,
       })
       setMappings(response.mappings)
+      setLoadingMappings(false)
     } catch (_error) {
       toast.error('Error', {
         description: 'Failed to fetch mappings',
       })
+      setLoadingMappings(false)
     }
   }
 
@@ -1454,7 +1459,11 @@ export default function ProductMappingsPage() {
                   )}
                 </CardHeader>
                 <CardContent>
-                  {paginatedMappings.length === 0 ? (
+                  {loadingMappings ? (
+                    <div className='text-center py-8 text-muted-foreground'>
+                      <HappyBarLoader />
+                    </div>
+                  ) : paginatedMappings.length === 0 ? (
                     <div className='text-center py-8 text-muted-foreground'>
                       {mappingSearch ||
                       confirmationFilter !== 'all' ||
@@ -1915,7 +1924,9 @@ export default function ProductMappingsPage() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className='text-center py-8'>Loading POS products...</div>
+                <div className='text-center py-8'>
+                  <HappyBarLoader />
+                </div>
               ) : unmappedPOSProducts.length === 0 ? (
                 <div className='text-center py-8 text-muted-foreground'>
                   {search

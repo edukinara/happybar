@@ -2,7 +2,7 @@
 
 import { TransactionHistoryDrawer } from '@/components/dashboard/Inventory/TransactionHistoryDrawer'
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { InputWithIcon } from '@/components/InputWithIcon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -136,7 +136,7 @@ export default function InventoryPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
-        <HappBarLoader className='p-16' text='Loading inventory data...' />
+        <HappyBarLoader className='p-16' text='Loading inventory data...' />
       </div>
     )
   }

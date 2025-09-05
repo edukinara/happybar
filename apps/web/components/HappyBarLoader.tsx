@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 
-interface HappBarLoaderProps {
+interface HappyBarLoaderProps {
   variant?: 'fill' | 'wave'
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showText?: boolean
@@ -8,13 +8,13 @@ interface HappBarLoaderProps {
   className?: string
 }
 
-export const HappBarLoader = ({
+export const HappyBarLoader = ({
   variant = 'wave',
   size = 'md',
   showText = true,
   text = 'Loading...',
   className,
-}: HappBarLoaderProps) => {
+}: HappyBarLoaderProps) => {
   // Size mappings
   const sizeClasses = {
     sm: 'w-12 h-12',

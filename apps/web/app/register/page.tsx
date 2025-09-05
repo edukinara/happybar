@@ -1,7 +1,7 @@
 'use client'
 
 import { NewLogo } from '@/components/brand/new-logo'
-import { HappBarLoader } from '@/components/HappyBarLoader'
+import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -337,7 +337,7 @@ export default function RegisterPage() {
     <Suspense
       fallback={
         <div className='min-h-screen flex items-center justify-center'>
-          <HappBarLoader />
+          <HappyBarLoader />
         </div>
       }
     >

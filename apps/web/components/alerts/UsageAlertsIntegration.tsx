@@ -13,6 +13,7 @@ import { AlertTriangle, Bell, Eye, RefreshCw, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { HappyBarLoader } from '../HappyBarLoader'
 
 interface UsageAlertsIntegrationProps {
   usageData?: UsageAnalysisResponse
@@ -201,8 +202,7 @@ export function UsageAlertsIntegration({
         <CardContent>
           {loading ? (
             <div className='flex items-center justify-center py-8 text-muted-foreground'>
-              <RefreshCw className='size-4 animate-spin mr-2' />
-              Loading alerts...
+              <HappyBarLoader text='Loading alerts...' />
             </div>
           ) : alerts.length === 0 ? (
             <div className='text-center py-8 text-muted-foreground'>

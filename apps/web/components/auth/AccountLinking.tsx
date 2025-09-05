@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import {
   accountLinkingApi,
   type LinkedAccount,
@@ -16,9 +17,8 @@ import {
 import { signIn, useSession } from '@/lib/auth/client'
 import { Link2, Loader2, Unlink, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { toast } from 'sonner'
-import { HappBarLoader } from '../HappyBarLoader'
+import { HappyBarLoader } from '../HappyBarLoader'
 
 export function AccountLinking() {
   const { showConfirm } = useAlertDialog()
@@ -110,7 +110,7 @@ export function AccountLinking() {
         </CardHeader>
         <CardContent>
           <div className='flex items-center justify-center py-8'>
-            <HappBarLoader />
+            <HappyBarLoader />
           </div>
         </CardContent>
       </Card>
