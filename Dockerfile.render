@@ -54,23 +54,29 @@ COPY --from=builder /app/packages/api/dist ./packages/api/dist/
 # Copy database package (needed for migrations)
 COPY --from=builder /app/packages/database ./packages/database/
 
+# Ensure Prisma client is generated with the production database package
+RUN cd packages/database && npx prisma generate
+
 # Copy other built packages
 COPY --from=builder /app/packages/types/package.json ./packages/types/
 COPY --from=builder /app/packages/types/dist ./packages/types/dist/
 COPY --from=builder /app/packages/pos/package.json ./packages/pos/
 COPY --from=builder /app/packages/pos/dist ./packages/pos/dist/
 
-# Install production dependencies only
-# Using --ignore-scripts to avoid unnecessary postinstall scripts
-# and --no-optional to skip optional dependencies
-RUN pnpm install --prod --frozen-lockfile --ignore-scripts --no-optional
+# Install production dependencies
+# Note: We need prisma CLI for migrations, so we can't ignore scripts completely
+RUN pnpm install --prod --frozen-lockfile
+
+# Install Prisma CLI globally for migrations
+RUN npm install -g prisma@latest
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Change ownership
-RUN chown -R nodejs:nodejs /app
+# Change ownership and set proper permissions
+RUN chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app/packages/database
 
 USER nodejs
 
@@ -87,10 +93,11 @@ ENTRYPOINT ["/sbin/tini", "--"]
 # Start script with better error handling
 CMD ["sh", "-c", "echo '🚀 Starting Happy Bar API...' && \
      echo '📦 Node version:' && node --version && \
+     echo '📦 Prisma version:' && prisma --version && \
      echo '🔧 Environment: ' $NODE_ENV && \
      cd /app/packages/database && \
      echo '🗄️ Running database migrations...' && \
-     npx prisma migrate deploy || echo '⚠️  Migration skipped or failed (may be expected on first run)' && \
+     prisma migrate deploy || echo '⚠️  Migration skipped or failed (may be expected on first run)' && \
      cd /app && \
      echo '🌐 Starting API server on port' $PORT '...' && \
      exec node /app/packages/api/dist/index.js"]
