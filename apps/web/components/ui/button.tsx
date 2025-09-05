@@ -56,9 +56,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <>
-            <Loader2 className='mr-2 size-4 animate-spin' />{' '}
-            {/* Loading spinner */}
-            {children}
+            <Loader2 className='mr-2 size-4 animate-spin' /> {children}
           </>
         ) : (
           children
