@@ -44,6 +44,7 @@ import { AlertTriangle, Package, Save, Search, Target } from 'lucide-react'
 import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 
 interface ParLevelItem {
   id: string
@@ -72,6 +73,7 @@ interface ParLevelItem {
 }
 
 export default function ParLevelsPage() {
+  const { showError } = useAlertDialog()
   const [items, setItems] = useState<ParLevelItem[]>([])
   const [locations, setLocations] = useState<LocationsResponse>([])
   const [loading, setLoading] = useState(true)
@@ -268,7 +270,7 @@ export default function ParLevelsPage() {
       await fetchInventoryItems() // Refresh data
     } catch (error) {
       console.error('Failed to save par level changes:', error)
-      alert('Failed to save changes. Please try again.')
+      showError('Failed to save changes. Please try again.')
     } finally {
       setSaving(false)
     }

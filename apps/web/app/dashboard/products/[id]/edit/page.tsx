@@ -42,6 +42,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { toast } from 'sonner'
 
 interface Category {
@@ -63,6 +64,7 @@ interface ProductSupplier {
 }
 
 export default function EditProductPage() {
+  const { showError } = useAlertDialog()
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
@@ -198,7 +200,7 @@ export default function EditProductPage() {
       router.push('/dashboard/products')
     } catch (error) {
       console.warn('Failed to update product:', error)
-      alert('Failed to update product. Please try again.')
+      showError('Failed to update product. Please try again.')
     } finally {
       setSaving(false)
     }

@@ -16,10 +16,12 @@ import {
 import { signIn, useSession } from '@/lib/auth/client'
 import { Link2, Loader2, Unlink, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { toast } from 'sonner'
 import { HappBarLoader } from '../HappyBarLoader'
 
 export function AccountLinking() {
+  const { showConfirm } = useAlertDialog()
   const { data: session } = useSession()
   const [linking, setLinking] = useState(false)
   const [unlinking, setUnlinking] = useState<string | null>(null)
@@ -70,25 +72,28 @@ export function AccountLinking() {
   }
 
   const handleUnlinkAccount = async (accountId: string, provider: string) => {
-    if (!confirm(`Are you sure you want to unlink your ${provider} account?`)) {
-      return
-    }
-
-    setUnlinking(accountId)
-    try {
-      await accountLinkingApi.unlinkAccount(accountId)
-      toast.success(`${provider} account unlinked successfully`)
-      await fetchLinkedAccounts()
-    } catch (error) {
-      console.warn('Unlinking error:', error)
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : `Failed to unlink ${provider} account`
-      toast.error(errorMessage)
-    } finally {
-      setUnlinking(null)
-    }
+    showConfirm(
+      `Are you sure you want to unlink your ${provider} account?`,
+      async () => {
+        setUnlinking(accountId)
+        try {
+          await accountLinkingApi.unlinkAccount(accountId)
+          toast.success(`${provider} account unlinked successfully`)
+          await fetchLinkedAccounts()
+        } catch (error) {
+          console.warn('Unlinking error:', error)
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : `Failed to unlink ${provider} account`
+          toast.error(errorMessage)
+        } finally {
+          setUnlinking(null)
+        }
+      },
+      'Unlink Account',
+      'Unlink'
+    )
   }
 
   if (loading) {

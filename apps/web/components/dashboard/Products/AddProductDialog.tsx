@@ -33,6 +33,7 @@ import { ProductUnit, type CatalogProduct } from '@happy-bar/types'
 import { Building2, Plus, Save, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { toast } from 'sonner'
 import CatalogSearch from './CatalogSearch'
 
@@ -53,6 +54,7 @@ interface AddProductDialogProps {
 export default function AddProductDialog({
   onComplete,
 }: AddProductDialogProps) {
+  const { showError } = useAlertDialog()
   const [open, setOpen] = useState(false)
   const { data: categories } = useCategories()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -187,7 +189,7 @@ export default function AddProductDialog({
       onComplete()
     } catch (error) {
       console.warn('Failed to create product:', error)
-      alert('Failed to create product. Please try again.')
+      showError('Failed to create product. Please try again.')
     } finally {
       setSaving(false)
     }

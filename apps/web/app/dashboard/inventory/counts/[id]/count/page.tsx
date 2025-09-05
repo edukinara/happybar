@@ -24,6 +24,7 @@ import { ArrowLeft, CheckCircle, MapPin, Package, Save } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 
 interface TransformedProduct {
   id: string
@@ -38,6 +39,7 @@ interface TransformedProduct {
 }
 
 export default function CountExecutionPage() {
+  const { showError } = useAlertDialog()
   const params = useParams()
   const router = useRouter()
   const [count, setCount] = useState<InventoryCountType | null>(null)
@@ -260,7 +262,7 @@ export default function CountExecutionPage() {
       await Promise.all(savePromises)
     } catch (error) {
       console.error('Failed to save progress:', error)
-      alert('Failed to save progress. Please try again.')
+      showError('Failed to save progress. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -331,7 +333,7 @@ export default function CountExecutionPage() {
       }
     } catch (error) {
       console.error('Failed to complete area:', error)
-      alert('Failed to complete area. Please try again.')
+      showError('Failed to complete area. Please try again.')
     } finally {
       setSaving(false)
     }

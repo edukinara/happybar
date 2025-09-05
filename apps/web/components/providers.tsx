@@ -2,6 +2,7 @@
 
 import { AuthProvider } from '@/lib/auth/auth-context'
 import { AutumnProvider } from '@/lib/subscription/autumn-provider'
+import { AlertDialogProvider } from '@/hooks/use-alert-dialog'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ThemeProvider } from 'next-themes'
@@ -42,8 +43,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <AuthProvider>
           <AutumnProvider>
-            {children}
-            <ReactQueryDevtools initialIsOpen={false} />
+            <AlertDialogProvider>
+              {children}
+              <ReactQueryDevtools initialIsOpen={false} />
+            </AlertDialogProvider>
           </AutumnProvider>
         </AuthProvider>
       </ThemeProvider>

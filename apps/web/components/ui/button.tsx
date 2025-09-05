@@ -51,14 +51,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={loading || props.disabled} // Disable button when loading
         {...props}
+        disabled={loading || props.disabled} // Disable button when loading
       >
         {loading ? (
           <>
             <Loader2 className='mr-2 size-4 animate-spin' />{' '}
             {/* Loading spinner */}
-            Please wait... {/* Optional loading text */}
+            {children}
           </>
         ) : (
           children

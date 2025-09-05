@@ -31,8 +31,10 @@ import {
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 
 export default function InventoryCountDetailPage() {
+  const { showSuccess } = useAlertDialog()
   const params = useParams()
   const [count, setCount] = useState<InventoryCountType | null>(null)
   const [loading, setLoading] = useState(true)
@@ -82,7 +84,7 @@ export default function InventoryCountDetailPage() {
       })
 
       // Show success message
-      alert('✅ Count approved successfully!\n\nYour inventory levels have been updated based on the count results.')
+      showSuccess('Your inventory levels have been updated based on the count results.', 'Count approved successfully!')
 
       // Refresh the count data to show updated status
       await fetchCount()

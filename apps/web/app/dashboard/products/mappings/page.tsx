@@ -137,6 +137,7 @@ export default function ProductMappingsPage() {
   const [bulkServingSize, setBulkServingSize] = useState<number | undefined>(
     1.5
   )
+  const [updatingMapping, setUpdatingMapping] = useState(false)
 
   useEffect(() => {
     fetchIntegrations()
@@ -430,13 +431,13 @@ export default function ProductMappingsPage() {
     if (!editingMapping || !selectedProduct || !selectedPOSProduct) return
 
     try {
+      setUpdatingMapping(true)
       // If serving unit is "container", use the actual container type
       const selectedProductData = products.find((p) => p.id === selectedProduct)
       const actualServingUnit =
         mappingServingUnit === 'container'
           ? selectedProductData?.container || undefined
           : mappingServingUnit || undefined
-
       await updateProductMapping(editingMapping.id, {
         productId: selectedProduct,
         posProductId: selectedPOSProduct,
@@ -461,6 +462,8 @@ export default function ProductMappingsPage() {
       toast.error('Error', {
         description: 'Failed to update mapping',
       })
+    } finally {
+      setUpdatingMapping(false)
     }
   }
 
@@ -476,6 +479,7 @@ export default function ProductMappingsPage() {
     }
 
     try {
+      setUpdatingMapping(true)
       await recipePOSMappingsApi.updateMapping(editingRecipeMapping.id, {
         isActive: true,
         recipeId: selectedRecipe,
@@ -493,6 +497,8 @@ export default function ProductMappingsPage() {
       toast.error('Error', {
         description: 'Failed to update mapping',
       })
+    } finally {
+      setUpdatingMapping(false)
     }
   }
 
@@ -853,12 +859,17 @@ export default function ProductMappingsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant='outline' onClick={handleCancelEdit}>
+            <Button
+              variant='outline'
+              onClick={handleCancelEdit}
+              disabled={updatingMapping}
+            >
               Cancel
             </Button>
             <Button
               onClick={handleUpdateMapping}
               disabled={!selectedProduct || !selectedPOSProduct}
+              loading={updatingMapping}
             >
               Update Mapping
             </Button>
@@ -924,6 +935,7 @@ export default function ProductMappingsPage() {
             <Button
               onClick={handleUpdateRecipeMapping}
               disabled={!selectedRecipe}
+              loading={updatingMapping}
             >
               Update Mapping
             </Button>

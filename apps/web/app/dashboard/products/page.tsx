@@ -48,6 +48,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { bulkUpdateProducts } from '@/lib/api/products'
 import {
   useCategories,
@@ -80,6 +81,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function ProductsPage() {
+  const { showDestructiveConfirm } = useAlertDialog()
   const [searchTerm, setSearchTerm] = useState('')
   const { data: categories, isFetching: fetchingCategories } = useCategories()
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -166,15 +168,14 @@ export default function ProductsPage() {
   }
 
   const handleDeleteProduct = (productId: string) => {
-    if (
-      !confirm(
-        'Are you sure you want to delete this product? This action cannot be undone.'
-      )
-    ) {
-      return
-    }
-
-    deleteProductMutation.mutate(productId)
+    showDestructiveConfirm(
+      'Are you sure you want to delete this product? This action cannot be undone.',
+      async () => {
+        deleteProductMutation.mutateAsync(productId)
+      },
+      'Delete Product',
+      'Delete'
+    )
   }
 
   const handleSelectAll = (checked: boolean) => {
@@ -451,14 +452,15 @@ export default function ProductsPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
-                            if (
-                              confirm(
-                                `Are you sure you want to delete ${selectedProducts.size} products?`
-                              )
-                            ) {
-                              // TODO: Implement bulk delete
-                              // console.log('Bulk delete:', Array.from(selectedProducts))
-                            }
+                            showDestructiveConfirm(
+                              `Are you sure you want to delete ${selectedProducts.size} products?`,
+                              () => {
+                                // TODO: Implement bulk delete
+                                // console.log('Bulk delete:', Array.from(selectedProducts))
+                              },
+                              'Delete Products',
+                              'Delete'
+                            )
                           }}
                           className='text-destructive'
                         >

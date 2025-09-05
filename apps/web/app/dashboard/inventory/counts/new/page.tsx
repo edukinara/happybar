@@ -26,8 +26,10 @@ import { ArrowLeft, Calendar, FileText, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 
 export default function NewInventoryCountPage() {
+  const { showError } = useAlertDialog()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [locations, setLocations] = useState<LocationsResponse>([])
@@ -76,12 +78,12 @@ export default function NewInventoryCountPage() {
     e.preventDefault()
 
     if (!formData.locationId) {
-      alert('Please select a location')
+      showError('Please select a location')
       return
     }
 
     if (storageAreas.length === 0) {
-      alert('Please add at least one storage area')
+      showError('Please add at least one storage area')
       return
     }
 
@@ -102,7 +104,7 @@ export default function NewInventoryCountPage() {
       router.push(`/dashboard/inventory/counts/${newCount.id}`)
     } catch (error) {
       console.error('Failed to create inventory count:', error)
-      alert('Failed to create inventory count. Please try again.')
+      showError('Failed to create inventory count. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -58,6 +58,7 @@ import {
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { toast } from 'sonner'
 
 interface Product {
@@ -77,6 +78,7 @@ interface Product {
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function SupplierDetailPage() {
+  const { showDestructiveConfirm } = useAlertDialog()
   const prms = useParams()
   const supplierId = prms.id as string
   const router = useRouter()
@@ -209,17 +211,22 @@ export default function SupplierDetailPage() {
   }
 
   const handleRemoveProduct = async (productId: string) => {
-    if (!confirm('Remove this product from the supplier catalog?')) return
-
-    try {
-      await suppliersApi.removeProductFromSupplier(supplierId, productId)
-      toast.success('Product removed from catalog')
-      loadSupplier()
-    } catch (error) {
-      toast.error(
-        (error as unknown as Error).message || 'Failed to remove product'
-      )
-    }
+    showDestructiveConfirm(
+      'Remove this product from the supplier catalog?',
+      async () => {
+        try {
+          await suppliersApi.removeProductFromSupplier(supplierId, productId)
+          toast.success('Product removed from catalog')
+          loadSupplier()
+        } catch (error) {
+          toast.error(
+            (error as unknown as Error).message || 'Failed to remove product'
+          )
+        }
+      },
+      'Remove Product',
+      'Remove'
+    )
   }
 
   const resetForm = () => {
