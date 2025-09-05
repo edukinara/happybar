@@ -1,31 +1,27 @@
-import React from 'react';
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { LinearGradient } from 'expo-linear-gradient'
+import React from 'react'
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Dimensions,
-  Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../navigation/AuthNavigator';
-import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { BorderRadius, Colors, Spacing } from '../constants/theme'
+import { AuthStackParamList } from '../navigation/AuthNavigator'
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window')
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>
 
 export function WelcomeScreen() {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>()
 
   return (
-    <LinearGradient
-      colors={Colors.backgroundGradient}
-      style={styles.container}
-    >
+    <LinearGradient colors={Colors.backgroundGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
           <View style={styles.logoSection}>
@@ -37,20 +33,20 @@ export function WelcomeScreen() {
           </View>
 
           <View style={styles.featuresSection}>
-            <FeatureItem 
-              icon="📊" 
-              title="Real-time Analytics"
-              description="Track inventory levels and costs instantly"
+            <FeatureItem
+              icon='📊'
+              title='Real-time Analytics'
+              description='Track inventory levels and costs instantly'
             />
-            <FeatureItem 
-              icon="📱" 
-              title="Quick Barcode Scanning"
-              description="Count inventory 5x faster with AI"
+            <FeatureItem
+              icon='📱'
+              title='Quick Barcode Scanning'
+              description='Count inventory 5x faster with AI'
             />
-            <FeatureItem 
-              icon="🎯" 
-              title="Smart Predictions"
-              description="Never run out with intelligent forecasting"
+            <FeatureItem
+              icon='🎯'
+              title='Smart Predictions'
+              description='Never run out with intelligent forecasting'
             />
           </View>
 
@@ -83,13 +79,17 @@ export function WelcomeScreen() {
         </View>
       </SafeAreaView>
     </LinearGradient>
-  );
+  )
 }
 
-function FeatureItem({ icon, title, description }: { 
-  icon: string; 
-  title: string; 
-  description: string;
+function FeatureItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: string
+  title: string
+  description: string
 }) {
   return (
     <View style={styles.featureItem}>
@@ -99,7 +99,7 @@ function FeatureItem({ icon, title, description }: {
         <Text style={styles.featureDescription}>{description}</Text>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -137,15 +137,15 @@ const styles = StyleSheet.create({
     fontSize: 50,
   },
   appName: {
-    fontSize: Typography.sizes.xxxl,
-    fontWeight: Typography.weights.bold,
+    fontSize: 40,
+    fontWeight: 700,
     color: Colors.primary,
     marginBottom: Spacing.xs,
   },
   tagline: {
-    fontSize: Typography.sizes.lg,
+    fontSize: 18,
     color: Colors.gray[600],
-    fontWeight: Typography.weights.medium,
+    fontWeight: 500,
   },
   featuresSection: {
     marginVertical: Spacing.xl,
@@ -171,13 +171,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureTitle: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 16,
+    fontWeight: 600,
     color: Colors.gray[900],
     marginBottom: 2,
   },
   featureDescription: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[600],
   },
   buttonsSection: {
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: Colors.white,
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
+    fontSize: 18,
+    fontWeight: 700,
   },
   secondaryButton: {
     paddingVertical: Spacing.md,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: Colors.primary,
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.medium,
+    fontSize: 16,
+    fontWeight: 500,
   },
-});
+})

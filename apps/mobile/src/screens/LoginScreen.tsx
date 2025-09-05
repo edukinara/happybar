@@ -1,159 +1,129 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthStackParamList } from '../navigation/AuthNavigator';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../constants/theme';
+
 import { useAuthStore } from '../stores/authStore';
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
-
 export function LoginScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const login = useAuthStore((state) => state.login);
-  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      alert('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
     try {
       await login(email, password);
-    } catch (error) {
-      Alert.alert('Login Failed', 'Please check your credentials and try again');
+    } catch (error: any) {
+      alert(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleGoogleLogin = async () => {
+    alert('Google login coming soon!');
+  };
+
   return (
     <LinearGradient
-      colors={Colors.backgroundGradient}
+      colors={['#8B5CF6', '#A855F7', '#C084FC']}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="arrow-back" size={24} color={Colors.gray[700]} />
-            </TouchableOpacity>
-
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Text style={styles.logoEmoji}>🍹</Text>
-              </View>
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Sign in to continue managing your inventory</Text>
+      <View style={styles.content}>
+        <View style={styles.centerContent}>
+          {/* Logo and Header */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="wine" size={40} color="#8B5CF6" />
             </View>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Happy Bar</Text>
+              <Text style={styles.subtitle}>Inventory Management</Text>
+            </View>
+          </View>
 
-            <View style={styles.form}>
+          {/* Login Form */}
+          <View style={styles.formContainer}>
+            <View style={styles.formContent}>
+              <View style={styles.welcomeContainer}>
+                <Text style={styles.welcomeTitle}>Welcome Back</Text>
+                <Text style={styles.welcomeSubtitle}>Sign in to continue</Text>
+              </View>
+
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Email</Text>
                 <View style={styles.inputWrapper}>
-                  <Ionicons name="mail-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
+                  <Text style={styles.inputLabel}>Email</Text>
                   <TextInput
                     style={styles.input}
+                    placeholder="Enter your email"
                     value={email}
                     onChangeText={setEmail}
-                    placeholder="your@email.com"
-                    placeholderTextColor={Colors.gray[400]}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
                 </View>
-              </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Password</Text>
                 <View style={styles.inputWrapper}>
-                  <Ionicons name="lock-closed-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
+                  <Text style={styles.inputLabel}>Password</Text>
                   <TextInput
                     style={styles.input}
+                    placeholder="Enter your password"
                     value={password}
                     onChangeText={setPassword}
-                    placeholder="••••••••"
-                    placeholderTextColor={Colors.gray[400]}
                     secureTextEntry={!showPassword}
                   />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeIcon}
-                  >
-                    <Ionicons
-                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                      size={20}
-                      color={Colors.gray[400]}
-                    />
-                  </TouchableOpacity>
                 </View>
-              </View>
 
-              <TouchableOpacity style={styles.forgotPassword}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity>
+                <View style={styles.rememberContainer}>
+                  <Text style={styles.rememberText}>Remember me</Text>
+                  <Text style={styles.forgotText}>Forgot Password?</Text>
+                </View>
 
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={handleLogin}
-                activeOpacity={0.8}
-                disabled={isLoading}
-              >
-                <LinearGradient
-                  colors={[Colors.primary, Colors.primaryDark]}
-                  style={styles.gradientButton}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                <TouchableOpacity
+                  style={[styles.button, styles.primaryButton, isLoading && styles.disabledButton]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator color={Colors.white} />
-                  ) : (
-                    <Text style={styles.loginButtonText}>Sign In</Text>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+                  <Text style={styles.buttonText}>
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </Text>
+                </TouchableOpacity>
 
+                <View style={styles.dividerContainer}>
+                  <View style={styles.divider} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.divider} />
+                </View>
 
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                  Need an account? Contact your administrator
-                </Text>
+                <TouchableOpacity
+                  style={[styles.button, styles.secondaryButton]}
+                  onPress={handleGoogleLogin}
+                >
+                  <View style={styles.googleButtonContent}>
+                    <Ionicons name="logo-google" size={20} />
+                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Text style={styles.footerLink}>Contact your administrator</Text>
+          </View>
+        </View>
+      </View>
     </LinearGradient>
   );
 }
@@ -162,152 +132,176 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  safeArea: {
+  content: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
   },
-  keyboardView: {
+  centerContent: {
     flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
-  },
-  backButton: {
-    marginTop: Spacing.md,
-    marginBottom: Spacing.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   header: {
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: 32,
   },
   logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: BorderRadius.xl,
-    backgroundColor: Colors.white,
+    backgroundColor: 'white',
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.md,
-    marginBottom: Spacing.md,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  logoEmoji: {
-    fontSize: 40,
+  titleContainer: {
+    alignItems: 'center',
   },
   title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.gray[900],
-    marginBottom: Spacing.xs,
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.gray[600],
-    textAlign: 'center',
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
-  form: {
-    flex: 1,
+  formContainer: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  formContent: {
+    width: '100%',
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  welcomeTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#6B7280',
   },
   inputContainer: {
-    marginBottom: Spacing.lg,
-  },
-  label: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    color: Colors.gray[700],
-    marginBottom: Spacing.xs,
+    width: '100%',
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.gray[200],
-    paddingHorizontal: Spacing.md,
-    ...Shadows.sm,
+    marginBottom: 16,
   },
-  inputIcon: {
-    marginRight: Spacing.sm,
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
   },
   input: {
-    flex: 1,
-    height: 50,
-    fontSize: Typography.sizes.md,
-    color: Colors.gray[900],
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#111827',
   },
-  eyeIcon: {
-    padding: Spacing.xs,
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: Spacing.lg,
-  },
-  forgotPasswordText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.primary,
-    fontWeight: Typography.weights.medium,
-  },
-  loginButton: {
-    marginBottom: Spacing.lg,
-    ...Shadows.md,
-  },
-  gradientButton: {
-    paddingVertical: 16,
-    borderRadius: BorderRadius.lg,
+  rememberContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 24,
   },
-  loginButtonText: {
-    color: Colors.white,
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
+  rememberText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  forgotText: {
+    fontSize: 14,
+    color: '#8B5CF6',
+    fontWeight: '500',
+  },
+  button: {
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#8B5CF6',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderColor: '#D1D5DB',
+    borderWidth: 1,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: Spacing.lg,
-  },
-  dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: '#D1D5DB',
   },
   dividerText: {
-    paddingHorizontal: Spacing.md,
-    fontSize: Typography.sizes.sm,
-    color: Colors.gray[500],
+    fontSize: 14,
+    color: '#6B7280',
+    marginHorizontal: 12,
   },
-  socialButton: {
+  googleButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.gray[200],
-    paddingVertical: 14,
-    marginBottom: Spacing.lg,
-    ...Shadows.sm,
   },
-  socialButtonText: {
-    marginLeft: Spacing.sm,
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.medium,
-    color: Colors.gray[700],
+  googleButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Spacing.lg,
+    marginTop: 32,
   },
   footerText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.gray[600],
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
   },
   footerLink: {
-    fontSize: Typography.sizes.md,
-    color: Colors.primary,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 14,
+    color: 'white',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 });

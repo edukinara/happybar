@@ -1,106 +1,126 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons'
+import { LinearGradient } from 'expo-linear-gradient'
+import React, { useState } from 'react'
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
   ActivityIndicator,
+  FlatList,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../constants/theme';
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { BorderRadius, Colors, Shadows, Spacing } from '../constants/theme'
+import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
 
 export function InventoryScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'low' | 'out'>('all');
-  
-  const { data: inventoryLevels, isLoading, refetch, isFetching } = useInventoryLevels();
-  const { data: lowStockItems } = useLowStockItems();
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState<'all' | 'low' | 'out'>('all')
+
+  const {
+    data: inventoryLevels,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useInventoryLevels()
+  const { data: lowStockItems } = useLowStockItems()
 
   const filteredItems = React.useMemo(() => {
-    if (!inventoryLevels) return [];
-    
-    let filtered = inventoryLevels;
-    
+    if (!inventoryLevels) return []
+
+    let filtered = inventoryLevels
+
     // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(item =>
-        item.product?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.product?.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(
+        (item) =>
+          item.product?.name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          item.product?.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     }
-    
+
     // Apply stock level filter
     if (filterType === 'low') {
-      const lowStockIds = lowStockItems?.map(item => item.productId) || [];
-      filtered = filtered.filter(item => lowStockIds.includes(item.productId));
+      const lowStockIds = lowStockItems?.map((item) => item.productId) || []
+      filtered = filtered.filter((item) => lowStockIds.includes(item.productId))
     } else if (filterType === 'out') {
-      filtered = filtered.filter(item => item.currentQuantity <= 0);
+      filtered = filtered.filter((item) => item.currentQuantity <= 0)
     }
-    
-    return filtered;
-  }, [inventoryLevels, searchQuery, filterType, lowStockItems]);
+
+    return filtered
+  }, [inventoryLevels, searchQuery, filterType, lowStockItems])
 
   const renderInventoryItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.inventoryItem}>
       <View style={styles.itemInfo}>
-        <Text style={styles.productName}>{item.product?.name || 'Unknown Product'}</Text>
+        <Text style={styles.productName}>
+          {item.product?.name || 'Unknown Product'}
+        </Text>
         <Text style={styles.productSku}>SKU: {item.product?.sku || 'N/A'}</Text>
-        <Text style={styles.productUnit}>{item.product?.unit} • {item.product?.container}</Text>
+        <Text style={styles.productUnit}>
+          {item.product?.unit} • {item.product?.container}
+        </Text>
       </View>
-      
+
       <View style={styles.quantityInfo}>
-        <Text style={[
-          styles.quantity,
-          item.currentQuantity <= 0 ? styles.outOfStock :
-          lowStockItems?.some(lowItem => lowItem.productId === item.productId) ? styles.lowStock : styles.inStock
-        ]}>
+        <Text
+          style={[
+            styles.quantity,
+            item.currentQuantity <= 0
+              ? styles.outOfStock
+              : lowStockItems?.some(
+                    (lowItem) => lowItem.productId === item.productId
+                  )
+                ? styles.lowStock
+                : styles.inStock,
+          ]}
+        >
           {item.currentQuantity}
         </Text>
-        <Text style={styles.quantityLabel}>{item.product?.unit || 'units'}</Text>
+        <Text style={styles.quantityLabel}>
+          {item.product?.unit || 'units'}
+        </Text>
         {item.parLevel && (
           <Text style={styles.parLevel}>Par: {item.parLevel}</Text>
         )}
       </View>
-      
+
       <View style={styles.statusIndicator}>
         {item.currentQuantity <= 0 ? (
-          <Ionicons name="alert-circle" size={24} color={Colors.error} />
-        ) : lowStockItems?.some(lowItem => lowItem.productId === item.productId) ? (
-          <Ionicons name="warning" size={24} color={Colors.warning} />
+          <Ionicons name='alert-circle' size={24} color={Colors.error} />
+        ) : lowStockItems?.some(
+            (lowItem) => lowItem.productId === item.productId
+          ) ? (
+          <Ionicons name='warning' size={24} color={Colors.warning} />
         ) : (
-          <Ionicons name="checkmark-circle" size={24} color={Colors.success} />
+          <Ionicons name='checkmark-circle' size={24} color={Colors.success} />
         )}
       </View>
     </TouchableOpacity>
-  );
+  )
 
   return (
-    <LinearGradient
-      colors={Colors.backgroundGradient}
-      style={styles.container}
-    >
+    <LinearGradient colors={Colors.backgroundGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Inventory</Text>
           <TouchableOpacity style={styles.addButton}>
-            <Ionicons name="add" size={24} color={Colors.white} />
+            <Ionicons name='add' size={24} color={Colors.white} />
           </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color={Colors.gray[400]} />
+            <Ionicons name='search' size={20} color={Colors.gray[400]} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search products..."
+              placeholder='Search products...'
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholderTextColor={Colors.gray[400]}
@@ -111,27 +131,54 @@ export function InventoryScreen() {
         {/* Filter Buttons */}
         <View style={styles.filterContainer}>
           <TouchableOpacity
-            style={[styles.filterButton, filterType === 'all' && styles.activeFilter]}
+            style={[
+              styles.filterButton,
+              filterType === 'all' && styles.activeFilter,
+            ]}
             onPress={() => setFilterType('all')}
           >
-            <Text style={[styles.filterText, filterType === 'all' && styles.activeFilterText]}>
+            <Text
+              style={[
+                styles.filterText,
+                filterType === 'all' && styles.activeFilterText,
+              ]}
+            >
               All ({inventoryLevels?.length || 0})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, filterType === 'low' && styles.activeFilter]}
+            style={[
+              styles.filterButton,
+              filterType === 'low' && styles.activeFilter,
+            ]}
             onPress={() => setFilterType('low')}
           >
-            <Text style={[styles.filterText, filterType === 'low' && styles.activeFilterText]}>
+            <Text
+              style={[
+                styles.filterText,
+                filterType === 'low' && styles.activeFilterText,
+              ]}
+            >
               Low Stock ({lowStockItems?.length || 0})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, filterType === 'out' && styles.activeFilter]}
+            style={[
+              styles.filterButton,
+              filterType === 'out' && styles.activeFilter,
+            ]}
             onPress={() => setFilterType('out')}
           >
-            <Text style={[styles.filterText, filterType === 'out' && styles.activeFilterText]}>
-              Out of Stock ({inventoryLevels?.filter(item => item.currentQuantity <= 0).length || 0})
+            <Text
+              style={[
+                styles.filterText,
+                filterType === 'out' && styles.activeFilterText,
+              ]}
+            >
+              Out of Stock (
+              {inventoryLevels?.filter((item) => item.currentQuantity <= 0)
+                .length || 0}
+              )
             </Text>
           </TouchableOpacity>
         </View>
@@ -139,7 +186,7 @@ export function InventoryScreen() {
         {/* Inventory List */}
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
+            <ActivityIndicator size='large' color={Colors.primary} />
             <Text style={styles.loadingText}>Loading inventory...</Text>
           </View>
         ) : (
@@ -160,7 +207,7 @@ export function InventoryScreen() {
         )}
       </SafeAreaView>
     </LinearGradient>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -178,8 +225,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
+    fontSize: 32,
+    fontWeight: 700,
     color: Colors.gray[900],
   },
   addButton: {
@@ -207,7 +254,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: Typography.sizes.md,
+    fontSize: 16,
     color: Colors.gray[900],
   },
   filterContainer: {
@@ -227,9 +274,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   filterText: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[700],
-    fontWeight: Typography.weights.medium,
+    fontWeight: 500,
   },
   activeFilterText: {
     color: Colors.white,
@@ -251,18 +298,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productName: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 16,
+    fontWeight: 600,
     color: Colors.gray[900],
     marginBottom: 2,
   },
   productSku: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[500],
     marginBottom: 2,
   },
   productUnit: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[600],
   },
   quantityInfo: {
@@ -270,8 +317,8 @@ const styles = StyleSheet.create({
     marginRight: Spacing.md,
   },
   quantity: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
+    fontSize: 18,
+    fontWeight: 700,
     marginBottom: 2,
   },
   inStock: {
@@ -284,12 +331,12 @@ const styles = StyleSheet.create({
     color: Colors.error,
   },
   quantityLabel: {
-    fontSize: Typography.sizes.xs,
+    fontSize: 12,
     color: Colors.gray[500],
     marginBottom: 2,
   },
   parLevel: {
-    fontSize: Typography.sizes.xs,
+    fontSize: 12,
     color: Colors.gray[400],
   },
   statusIndicator: {
@@ -302,8 +349,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: Typography.sizes.md,
+    fontSize: 16,
     color: Colors.gray[600],
     marginTop: Spacing.sm,
   },
-});
+})

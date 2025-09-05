@@ -5,6 +5,10 @@
     "jsx": "react-native",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./*"],
+      "tailwind.config": ["./tailwind.config.js"]
+    }
   }
 }

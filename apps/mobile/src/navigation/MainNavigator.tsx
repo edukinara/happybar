@@ -1,43 +1,43 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { HomeScreen } from '../screens/HomeScreen';
-import { InventoryNavigator } from './InventoryNavigator';
-import { ScanScreen } from '../screens/ScanScreen';
-import { InsightsScreen } from '../screens/InsightsScreen';
-import { SettingsScreen } from '../screens/SettingsScreen';
-import { Colors, Typography } from '../constants/theme';
-import { View, Text, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import React from 'react'
+import { Platform, View } from 'react-native'
+import { Colors } from '../constants/theme'
+import { HomeScreen } from '../screens/HomeScreen'
+import { InsightsScreen } from '../screens/InsightsScreen'
+import { ScanScreen } from '../screens/ScanScreen'
+import { SettingsScreen } from '../screens/SettingsScreen'
+import { InventoryNavigator } from './InventoryNavigator'
 
 export type MainTabParamList = {
-  Home: undefined;
-  Inventory: undefined;
-  Scan: undefined;
-  Insights: undefined;
-  Settings: undefined;
-};
+  Home: undefined
+  Inventory: undefined
+  Scan: undefined
+  Insights: undefined
+  Settings: undefined
+}
 
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Tab = createBottomTabNavigator<MainTabParamList>()
 
 export function MainNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
+          let iconName: keyof typeof Ionicons.glyphMap
 
           if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
+            iconName = focused ? 'home' : 'home-outline'
           } else if (route.name === 'Inventory') {
-            iconName = focused ? 'cube' : 'cube-outline';
+            iconName = focused ? 'cube' : 'cube-outline'
           } else if (route.name === 'Scan') {
-            iconName = focused ? 'scan' : 'scan-outline';
+            iconName = focused ? 'scan' : 'scan-outline'
           } else if (route.name === 'Insights') {
-            iconName = focused ? 'analytics' : 'analytics-outline';
+            iconName = focused ? 'analytics' : 'analytics-outline'
           } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
+            iconName = focused ? 'settings' : 'settings-outline'
           } else {
-            iconName = 'help-outline';
+            iconName = 'help-outline'
           }
 
           // Special treatment for scan button
@@ -45,7 +45,9 @@ export function MainNavigator() {
             return (
               <View
                 style={{
-                  backgroundColor: focused ? Colors.primary : Colors.primaryLight,
+                  backgroundColor: focused
+                    ? Colors.primary
+                    : Colors.primaryLight,
                   borderRadius: 30,
                   width: 60,
                   height: 60,
@@ -61,10 +63,10 @@ export function MainNavigator() {
               >
                 <Ionicons name={iconName} size={28} color={Colors.white} />
               </View>
-            );
+            )
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={size} color={color} />
         },
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.gray[400],
@@ -81,8 +83,8 @@ export function MainNavigator() {
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: Typography.sizes.xs,
-          fontWeight: Typography.weights.medium,
+          fontSize: 12,
+          fontWeight: '500',
         },
         headerStyle: {
           backgroundColor: Colors.white,
@@ -92,48 +94,48 @@ export function MainNavigator() {
         },
         headerTintColor: Colors.gray[900],
         headerTitleStyle: {
-          fontWeight: Typography.weights.bold,
-          fontSize: Typography.sizes.xl,
+          fontWeight: '700',
+          fontSize: 24,
         },
       })}
     >
-      <Tab.Screen 
-        name="Home" 
+      <Tab.Screen
+        name='Home'
         component={HomeScreen}
-        options={{ 
+        options={{
           title: 'Dashboard',
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Inventory" 
+      <Tab.Screen
+        name='Inventory'
         component={InventoryNavigator}
-        options={{ 
+        options={{
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Scan" 
+      <Tab.Screen
+        name='Scan'
         component={ScanScreen}
-        options={{ 
+        options={{
           title: 'Quick Count',
           tabBarLabel: '',
         }}
       />
-      <Tab.Screen 
-        name="Insights" 
+      <Tab.Screen
+        name='Insights'
         component={InsightsScreen}
-        options={{ 
+        options={{
           title: 'Insights',
         }}
       />
-      <Tab.Screen 
-        name="Settings" 
+      <Tab.Screen
+        name='Settings'
         component={SettingsScreen}
-        options={{ 
+        options={{
           title: 'Settings',
         }}
       />
     </Tab.Navigator>
-  );
+  )
 }

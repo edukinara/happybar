@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors, Typography, Spacing } from '../constants/theme';
-import { useAuthStore } from '../stores/authStore';
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Colors, Spacing } from '../constants/theme'
+import { useAuthStore } from '../stores/authStore'
 
 export function SettingsScreen() {
-  const logout = useAuthStore((state) => state.logout);
+  const logout = useAuthStore((state) => state.logout)
 
   return (
     <View style={styles.container}>
@@ -13,7 +13,7 @@ export function SettingsScreen() {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   text: {
-    fontSize: Typography.sizes.lg,
+    fontSize: 18,
     color: Colors.gray[900],
     marginBottom: Spacing.lg,
   },
@@ -36,6 +36,6 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: Colors.white,
-    fontWeight: Typography.weights.semibold,
+    fontWeight: 600,
   },
-});
+})

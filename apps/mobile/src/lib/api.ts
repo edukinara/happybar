@@ -13,6 +13,10 @@ class ApiClient {
     const session = await authClient.getSession()
 
     if (session.data?.session?.token) {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.token}`,
+      }
     }
     return {
       'Content-Type': 'application/json',

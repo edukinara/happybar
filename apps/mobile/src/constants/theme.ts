@@ -1,3 +1,5 @@
+import { ColorValue } from 'react-native'
+
 export const Colors = {
   primary: '#8B5CF6',
   primaryDark: '#7C3AED',
@@ -5,13 +7,13 @@ export const Colors = {
   secondary: '#F59E0B',
   secondaryDark: '#D97706',
   secondaryLight: '#FCD34D',
-  
+
   // Semantic colors
   success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',
   info: '#3B82F6',
-  
+
   // Neutrals
   white: '#FFFFFF',
   black: '#000000',
@@ -27,11 +29,19 @@ export const Colors = {
     800: '#1F2937',
     900: '#111827',
   },
-  
+
   // Background gradients
-  backgroundGradient: ['#FAF5FF', '#FFFFFF', '#FFF7ED'],
-  cardGradient: ['#FFFFFF', '#FEFEFE', '#FAF5FF'],
-};
+  backgroundGradient: ['#FAF5FF', '#FFFFFF', '#FFF7ED'] as readonly [
+    ColorValue,
+    ColorValue,
+    ...ColorValue[],
+  ],
+  cardGradient: ['#FFFFFF', '#FEFEFE', '#FAF5FF'] as readonly [
+    ColorValue,
+    ColorValue,
+    ...ColorValue[],
+  ],
+}
 
 export const Spacing = {
   xs: 4,
@@ -40,7 +50,7 @@ export const Spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
-};
+}
 
 export const Typography = {
   sizes: {
@@ -53,13 +63,13 @@ export const Typography = {
     xxxl: 40,
   },
   weights: {
-    light: '300' as const,
-    regular: '400' as const,
-    medium: '500' as const,
-    semibold: '600' as const,
-    bold: '700' as const,
+    light: 300,
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
   },
-};
+}
 
 export const Shadows = {
   sm: {
@@ -83,7 +93,7 @@ export const Shadows = {
     shadowRadius: 8,
     elevation: 8,
   },
-};
+}
 
 export const BorderRadius = {
   sm: 4,
@@ -91,4 +101,4 @@ export const BorderRadius = {
   lg: 12,
   xl: 16,
   full: 9999,
-};
+}

@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Typography } from '../constants/theme';
+import React from 'react'
+import { StyleSheet, Text, View } from 'react-native'
+import { Colors } from '../constants/theme'
 
 export function InsightsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Insights Screen - AI-Powered Analytics</Text>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   text: {
-    fontSize: Typography.sizes.lg,
+    fontSize: 18,
     color: Colors.gray[900],
   },
-});
+})

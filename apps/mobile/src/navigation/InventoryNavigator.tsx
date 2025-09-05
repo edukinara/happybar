@@ -22,8 +22,8 @@ export function InventoryNavigator() {
         },
         headerTintColor: Colors.gray[900],
         headerTitleStyle: {
-          fontWeight: Typography.weights.bold,
-          fontSize: Typography.sizes.xl,
+          fontWeight: '700',
+          fontSize: 24,
         },
         headerShadowVisible: false,
       }}

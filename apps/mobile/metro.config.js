@@ -1,25 +1,31 @@
 const { getDefaultConfig } = require('expo/metro-config');
-
-const config = getDefaultConfig(__dirname);
-
-// Enable package exports for Better-auth
-config.resolver.unstable_enablePackageExports = true;
-
-// Monorepo support
 const path = require('path');
+
+// Find the project and workspace root
 const projectRoot = __dirname;
-const monorepoRoot = path.resolve(projectRoot, '../..');
+const workspaceRoot = path.resolve(projectRoot, '../..');
 
-// Watch all files within the monorepo
-config.watchFolders = [monorepoRoot];
+const config = getDefaultConfig(projectRoot);
 
-// Let Metro know where to resolve packages and in what order
+// 1. Watch the entire workspace
+config.watchFolders = [workspaceRoot];
+
+// 2. Map metro cache to workspace, to ensure we use workspace modules
+config.projectRoot = projectRoot;
+
+// 3. Force resolver to use workspace root node_modules for React
+config.resolver.alias = {
+  'react': path.resolve(workspaceRoot, 'node_modules/react'),
+  'react-native': path.resolve(workspaceRoot, 'node_modules/react-native'),
+};
+
+// 4. Make Metro look for modules in both project and workspace node_modules
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
-  path.resolve(monorepoRoot, 'node_modules'),
+  path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
-config.resolver.disableHierarchicalLookup = true;
+// 5. Exclude entire database package and all Prisma-related content
+config.resolver.blacklistRE = /packages\/database|@prisma|prisma/;
 
 module.exports = config;

@@ -91,8 +91,33 @@ export const useInventoryAnalytics = (timeRange?: string) => {
     queryKey: [...analyticsKeys.inventory(), timeRange],
     queryFn: async () => {
       const params = timeRange ? `?timeRange=${timeRange}` : '';
-      const response = await apiClient.get<{ success: boolean; data: InventoryAnalytics }>(`/api/analytics/inventory${params}`);
-      return response.data;
+      const response = await apiClient.get<any>(`/api/analytics/inventory${params}`);
+      
+      // Map API response to expected structure
+      if (response?.inventoryData) {
+        return {
+          totalProducts: response.inventoryData.totalItems,
+          totalValue: response.inventoryData.totalValue,
+          lowStockItems: response.inventoryData.lowStockCount,
+          outOfStockItems: response.inventoryData.stockoutCount,
+          turnoverRate: response.inventoryData.avgTurnover,
+          wastePercentage: 0, // Not provided by API
+          topMovingProducts: [],
+          categoryBreakdown: [],
+        } as InventoryAnalytics;
+      }
+      
+      // Return default if no data
+      return {
+        totalProducts: 0,
+        totalValue: 0,
+        lowStockItems: 0,
+        outOfStockItems: 0,
+        turnoverRate: 0,
+        wastePercentage: 0,
+        topMovingProducts: [],
+        categoryBreakdown: [],
+      } as InventoryAnalytics;
     },
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });

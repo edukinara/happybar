@@ -24,7 +24,7 @@
     "db:verify": "./scripts/pg-verify-backup.sh",
     "admin:create": "tsx scripts/create-admin-user.ts",
     "deploy:web": "vercel --prod",
-    "deploy:admin": "cd apps/admin && vercel --prod", 
+    "deploy:admin": "cd apps/admin && vercel --prod",
     "deploy:api": "railway up",
     "deploy:mobile": "cd apps/mobile && eas build --platform all",
     "deploy:all": "pnpm run deploy:api && pnpm run deploy:web && pnpm run deploy:admin"
@@ -43,5 +43,13 @@
     "pnpm": ">=10.0.0"
   },
   "packageManager": "pnpm@10.14.0",
-  "dependencies": {}
+  "dependencies": {
+    "react": "19.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.0.0",
+      "react-dom": "19.0.0"
+    }
+  }
 }

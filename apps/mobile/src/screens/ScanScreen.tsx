@@ -1,38 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons'
+import * as Haptics from 'expo-haptics'
+import { LinearGradient } from 'expo-linear-gradient'
+import React, { useEffect, useState } from 'react'
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+  ActivityIndicator,
   Alert,
   Modal,
+  StyleSheet,
+  Text,
   TextInput,
-  ActivityIndicator,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../constants/theme';
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { BorderRadius, Colors, Spacing } from '../constants/theme'
 
 export function ScanScreen() {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isScanning, setIsScanning] = useState(true);
-  const [scannedProduct, setScannedProduct] = useState<any>(null);
-  const [quantity, setQuantity] = useState('1');
-  const [showModal, setShowModal] = useState(false);
-  const [recentScans, setRecentScans] = useState<any[]>([]);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const [isScanning, setIsScanning] = useState(true)
+  const [scannedProduct, setScannedProduct] = useState<any>(null)
+  const [quantity, setQuantity] = useState('1')
+  const [showModal, setShowModal] = useState(false)
+  const [recentScans, setRecentScans] = useState<any[]>([])
 
   useEffect(() => {
     // Mock permission for demo purposes
-    setHasPermission(true);
-  }, []);
+    setHasPermission(true)
+  }, [])
 
   const handleBarCodeScanned = ({ type, data }: any) => {
-    if (!isScanning) return;
-    
-    setIsScanning(false);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
+    if (!isScanning) return
+
+    setIsScanning(false)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+
     // Mock product lookup - replace with API call
     const mockProduct = {
       barcode: data,
@@ -40,11 +40,11 @@ export function ScanScreen() {
       size: '750ml',
       currentStock: 12,
       unit: 'bottles',
-    };
-    
-    setScannedProduct(mockProduct);
-    setShowModal(true);
-  };
+    }
+
+    setScannedProduct(mockProduct)
+    setShowModal(true)
+  }
 
   const handleManualScan = () => {
     // Mock manual scan for testing
@@ -54,46 +54,46 @@ export function ScanScreen() {
       size: '750ml',
       currentStock: 12,
       unit: 'bottles',
-    };
-    
-    setScannedProduct(mockProduct);
-    setShowModal(true);
-  };
+    }
+
+    setScannedProduct(mockProduct)
+    setShowModal(true)
+  }
 
   const handleSaveCount = () => {
     const scan = {
       ...scannedProduct,
       quantity: parseFloat(quantity),
       timestamp: new Date().toISOString(),
-    };
-    
-    setRecentScans([scan, ...recentScans]);
-    setShowModal(false);
-    setScannedProduct(null);
-    setQuantity('1');
-    setIsScanning(true);
-    
-    Alert.alert('Success', 'Count saved successfully');
-  };
+    }
+
+    setRecentScans([scan, ...recentScans])
+    setShowModal(false)
+    setScannedProduct(null)
+    setQuantity('1')
+    setIsScanning(true)
+
+    Alert.alert('Success', 'Count saved successfully')
+  }
 
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size={64} color={Colors.primary} />
       </View>
-    );
+    )
   }
 
   if (hasPermission === false) {
     return (
       <View style={styles.container}>
-        <Ionicons name="camera-off" size={64} color={Colors.gray[400]} />
+        <Ionicons name='camera-outline' size={64} color={Colors.gray[400]} />
         <Text style={styles.permissionText}>Camera permission is required</Text>
         <TouchableOpacity style={styles.permissionButton}>
           <Text style={styles.permissionButtonText}>Grant Permission</Text>
         </TouchableOpacity>
       </View>
-    );
+    )
   }
 
   return (
@@ -103,22 +103,26 @@ export function ScanScreen() {
     >
       <View style={styles.mockCamera}>
         <View style={styles.cameraPlaceholder}>
-          <Ionicons name="camera" size={64} color={Colors.gray[400]} />
+          <Ionicons name='camera' size={64} color={Colors.gray[400]} />
           <Text style={styles.cameraText}>Camera View</Text>
           <Text style={styles.cameraSubtext}>
             {isScanning ? 'Ready to scan barcodes' : 'Processing...'}
           </Text>
         </View>
       </View>
-      
+
       <View style={styles.overlay}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.headerButton}>
-            <Ionicons name="flash-off" size={24} color={Colors.white} />
+            <Ionicons name='flash-off' size={24} color={Colors.white} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Quick Count</Text>
           <TouchableOpacity style={styles.headerButton}>
-            <Ionicons name="help-circle-outline" size={24} color={Colors.white} />
+            <Ionicons
+              name='help-circle-outline'
+              size={24}
+              color={Colors.white}
+            />
           </TouchableOpacity>
         </View>
 
@@ -136,23 +140,30 @@ export function ScanScreen() {
 
         <View style={styles.footer}>
           <View style={styles.recentScansHeader}>
-            <Text style={styles.recentScansTitle}>Recent Scans ({recentScans.length})</Text>
+            <Text style={styles.recentScansTitle}>
+              Recent Scans ({recentScans.length})
+            </Text>
             <TouchableOpacity>
               <Text style={styles.clearButton}>Clear All</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.recentScansList}>
             {recentScans.slice(0, 3).map((scan, index) => (
               <View key={index} style={styles.recentScanItem}>
                 <Text style={styles.recentScanName}>{scan.name}</Text>
-                <Text style={styles.recentScanQuantity}>{scan.quantity} {scan.unit}</Text>
+                <Text style={styles.recentScanQuantity}>
+                  {scan.quantity} {scan.unit}
+                </Text>
               </View>
             ))}
           </View>
 
-          <TouchableOpacity style={styles.manualButton} onPress={handleManualScan}>
-            <Ionicons name="keypad" size={20} color={Colors.white} />
+          <TouchableOpacity
+            style={styles.manualButton}
+            onPress={handleManualScan}
+          >
+            <Ionicons name='keypad' size={20} color={Colors.white} />
             <Text style={styles.manualButtonText}>Manual Entry</Text>
           </TouchableOpacity>
         </View>
@@ -161,19 +172,20 @@ export function ScanScreen() {
       <Modal
         visible={showModal}
         transparent
-        animationType="slide"
+        animationType='slide'
         onRequestClose={() => setShowModal(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Product Scanned</Text>
-            
+
             {scannedProduct && (
               <>
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>{scannedProduct.name}</Text>
                   <Text style={styles.productDetails}>
-                    {scannedProduct.size} • Current Stock: {scannedProduct.currentStock} {scannedProduct.unit}
+                    {scannedProduct.size} • Current Stock:{' '}
+                    {scannedProduct.currentStock} {scannedProduct.unit}
                   </Text>
                 </View>
 
@@ -182,22 +194,32 @@ export function ScanScreen() {
                   <View style={styles.quantityControls}>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => setQuantity(String(Math.max(0, parseFloat(quantity) - 1)))}
+                      onPress={() =>
+                        setQuantity(
+                          String(Math.max(0, parseFloat(quantity) - 1))
+                        )
+                      }
                     >
-                      <Ionicons name="remove" size={24} color={Colors.primary} />
+                      <Ionicons
+                        name='remove'
+                        size={24}
+                        color={Colors.primary}
+                      />
                     </TouchableOpacity>
                     <TextInput
                       style={styles.quantityField}
                       value={quantity}
                       onChangeText={setQuantity}
-                      keyboardType="decimal-pad"
+                      keyboardType='decimal-pad'
                       selectTextOnFocus
                     />
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => setQuantity(String(parseFloat(quantity) + 1))}
+                      onPress={() =>
+                        setQuantity(String(parseFloat(quantity) + 1))
+                      }
                     >
-                      <Ionicons name="add" size={24} color={Colors.primary} />
+                      <Ionicons name='add' size={24} color={Colors.primary} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -206,8 +228,8 @@ export function ScanScreen() {
                   <TouchableOpacity
                     style={styles.cancelButton}
                     onPress={() => {
-                      setShowModal(false);
-                      setIsScanning(true);
+                      setShowModal(false)
+                      setIsScanning(true)
                     }}
                   >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -225,7 +247,7 @@ export function ScanScreen() {
         </View>
       </Modal>
     </LinearGradient>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -242,13 +264,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cameraText: {
-    fontSize: Typography.sizes.lg,
+    fontSize: 18,
     color: Colors.white,
     marginTop: Spacing.md,
-    fontWeight: Typography.weights.semibold,
+    fontWeight: 600,
   },
   cameraSubtext: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[400],
     marginTop: Spacing.xs,
   },
@@ -269,8 +291,8 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
   },
   headerTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 18,
+    fontWeight: 600,
     color: Colors.white,
   },
   scanArea: {
@@ -316,7 +338,7 @@ const styles = StyleSheet.create({
   },
   scanHint: {
     marginTop: Spacing.lg,
-    fontSize: Typography.sizes.md,
+    fontSize: 16,
     color: Colors.white,
     textAlign: 'center',
   },
@@ -333,12 +355,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   recentScansTitle: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 16,
+    fontWeight: 600,
     color: Colors.white,
   },
   clearButton: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.primary,
   },
   recentScansList: {
@@ -352,11 +374,11 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   recentScanName: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.white,
   },
   recentScanQuantity: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[400],
   },
   manualButton: {
@@ -369,12 +391,12 @@ const styles = StyleSheet.create({
   },
   manualButtonText: {
     marginLeft: Spacing.sm,
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 16,
+    fontWeight: 600,
     color: Colors.white,
   },
   permissionText: {
-    fontSize: Typography.sizes.lg,
+    fontSize: 18,
     color: Colors.gray[600],
     marginTop: Spacing.lg,
     marginBottom: Spacing.md,
@@ -387,7 +409,7 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: {
     color: Colors.white,
-    fontWeight: Typography.weights.semibold,
+    fontWeight: 600,
   },
   modalOverlay: {
     flex: 1,
@@ -402,8 +424,8 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
   },
   modalTitle: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
+    fontSize: 24,
+    fontWeight: 700,
     color: Colors.gray[900],
     marginBottom: Spacing.lg,
     textAlign: 'center',
@@ -412,21 +434,21 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   productName: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 18,
+    fontWeight: 600,
     color: Colors.gray[900],
     marginBottom: Spacing.xs,
   },
   productDetails: {
-    fontSize: Typography.sizes.sm,
+    fontSize: 14,
     color: Colors.gray[600],
   },
   quantityInput: {
     marginBottom: Spacing.lg,
   },
   inputLabel: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
+    fontSize: 14,
+    fontWeight: 500,
     color: Colors.gray[700],
     marginBottom: Spacing.sm,
   },
@@ -445,8 +467,8 @@ const styles = StyleSheet.create({
   },
   quantityField: {
     marginHorizontal: Spacing.lg,
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
+    fontSize: 32,
+    fontWeight: 700,
     color: Colors.gray[900],
     minWidth: 80,
     textAlign: 'center',
@@ -464,8 +486,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.medium,
+    fontSize: 16,
+    fontWeight: 500,
     color: Colors.gray[700],
   },
   saveButton: {
@@ -476,8 +498,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.semibold,
+    fontSize: 16,
+    fontWeight: 600,
     color: Colors.white,
   },
-});
+})
