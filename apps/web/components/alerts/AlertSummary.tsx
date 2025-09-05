@@ -14,7 +14,7 @@ import {
   type AlertNotification,
   type AlertSummary,
 } from '@/lib/api/alerts'
-import { AlertTriangle, Bell, CheckCircle, Settings } from 'lucide-react'
+import { AlertTriangle, Bell, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { HappBarLoader } from '../HappyBarLoader'
@@ -51,6 +51,8 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
       setLoading(false)
     }
   }
+
+  if (!summary || summary.activeAlerts === 0) return null
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -135,90 +137,76 @@ export function AlertSummaryCard({ locationId, className }: AlertSummaryProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {!summary || summary.activeAlerts === 0 ? (
-          <div className='text-center py-6'>
-            <CheckCircle className='h-12 w-12 text-green-500 mx-auto mb-3' />
-            <h3 className='text-lg font-medium text-green-600 mb-1'>
-              All Clear!
-            </h3>
-            <p className='text-sm text-muted-foreground'>
-              {locationId
-                ? 'No active variance alerts for this location'
-                : 'No active variance alerts at this time'}
-            </p>
-          </div>
-        ) : (
-          <div className='space-y-4'>
-            {/* Summary Stats */}
-            <div className='grid grid-cols-3 gap-3 text-center'>
-              <div>
-                <div className='text-2xl font-bold'>{summary.activeAlerts}</div>
-                <div className='text-xs text-muted-foreground'>Active</div>
-              </div>
-              <div>
-                <div className='text-2xl font-bold text-red-600'>
-                  {summary.criticalAlerts}
-                </div>
-                <div className='text-xs text-muted-foreground'>Critical</div>
-              </div>
-              <div>
-                <div className='text-2xl font-bold'>{summary.recentAlerts}</div>
-                <div className='text-xs text-muted-foreground'>Recent</div>
-              </div>
+        <div className='space-y-4'>
+          {/* Summary Stats */}
+          <div className='grid grid-cols-3 gap-3 text-center'>
+            <div>
+              <div className='text-2xl font-bold'>{summary.activeAlerts}</div>
+              <div className='text-xs text-muted-foreground'>Active</div>
             </div>
+            <div>
+              <div className='text-2xl font-bold text-red-600'>
+                {summary.criticalAlerts}
+              </div>
+              <div className='text-xs text-muted-foreground'>Critical</div>
+            </div>
+            <div>
+              <div className='text-2xl font-bold'>{summary.recentAlerts}</div>
+              <div className='text-xs text-muted-foreground'>Recent</div>
+            </div>
+          </div>
 
-            {/* Recent Alert Notifications */}
-            {notifications.length > 0 && (
-              <div className='space-y-2'>
-                <h4 className='text-sm font-medium'>Recent Variance Alerts</h4>
-                {notifications.slice(0, 3).map((notification) => (
-                  <div
-                    key={notification.id}
-                    className='flex items-center justify-between p-2 bg-muted/50 rounded-lg'
-                  >
-                    <div className='flex-1 min-w-0'>
-                      <div className='flex items-center gap-2'>
-                        <Badge
-                          variant='outline'
-                          className={getSeverityColor(notification.severity)}
-                        >
-                          {notification.severity}
-                        </Badge>
-                        <span className='text-sm font-medium truncate'>
-                          {notification.productName || 'Unknown Product'}
+          {/* Recent Alert Notifications */}
+          {notifications.length > 0 && (
+            <div className='space-y-2'>
+              <h4 className='text-sm font-medium'>Recent Variance Alerts</h4>
+              {notifications.slice(0, 3).map((notification) => (
+                <div
+                  key={notification.id}
+                  className='flex items-center justify-between p-2 bg-muted/50 rounded-lg'
+                >
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center gap-2'>
+                      <Badge
+                        variant='outline'
+                        className={getSeverityColor(notification.severity)}
+                      >
+                        {notification.severity}
+                      </Badge>
+                      <span className='text-sm font-medium truncate'>
+                        {notification.productName || 'Unknown Product'}
+                      </span>
+                    </div>
+                    <div className='text-xs text-muted-foreground'>
+                      {notification.type.replace('_', ' ').toLowerCase()} •{' '}
+                      {new Date(notification.createdAt).toLocaleDateString()}
+                      {notification.costImpact && (
+                        <span className='ml-2 text-red-600'>
+                          ${Math.abs(notification.costImpact).toFixed(2)}
                         </span>
-                      </div>
-                      <div className='text-xs text-muted-foreground'>
-                        {notification.type.replace('_', ' ').toLowerCase()} •{' '}
-                        {new Date(notification.createdAt).toLocaleDateString()}
-                        {notification.costImpact && (
-                          <span className='ml-2 text-red-600'>
-                            ${Math.abs(notification.costImpact).toFixed(2)}
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
-                ))}
-                {notifications.length > 3 && (
-                  <div className='text-xs text-muted-foreground text-center'>
-                    +{notifications.length - 3} more alerts
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Action Button */}
-            <div className='pt-2'>
-              <Button variant='outline' asChild className='w-full'>
-                <Link href='/dashboard/alerts'>
-                  <AlertTriangle className='mr-2 size-4' />
-                  View All Alerts
-                </Link>
-              </Button>
+                </div>
+              ))}
+              {notifications.length > 3 && (
+                <div className='text-xs text-muted-foreground text-center'>
+                  +{notifications.length - 3} more alerts
+                </div>
+              )}
             </div>
+          )}
+
+          {/* Action Button */}
+          <div className='pt-2'>
+            <Button variant='outline' asChild className='w-full'>
+              <Link href='/dashboard/alerts'>
+                <AlertTriangle className='mr-2 size-4' />
+                View All Alerts
+              </Link>
+            </Button>
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   )
