@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import React from 'react'
 import { Platform, View } from 'react-native'
-import { Colors } from '../constants/theme'
 import { HomeScreen } from '../screens/HomeScreen'
 import { InsightsScreen } from '../screens/InsightsScreen'
 import { ScanScreen } from '../screens/ScanScreen'
@@ -40,28 +39,28 @@ export function MainNavigator() {
             iconName = 'help-outline'
           }
 
-          // Special treatment for scan button - beautiful floating action button
+          // Special treatment for scan button - premium floating action button
           if (route.name === 'Scan') {
             return (
               <View
                 style={{
                   backgroundColor: focused ? '#8B5CF6' : '#A855F7',
-                  borderRadius: 32,
-                  width: 64,
-                  height: 64,
+                  borderRadius: 30,
+                  width: 60,
+                  height: 60,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: Platform.OS === 'ios' ? 0 : 12,
+                  marginBottom: Platform.OS === 'ios' ? -10 : 10,
                   shadowColor: '#8B5CF6',
-                  shadowOffset: { width: 0, height: 6 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 12,
-                  elevation: 12,
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 25,
+                  elevation: 20,
                   borderWidth: 4,
-                  borderColor: 'white',
+                  borderColor: 'rgba(255,255,255,0.95)',
                 }}
               >
-                <Ionicons name={iconName} size={30} color="white" />
+                <Ionicons name={iconName} size={30} color='white' />
               </View>
             )
           }
@@ -69,23 +68,31 @@ export function MainNavigator() {
           return <Ionicons name={iconName} size={size} color={color} />
         },
         tabBarActiveTintColor: '#8B5CF6',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          backgroundColor: 'white',
+          backgroundColor: 'rgba(255,255,255,1)',
+          backdropFilter: 'blur(20px)',
           borderTopWidth: 0,
-          elevation: 24,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -6 },
-          shadowOpacity: 0.15,
-          shadowRadius: 16,
+          elevation: 8,
+          // shadowColor: '#000',
+          // shadowOffset: { width: 0, height: -8 },
+          // shadowOpacity: 1,
+          // shadowRadius: 4,
           height: Platform.OS === 'ios' ? 90 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
-          paddingTop: 12,
+          paddingBottom: Platform.OS === 'ios' ? 32 : 14,
+          paddingTop: 10,
           paddingHorizontal: 16,
+          borderRadius: 28,
+          position: 'absolute',
+          left: 8,
+          right: 8,
+          bottom: Platform.OS === 'ios' ? 0 : 32,
+          marginHorizontal: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          fontSize: 10,
+          fontWeight: '700',
+          marginTop: 4,
         },
         headerStyle: {
           backgroundColor: 'white',
