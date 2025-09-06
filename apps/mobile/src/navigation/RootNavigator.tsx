@@ -25,7 +25,9 @@ export function RootNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: Colors.white },
+        contentStyle: { backgroundColor: '#F9FAFB' },
+        animation: 'slide_from_right',
+        animationDuration: 200,
       }}
     >
       {isAuthenticated ? (

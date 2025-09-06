@@ -1,16 +1,21 @@
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
+import { KeyboardAvoidingView, Platform, ScrollView, Dimensions } from 'react-native'
 
 import { Box } from '@/components/ui/box'
 import { Button, ButtonText } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Center } from '@/components/ui/center'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
+import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input'
+import { Pressable } from '@/components/ui/pressable'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { useAuthStore } from '../stores/authStore'
+import { HappyBarLogo } from '../components/brand/HappyBarLogo'
+
+const { height } = Dimensions.get('window')
 
 export function LoginScreen() {
   const [email, setEmail] = useState('')
@@ -19,6 +24,22 @@ export function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const login = useAuthStore((state) => state.login)
+  const scrollViewRef = useRef<ScrollView>(null)
+  
+  const scrollToInput = (inputPosition: 'email' | 'password') => {
+    // Only scroll if we're on a smaller screen or if it's the password field
+    const shouldScroll = height < 700 || inputPosition === 'password'
+    
+    if (shouldScroll) {
+      setTimeout(() => {
+        const scrollOffset = inputPosition === 'email' ? 20 : 40
+        scrollViewRef.current?.scrollTo({
+          y: scrollOffset,
+          animated: true,
+        })
+      }, 150)
+    }
+  }
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -42,46 +63,66 @@ export function LoginScreen() {
 
   return (
     <LinearGradient
-      colors={['#8B5CF6', '#A855F7', '#C084FC']}
+      colors={['#6366F1', '#8B5CF6', '#A855F7']}
       className='flex-1'
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
     >
-      <Box className='flex-1 justify-center items-center p-6'>
-        <Center className='flex-1 w-full'>
-          <VStack space='xl' className='items-center w-full'>
+      <KeyboardAvoidingView 
+        behavior='padding'
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
+        className='flex-1'
+        enabled
+      >
+        <ScrollView 
+          ref={scrollViewRef}
+          contentContainerStyle={{ 
+            flexGrow: 1, 
+            paddingHorizontal: 24,
+            paddingTop: 60,
+            paddingBottom: 40,
+            justifyContent: 'center'
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps='handled'
+          bounces={false}
+          className='flex-1'
+        >
+          <VStack space='lg' className='items-center w-full'>
             {/* Logo and Header */}
             <VStack space='md' className='items-center'>
-              <Box className='w-20 h-20 bg-white rounded-full justify-center items-center shadow-lg'>
-                <Ionicons name='wine' size={40} color='#8B5CF6' />
+              <Box className='w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full justify-center items-center shadow-2xl border-4 border-white/30'>
+                <HappyBarLogo size={60} color='white' />
               </Box>
               <VStack space='xs' className='items-center'>
-                <Text className='text-white text-3xl font-bold'>Happy Bar</Text>
-                <Text className='text-white/90 text-lg'>
+                <Text className='text-white text-3xl font-bold tracking-tight'>Happy Bar</Text>
+                <Text className='text-white/90 text-lg font-medium'>
                   Inventory Management
                 </Text>
               </VStack>
             </VStack>
 
             {/* Login Form */}
-            <Card className='w-full max-w-sm bg-white rounded-xl p-6 shadow-2xl'>
-              <VStack space='lg' className='w-full'>
+            <Card className='w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-2xl p-5 shadow-2xl border border-white/20'>
+              <VStack space='md' className='w-full'>
                 <VStack space='xs' className='items-center'>
-                  <Text className='text-typography-900 text-xl font-bold'>
+                  <Text className='text-white text-xl font-bold'>
                     Welcome Back
                   </Text>
-                  <Text className='text-typography-500 text-base'>
+                  <Text className='text-white/80 text-base'>
                     Sign in to continue
                   </Text>
                 </VStack>
 
                 <VStack space='md' className='w-full'>
                   <VStack space='sm'>
-                    <Text className='text-typography-700 text-sm font-medium'>
+                    <Text className='text-white text-sm font-medium'>
                       Email
                     </Text>
                     <Input
                       variant='outline'
                       size='md'
-                      className='bg-background-50'
+                      className='bg-white/20 border-white/30'
                     >
                       <InputField
                         placeholder='Enter your email'
@@ -90,33 +131,46 @@ export function LoginScreen() {
                         keyboardType='email-address'
                         autoCapitalize='none'
                         autoCorrect={false}
+                        className='text-white placeholder:text-white/60'
+                        onFocus={() => scrollToInput('email')}
                       />
                     </Input>
                   </VStack>
 
                   <VStack space='sm'>
-                    <Text className='text-typography-700 text-sm font-medium'>
+                    <Text className='text-white text-sm font-medium'>
                       Password
                     </Text>
                     <Input
                       variant='outline'
                       size='md'
-                      className='bg-background-50'
+                      className='bg-white/20 border-white/30'
                     >
                       <InputField
                         placeholder='Enter your password'
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
+                        className='text-white placeholder:text-white/60'
+                        onFocus={() => scrollToInput('password')}
                       />
+                      <InputSlot className='pr-3' onPress={() => setShowPassword(!showPassword)}>
+                        <InputIcon asChild>
+                          <Ionicons 
+                            name={showPassword ? 'eye-off' : 'eye'} 
+                            size={20} 
+                            color="rgba(255,255,255,0.7)" 
+                          />
+                        </InputIcon>
+                      </InputSlot>
                     </Input>
                   </VStack>
 
                   <HStack className='justify-between items-center'>
-                    <Text className='text-typography-500 text-sm'>
+                    <Text className='text-white/70 text-sm'>
                       Remember me
                     </Text>
-                    <Text className='text-primary-500 text-sm font-medium'>
+                    <Text className='text-white text-sm font-medium underline'>
                       Forgot Password?
                     </Text>
                   </HStack>
@@ -127,17 +181,17 @@ export function LoginScreen() {
                     action='primary'
                     onPress={handleLogin}
                     isDisabled={isLoading}
-                    className='bg-primary-500'
+                    className='bg-white rounded-xl shadow-2xl'
                   >
-                    <ButtonText className='text-white font-semibold'>
+                    <ButtonText className='text-indigo-600 font-bold text-base'>
                       {isLoading ? 'Signing in...' : 'Sign In'}
                     </ButtonText>
                   </Button>
 
                   <HStack className='items-center'>
-                    <Box className='flex-1 h-0.5 bg-outline-200' />
-                    <Text className='text-typography-400 text-sm mx-3'>or</Text>
-                    <Box className='flex-1 h-0.5 bg-outline-200' />
+                    <Box className='flex-1 h-0.5 bg-white/30' />
+                    <Text className='text-white/70 text-sm mx-3'>or</Text>
+                    <Box className='flex-1 h-0.5 bg-white/30' />
                   </HStack>
 
                   <Button
@@ -145,11 +199,11 @@ export function LoginScreen() {
                     variant='outline'
                     action='secondary'
                     onPress={handleGoogleLogin}
-                    className='border-outline-300'
+                    className='border-white/30 bg-white/10'
                   >
                     <HStack space='sm' className='items-center'>
-                      <Ionicons name='logo-google' size={20} color='#374151' />
-                      <ButtonText className='text-typography-700 font-medium'>
+                      <Ionicons name='logo-google' size={20} color='white' />
+                      <ButtonText className='text-white font-medium'>
                         Continue with Google
                       </ButtonText>
                     </HStack>
@@ -160,7 +214,7 @@ export function LoginScreen() {
 
             {/* Footer */}
             <VStack space='xs' className='items-center'>
-              <Text className='text-white/80 text-sm'>
+              <Text className='text-white/70 text-sm'>
                 Don't have an account?
               </Text>
               <Text className='text-white font-bold text-sm underline'>
@@ -168,8 +222,8 @@ export function LoginScreen() {
               </Text>
             </VStack>
           </VStack>
-        </Center>
-      </Box>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   )
 }

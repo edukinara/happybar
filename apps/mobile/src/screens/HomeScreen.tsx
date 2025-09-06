@@ -1,6 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { Box } from '@/components/ui/box';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { HStack } from '@/components/ui/hstack';
+import { Pressable } from '@/components/ui/pressable';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 import { useAuthStore } from '../stores/authStore';
 import { useInventoryAnalytics } from '../hooks/useAnalyticsData';
@@ -17,353 +25,200 @@ export function HomeScreen() {
   const isLoading = analyticsLoading || lowStockLoading;
 
   const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.headerContent}>
-        <Text style={styles.welcomeText}>
+    <HStack className="justify-between items-center py-4 mb-6">
+      <VStack className="flex-1" space="xs">
+        <Text className="text-2xl font-bold text-typography-900">
           Welcome back, {user?.name || 'Bar Manager'}!
         </Text>
-        <Text style={styles.overviewText}>
+        <Text className="text-base text-typography-500">
           Here's your inventory overview
         </Text>
-      </View>
-      <TouchableOpacity style={styles.notificationButton}>
+      </VStack>
+      <Pressable className="w-12 h-12 rounded-full border border-outline-200 bg-white justify-center items-center shadow-sm">
         <Ionicons name="notifications-outline" size={24} color="#4B5563" />
-      </TouchableOpacity>
-    </View>
+      </Pressable>
+    </HStack>
   );
 
   const renderStats = () => (
-    <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>Analytics</Text>
-      <View>
-        <View style={styles.statsRow}>
-          <View style={[styles.card, styles.statCard]}>
-            <View style={styles.statHeader}>
+    <VStack className="mb-6" space="md">
+      <Text className="text-lg font-semibold text-typography-900">Analytics</Text>
+      <VStack space="md">
+        <HStack space="md">
+          <Card className="flex-1 p-4 bg-white rounded-xl shadow-sm">
+            <HStack className="justify-between items-center mb-2">
               <Ionicons name="trending-up" size={20} color="#10B981" />
-              <Text style={[styles.statChange, { color: '#10B981' }]}>+12%</Text>
-            </View>
-            <View>
-              <Text style={styles.statValue}>
+              <Text className="text-xs font-medium text-green-500">+12%</Text>
+            </HStack>
+            <VStack space="xs">
+              <Text className="text-2xl font-bold text-typography-900">
                 {analytics?.totalValue
                   ? `$${(analytics.totalValue / 1000).toFixed(1)}K`
                   : '$0'}
               </Text>
-              <Text style={styles.statLabel}>Total Value</Text>
-            </View>
-          </View>
+              <Text className="text-sm text-typography-500">Total Value</Text>
+            </VStack>
+          </Card>
 
-          <View style={[styles.card, styles.statCard]}>
-            <View style={styles.statHeader}>
+          <Card className="flex-1 p-4 bg-white rounded-xl shadow-sm">
+            <HStack className="justify-between items-center mb-2">
               <Ionicons name="cube-outline" size={20} color="#8B5CF6" />
-              <Text style={[styles.statChange, { color: '#8B5CF6' }]}>+3</Text>
-            </View>
-            <View>
-              <Text style={styles.statValue}>
+              <Text className="text-xs font-medium text-purple-600">+3</Text>
+            </HStack>
+            <VStack space="xs">
+              <Text className="text-2xl font-bold text-typography-900">
                 {analytics?.totalProducts?.toString() || '0'}
               </Text>
-              <Text style={styles.statLabel}>Products</Text>
-            </View>
-          </View>
-        </View>
+              <Text className="text-sm text-typography-500">Products</Text>
+            </VStack>
+          </Card>
+        </HStack>
 
-        <View style={styles.statsRow}>
-          <View style={[styles.card, styles.statCard]}>
-            <View style={styles.statHeader}>
+        <HStack space="md">
+          <Card className="flex-1 p-4 bg-white rounded-xl shadow-sm">
+            <HStack className="justify-between items-center mb-2">
               <Ionicons name="speedometer" size={20} color="#F59E0B" />
-              <Text style={[styles.statChange, { color: '#F59E0B' }]}>-5%</Text>
-            </View>
-            <View>
-              <Text style={styles.statValue}>
+              <Text className="text-xs font-medium text-amber-500">-5%</Text>
+            </HStack>
+            <VStack space="xs">
+              <Text className="text-2xl font-bold text-typography-900">
                 {analytics?.turnoverRate
                   ? `${analytics.turnoverRate.toFixed(1)}x`
                   : '0x'}
               </Text>
-              <Text style={styles.statLabel}>Turnover</Text>
-            </View>
-          </View>
+              <Text className="text-sm text-typography-500">Turnover</Text>
+            </VStack>
+          </Card>
 
-          <View style={[styles.card, styles.statCard]}>
-            <View style={styles.statHeader}>
+          <Card className="flex-1 p-4 bg-white rounded-xl shadow-sm">
+            <HStack className="justify-between items-center mb-2">
               <Ionicons name="analytics" size={20} color="#3B82F6" />
-              <Text style={[styles.statChange, { color: '#3B82F6' }]}>-0.5%</Text>
-            </View>
-            <View>
-              <Text style={styles.statValue}>
+              <Text className="text-xs font-medium text-blue-500">-0.5%</Text>
+            </HStack>
+            <VStack space="xs">
+              <Text className="text-2xl font-bold text-typography-900">
                 {analytics?.wastePercentage
                   ? `${analytics.wastePercentage.toFixed(1)}%`
                   : '0%'}
               </Text>
-              <Text style={styles.statLabel}>Waste</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
+              <Text className="text-sm text-typography-500">Waste</Text>
+            </VStack>
+          </Card>
+        </HStack>
+      </VStack>
+    </VStack>
   );
 
   const renderQuickActions = () => (
-    <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
-      <View>
-        <View style={styles.quickActionsRow}>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <View style={styles.quickActionContent}>
+    <VStack className="mb-6" space="md">
+      <Text className="text-lg font-semibold text-typography-900">Quick Actions</Text>
+      <VStack space="md">
+        <HStack space="md">
+          <Pressable className="flex-1 p-4 border border-outline-200 rounded-xl bg-white items-center shadow-sm">
+            <VStack className="items-center" space="sm">
               <Ionicons name="scan" size={24} color="#8B5CF6" />
-              <Text style={styles.quickActionText}>Quick Count</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <View style={styles.quickActionContent}>
+              <Text className="text-sm font-medium text-typography-700">Quick Count</Text>
+            </VStack>
+          </Pressable>
+          <Pressable className="flex-1 p-4 border border-outline-200 rounded-xl bg-white items-center shadow-sm">
+            <VStack className="items-center" space="sm">
               <Ionicons name="add-circle" size={24} color="#10B981" />
-              <Text style={styles.quickActionText}>Add Product</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.quickActionsRow}>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <View style={styles.quickActionContent}>
+              <Text className="text-sm font-medium text-typography-700">Add Product</Text>
+            </VStack>
+          </Pressable>
+        </HStack>
+        <HStack space="md">
+          <Pressable className="flex-1 p-4 border border-outline-200 rounded-xl bg-white items-center shadow-sm">
+            <VStack className="items-center" space="sm">
               <Ionicons name="clipboard" size={24} color="#F59E0B" />
-              <Text style={styles.quickActionText}>Full Count</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <View style={styles.quickActionContent}>
+              <Text className="text-sm font-medium text-typography-700">Full Count</Text>
+            </VStack>
+          </Pressable>
+          <Pressable className="flex-1 p-4 border border-outline-200 rounded-xl bg-white items-center shadow-sm">
+            <VStack className="items-center" space="sm">
               <Ionicons name="cart" size={24} color="#3B82F6" />
-              <Text style={styles.quickActionText}>Create Order</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+              <Text className="text-sm font-medium text-typography-700">Create Order</Text>
+            </VStack>
+          </Pressable>
+        </HStack>
+      </VStack>
+    </VStack>
   );
 
   const renderAlerts = () => {
     if (isLoading) return null;
 
     return (
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Alerts</Text>
-        <View>
+      <VStack className="mb-6" space="md">
+        <Text className="text-lg font-semibold text-typography-900">Alerts</Text>
+        <VStack space="md">
           {analytics && analytics.outOfStockItems > 0 && (
-            <View style={[styles.alertCard, styles.alertCardError]}>
-              <View style={styles.alertContent}>
-                <Ionicons name="alert-circle" size={24} color="#EF4444" style={styles.alertIcon} />
-                <View style={styles.alertTextContainer}>
-                  <Text style={styles.alertTitle}>
+            <Card className="p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+              <HStack className="items-center" space="md">
+                <Ionicons name="alert-circle" size={24} color="#EF4444" />
+                <VStack className="flex-1" space="xs">
+                  <Text className="font-semibold text-typography-900">
                     {analytics.outOfStockItems} Items Out of Stock
                   </Text>
-                  <Text style={styles.alertDescription}>
+                  <Text className="text-sm text-typography-500">
                     Items need immediate reordering
                   </Text>
-                </View>
-              </View>
-            </View>
+                </VStack>
+              </HStack>
+            </Card>
           )}
 
           {analytics && analytics.lowStockItems > 0 && (
-            <View style={[styles.alertCard, styles.alertCardWarning]}>
-              <View style={styles.alertContent}>
-                <Ionicons name="warning" size={24} color="#F59E0B" style={styles.alertIcon} />
-                <View style={styles.alertTextContainer}>
-                  <Text style={styles.alertTitle}>
+            <Card className="p-4 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
+              <HStack className="items-center" space="md">
+                <Ionicons name="warning" size={24} color="#F59E0B" />
+                <VStack className="flex-1" space="xs">
+                  <Text className="font-semibold text-typography-900">
                     Low Stock Alert
                   </Text>
-                  <Text style={styles.alertDescription}>
+                  <Text className="text-sm text-typography-500">
                     {analytics.lowStockItems} items below par level
                   </Text>
-                </View>
-              </View>
-            </View>
+                </VStack>
+              </HStack>
+            </Card>
           )}
 
           {(!analytics ||
             (analytics.outOfStockItems === 0 &&
               analytics.lowStockItems === 0)) && (
-            <View style={[styles.alertCard, styles.alertCardSuccess]}>
-              <View style={styles.alertContent}>
-                <Ionicons name="checkmark-circle" size={24} color="#10B981" style={styles.alertIcon} />
-                <View style={styles.alertTextContainer}>
-                  <Text style={styles.alertTitle}>
+            <Card className="p-4 bg-green-50 border border-green-200 rounded-xl shadow-sm">
+              <HStack className="items-center" space="md">
+                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                <VStack className="flex-1" space="xs">
+                  <Text className="font-semibold text-typography-900">
                     All Stock Levels Good
                   </Text>
-                  <Text style={styles.alertDescription}>
+                  <Text className="text-sm text-typography-500">
                     No critical inventory issues
                   </Text>
-                </View>
-              </View>
-            </View>
+                </VStack>
+              </HStack>
+            </Card>
           )}
-        </View>
-      </View>
+        </VStack>
+      </VStack>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+    <Box className="flex-1 bg-background-50">
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ padding: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
         {renderHeader()}
         {renderAlerts()}
         {renderStats()}
         {renderQuickActions()}
       </ScrollView>
-    </View>
+    </Box>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    marginBottom: 24,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  overviewText: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  notificationButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  alertCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-  },
-  statHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statChange: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 2,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  quickActionsRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-    gap: 12,
-  },
-  quickActionButton: {
-    flex: 1,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    backgroundColor: 'white',
-    alignItems: 'center',
-  },
-  quickActionContent: {
-    alignItems: 'center',
-  },
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginTop: 8,
-  },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  alertContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  alertIcon: {
-    marginRight: 12,
-  },
-  alertTextContainer: {
-    flex: 1,
-  },
-  alertTitle: {
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  alertDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  alertCardError: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FECACA',
-    borderWidth: 1,
-  },
-  alertCardWarning: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FDE68A',
-    borderWidth: 1,
-  },
-  alertCardSuccess: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
-    borderWidth: 1,
-  },
-});

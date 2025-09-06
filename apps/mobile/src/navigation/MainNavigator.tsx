@@ -40,62 +40,64 @@ export function MainNavigator() {
             iconName = 'help-outline'
           }
 
-          // Special treatment for scan button
+          // Special treatment for scan button - beautiful floating action button
           if (route.name === 'Scan') {
             return (
               <View
                 style={{
-                  backgroundColor: focused
-                    ? Colors.primary
-                    : Colors.primaryLight,
-                  borderRadius: 30,
-                  width: 60,
-                  height: 60,
+                  backgroundColor: focused ? '#8B5CF6' : '#A855F7',
+                  borderRadius: 32,
+                  width: 64,
+                  height: 64,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: Platform.OS === 'ios' ? 0 : 10,
-                  shadowColor: Colors.primary,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
+                  marginBottom: Platform.OS === 'ios' ? 0 : 12,
+                  shadowColor: '#8B5CF6',
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 12,
+                  elevation: 12,
+                  borderWidth: 4,
+                  borderColor: 'white',
                 }}
               >
-                <Ionicons name={iconName} size={28} color={Colors.white} />
+                <Ionicons name={iconName} size={30} color="white" />
               </View>
             )
           }
 
           return <Ionicons name={iconName} size={size} color={color} />
         },
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.gray[400],
+        tabBarActiveTintColor: '#8B5CF6',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarStyle: {
-          backgroundColor: Colors.white,
+          backgroundColor: 'white',
           borderTopWidth: 0,
-          elevation: 20,
+          elevation: 24,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          height: Platform.OS === 'ios' ? 85 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 25 : 10,
-          paddingTop: 10,
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: 0.15,
+          shadowRadius: 16,
+          height: Platform.OS === 'ios' ? 90 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingTop: 12,
+          paddingHorizontal: 16,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 11,
+          fontWeight: '600',
         },
         headerStyle: {
-          backgroundColor: Colors.white,
+          backgroundColor: 'white',
           elevation: 0,
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
-        headerTintColor: Colors.gray[900],
+        headerTintColor: '#111827',
         headerTitleStyle: {
           fontWeight: '700',
-          fontSize: 24,
+          fontSize: 26,
+          color: '#111827',
         },
       })}
     >

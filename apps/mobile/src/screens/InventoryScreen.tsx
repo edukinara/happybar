@@ -5,13 +5,13 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
+  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { BorderRadius, Colors, Shadows, Spacing } from '../constants/theme'
 import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
 
