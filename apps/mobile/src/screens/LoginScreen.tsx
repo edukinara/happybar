@@ -1,19 +1,22 @@
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { useState, useRef } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView, Dimensions } from 'react-native'
+import React, { useRef, useState } from 'react'
+import {
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native'
 
 import { Box } from '@/components/ui/box'
 import { Button, ButtonText } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Center } from '@/components/ui/center'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input'
-import { Pressable } from '@/components/ui/pressable'
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
-import { useAuthStore } from '../stores/authStore'
 import { HappyBarLogo } from '../components/brand/HappyBarLogo'
+import { useAuthStore } from '../stores/authStore'
 
 const { height } = Dimensions.get('window')
 
@@ -25,11 +28,11 @@ export function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const login = useAuthStore((state) => state.login)
   const scrollViewRef = useRef<ScrollView>(null)
-  
+
   const scrollToInput = (inputPosition: 'email' | 'password') => {
     // Only scroll if we're on a smaller screen or if it's the password field
     const shouldScroll = height < 700 || inputPosition === 'password'
-    
+
     if (shouldScroll) {
       setTimeout(() => {
         const scrollOffset = inputPosition === 'email' ? 20 : 40
@@ -68,20 +71,20 @@ export function LoginScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior='padding'
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
         className='flex-1'
         enabled
       >
-        <ScrollView 
+        <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={{ 
-            flexGrow: 1, 
+          contentContainerStyle={{
+            flexGrow: 1,
             paddingHorizontal: 24,
             paddingTop: 60,
             paddingBottom: 40,
-            justifyContent: 'center'
+            justifyContent: 'center',
           }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps='handled'
@@ -95,7 +98,9 @@ export function LoginScreen() {
                 <HappyBarLogo size={60} color='white' />
               </Box>
               <VStack space='xs' className='items-center'>
-                <Text className='text-white text-3xl font-bold tracking-tight'>Happy Bar</Text>
+                <Text className='text-white text-3xl font-bold tracking-tight'>
+                  Happy Bar
+                </Text>
                 <Text className='text-white/90 text-lg font-medium'>
                   Inventory Management
                 </Text>
@@ -154,12 +159,15 @@ export function LoginScreen() {
                         className='text-white placeholder:text-white/60'
                         onFocus={() => scrollToInput('password')}
                       />
-                      <InputSlot className='pr-3' onPress={() => setShowPassword(!showPassword)}>
-                        <InputIcon asChild>
-                          <Ionicons 
-                            name={showPassword ? 'eye-off' : 'eye'} 
-                            size={20} 
-                            color="rgba(255,255,255,0.7)" 
+                      <InputSlot
+                        className='pr-3'
+                        onPress={() => setShowPassword(!showPassword)}
+                      >
+                        <InputIcon>
+                          <Ionicons
+                            name={showPassword ? 'eye-off' : 'eye'}
+                            size={20}
+                            color='rgba(255,255,255,0.7)'
                           />
                         </InputIcon>
                       </InputSlot>
@@ -167,9 +175,7 @@ export function LoginScreen() {
                   </VStack>
 
                   <HStack className='justify-between items-center'>
-                    <Text className='text-white/70 text-sm'>
-                      Remember me
-                    </Text>
+                    <Text className='text-white/70 text-sm'>Remember me</Text>
                     <Text className='text-white text-sm font-medium underline'>
                       Forgot Password?
                     </Text>

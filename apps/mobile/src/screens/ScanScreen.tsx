@@ -1,31 +1,65 @@
 import { Ionicons } from '@expo/vector-icons'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Alert, Dimensions } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import { Box } from '@/components/ui/box'
+import { Button, ButtonText } from '@/components/ui/button'
+import { Center } from '@/components/ui/center'
+import { HStack } from '@/components/ui/hstack'
+import { Input, InputField } from '@/components/ui/input'
 import {
-  ActivityIndicator,
-  Alert,
   Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native'
-import { BorderRadius, Colors, Spacing } from '../constants/theme'
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from '@/components/ui/modal'
+import { Pressable } from '@/components/ui/pressable'
+import { Spinner } from '@/components/ui/spinner'
+import { Text } from '@/components/ui/text'
+import { VStack } from '@/components/ui/vstack'
+
+import pluralize from 'pluralize'
+import { useProductByUPC } from '../hooks/useInventoryData'
+
+const { width, height } = Dimensions.get('window')
 
 export function ScanScreen() {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const [permission, requestPermission] = useCameraPermissions()
   const [isScanning, setIsScanning] = useState(true)
-  const [scannedProduct, setScannedProduct] = useState<any>(null)
+  const [scannedProduct, setScannedProduct] = useState<{
+    id: string
+    inventoryItemId: string
+    barcode: string
+    name: string
+    sku: string | null
+    unit: string
+    image: string | null
+    container: string | null
+    currentStock: number
+    parLevel: number
+  } | null>(null)
   const [quantity, setQuantity] = useState('1')
   const [showModal, setShowModal] = useState(false)
   const [recentScans, setRecentScans] = useState<any[]>([])
+  const [flashOn, setFlashOn] = useState(false)
+  const [scannedUPC, setScannedUPC] = useState<string | null>(null)
+  const insets = useSafeAreaInsets()
+  const navigation = useNavigation()
 
-  useEffect(() => {
-    // Mock permission for demo purposes
-    setHasPermission(true)
-  }, [])
+  // Query to lookup product by UPC
+  const {
+    data: productData,
+    isLoading: isLookingUp,
+    isError: lookupError,
+  } = useProductByUPC(scannedUPC || '')
 
   const handleBarCodeScanned = ({ type, data }: any) => {
     if (!isScanning) return
@@ -33,22 +67,93 @@ export function ScanScreen() {
     setIsScanning(false)
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
 
-    // Mock product lookup - replace with API call
-    const mockProduct = {
-      barcode: data,
-      name: 'Grey Goose Vodka',
-      size: '750ml',
-      currentStock: 12,
-      unit: 'bottles',
-    }
-
-    setScannedProduct(mockProduct)
-    setShowModal(true)
+    // Set the scanned UPC to trigger the lookup
+    setScannedUPC(data)
   }
+
+  // Handle the result of the UPC lookup
+  useEffect(() => {
+    if (scannedUPC && !isLookingUp) {
+      if (productData && !lookupError) {
+        // Product found in inventory
+        const product = {
+          id: productData.id,
+          inventoryItemId: productData.inventoryItems[0]?.id,
+          barcode: scannedUPC,
+          name: productData.name,
+          sku: productData.sku,
+          unit: productData.unit,
+          image: productData.image,
+          container: productData.container,
+          currentStock: productData.inventoryItems[0]?.currentQuantity || 0,
+          parLevel: productData.inventoryItems[0]?.minimumQuantity || 0,
+        }
+        setQuantity(product.currentStock.toString() || '1')
+        setScannedProduct(product)
+        setShowModal(true)
+      } else {
+        // Product not found in inventory
+        Alert.alert(
+          'Product Not Found',
+          `UPC ${scannedUPC} was not found in your inventory. Would you like to add it as a new product?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+                setScannedUPC(null)
+                setIsScanning(true)
+              },
+              style: 'cancel',
+            },
+            {
+              text: 'Add Product',
+              onPress: () => {
+                // Navigate to add product screen with UPC pre-filled
+                navigation.navigate([
+                  'Inventory',
+                  {
+                    screen: 'AddProduct',
+                    params: { upc: scannedUPC },
+                  },
+                ] as never)
+                setScannedUPC(null)
+              },
+            },
+          ]
+        )
+      }
+    }
+  }, [productData, isLookingUp, lookupError, scannedUPC, navigation])
+
+  // Reset scanning state when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      // Reset all scan-related state when returning to the screen
+      setIsScanning(true)
+      setScannedProduct(null)
+      setScannedUPC(null)
+      setQuantity('1')
+      setShowModal(false)
+
+      return () => {
+        // Cleanup when screen loses focus
+        setIsScanning(false)
+        setScannedProduct(null)
+        setScannedUPC(null)
+        setShowModal(false)
+      }
+    }, [])
+  )
 
   const handleManualScan = () => {
     // Mock manual scan for testing
     const mockProduct = {
+      id: '1',
+      inventoryItemId: '1',
+      sku: '123456789',
+      image: null,
+      container: 'bottle',
+      parLevel: 12,
       barcode: '123456789',
       name: 'Grey Goose Vodka',
       size: '750ml',
@@ -68,438 +173,313 @@ export function ScanScreen() {
     }
 
     setRecentScans([scan, ...recentScans])
+
+    // Reset all scan-related state
     setShowModal(false)
     setScannedProduct(null)
+    setScannedUPC(null)
     setQuantity('1')
     setIsScanning(true)
 
-    Alert.alert('Success', 'Count saved successfully')
+    // Navigate away first to stop camera, then show alert
+    navigation.navigate('Home' as never)
+
+    // Show alert after a brief delay to ensure navigation completes
+    setTimeout(() => {
+      Alert.alert(
+        'Success',
+        `Count saved: ${scan.quantity} ${scan.unit} of ${scan.name}`
+      )
+    }, 300)
   }
 
-  if (hasPermission === null) {
+  if (!permission) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size={64} color={Colors.primary} />
-      </View>
+      <LinearGradient
+        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        className='flex-1'
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Center className='flex-1'>
+          <Spinner size='large' color='white' />
+          <Text className='text-white text-lg mt-4'>
+            Requesting camera permission...
+          </Text>
+        </Center>
+      </LinearGradient>
     )
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Ionicons name='camera-outline' size={64} color={Colors.gray[400]} />
-        <Text style={styles.permissionText}>Camera permission is required</Text>
-        <TouchableOpacity style={styles.permissionButton}>
-          <Text style={styles.permissionButtonText}>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
+      <LinearGradient
+        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        className='flex-1'
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Center className='flex-1 px-6'>
+          <Box className='w-20 h-20 bg-white/20 rounded-full justify-center items-center mb-6'>
+            <Ionicons name='camera-outline' size={40} color='white' />
+          </Box>
+          <Text className='text-white text-xl font-bold text-center mb-4'>
+            Camera Permission Required
+          </Text>
+          <Text className='text-white/80 text-base text-center mb-8'>
+            We need camera access to scan barcodes for inventory counting
+          </Text>
+          <Button
+            size='lg'
+            className='bg-white rounded-xl px-8'
+            onPress={requestPermission}
+          >
+            <ButtonText className='text-purple-600 font-bold'>
+              Grant Permission
+            </ButtonText>
+          </Button>
+        </Center>
+      </LinearGradient>
     )
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.gray[900], Colors.gray[800], Colors.gray[700]]}
-      style={styles.container}
-    >
-      <View style={styles.mockCamera}>
-        <View style={styles.cameraPlaceholder}>
-          <Ionicons name='camera' size={64} color={Colors.gray[400]} />
-          <Text style={styles.cameraText}>Camera View</Text>
-          <Text style={styles.cameraSubtext}>
-            {isScanning ? 'Ready to scan barcodes' : 'Processing...'}
-          </Text>
-        </View>
-      </View>
+    <Box className='flex-1 bg-black'>
+      {/* Camera View */}
+      <CameraView
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+        }}
+        facing='back'
+        flash={flashOn ? 'on' : 'off'}
+        barcodeScannerSettings={{
+          barcodeTypes: [
+            'qr',
+            'pdf417',
+            'aztec',
+            'ean13',
+            'ean8',
+            'upc_a',
+            'upc_e',
+            'code39',
+            'code93',
+            'code128',
+            'codabar',
+          ],
+        }}
+        onBarcodeScanned={isScanning ? handleBarCodeScanned : undefined}
+      />
 
-      <View style={styles.overlay}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.headerButton}>
-            <Ionicons name='flash-off' size={24} color={Colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Quick Count</Text>
-          <TouchableOpacity style={styles.headerButton}>
+      {/* Header Overlay */}
+      <Box
+        className='absolute top-0 left-0 right-0 bg-black/50 backdrop-blur-sm'
+        style={{ paddingTop: insets.top }}
+      >
+        <HStack className='justify-between items-center px-5 py-4'>
+          <Pressable
+            className='w-12 h-12 rounded-full bg-black/30 justify-center items-center'
+            onPress={() => setFlashOn(!flashOn)}
+          >
             <Ionicons
-              name='help-circle-outline'
+              name={flashOn ? 'flash' : 'flash-off'}
               size={24}
-              color={Colors.white}
+              color='white'
             />
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+          <Text className='text-white text-xl font-bold'>Quick Count</Text>
+          <Pressable className='w-12 h-12 rounded-full bg-black/30 justify-center items-center'>
+            <Ionicons name='help-circle-outline' size={24} color='white' />
+          </Pressable>
+        </HStack>
+      </Box>
 
-        <View style={styles.scanArea}>
-          <View style={styles.scanFrame}>
-            <View style={[styles.scanCorner, styles.topLeft]} />
-            <View style={[styles.scanCorner, styles.topRight]} />
-            <View style={[styles.scanCorner, styles.bottomLeft]} />
-            <View style={[styles.scanCorner, styles.bottomRight]} />
-          </View>
-          <Text style={styles.scanHint}>
-            {isScanning ? 'Point camera at barcode' : 'Processing...'}
-          </Text>
-        </View>
+      {/* Scan Frame Overlay */}
+      <Center className='flex-1'>
+        <Box className='relative' style={{ width: 280, height: 280 }}>
+          {/* Corner brackets */}
+          <Box className='absolute top-0 left-0 w-12 h-12 border-l-4 border-t-4 border-white rounded-tl-lg' />
+          <Box className='absolute top-0 right-0 w-12 h-12 border-r-4 border-t-4 border-white rounded-tr-lg' />
+          <Box className='absolute bottom-0 left-0 w-12 h-12 border-l-4 border-b-4 border-white rounded-bl-lg' />
+          <Box className='absolute bottom-0 right-0 w-12 h-12 border-r-4 border-b-4 border-white rounded-br-lg' />
 
-        <View style={styles.footer}>
-          <View style={styles.recentScansHeader}>
-            <Text style={styles.recentScansTitle}>
+          {/* Scanning line animation */}
+          {isScanning && (
+            <Box className='absolute inset-x-4 top-1/2 h-0.5 bg-white opacity-80' />
+          )}
+        </Box>
+
+        <Text className='text-white text-lg font-medium mt-8 text-center px-8'>
+          {isScanning
+            ? 'Point camera at barcode'
+            : isLookingUp
+              ? 'Looking up product...'
+              : 'Processing scan...'}
+        </Text>
+      </Center>
+
+      {/* Bottom Footer */}
+      <Box
+        className='absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl rounded-t-3xl'
+        style={{ paddingBottom: insets.bottom + 20 }}
+      >
+        <VStack className='p-6 mb-16' space='lg'>
+          {/* <HStack className='justify-between items-center'>
+            <Text className='text-white text-lg font-bold'>
               Recent Scans ({recentScans.length})
             </Text>
-            <TouchableOpacity>
-              <Text style={styles.clearButton}>Clear All</Text>
-            </TouchableOpacity>
-          </View>
+            {recentScans.length > 0 && (
+              <Pressable onPress={() => setRecentScans([])}>
+                <Text className='text-purple-400 font-medium'>Clear All</Text>
+              </Pressable>
+            )}
+          </HStack> */}
 
-          <View style={styles.recentScansList}>
-            {recentScans.slice(0, 3).map((scan, index) => (
-              <View key={index} style={styles.recentScanItem}>
-                <Text style={styles.recentScanName}>{scan.name}</Text>
-                <Text style={styles.recentScanQuantity}>
-                  {scan.quantity} {scan.unit}
-                </Text>
-              </View>
-            ))}
-          </View>
+          {/* {recentScans.length > 0 ? (
+            <VStack space='sm'>
+              {recentScans.slice(0, 3).map((scan, index) => (
+                <HStack
+                  key={index}
+                  className='justify-between py-3 border-b border-white/10'
+                >
+                  <Text className='text-white font-medium'>{scan.name}</Text>
+                  <Text className='text-gray-400'>
+                    {scan.quantity} {scan.unit}
+                  </Text>
+                </HStack>
+              ))}
+            </VStack>
+          ) : (
+            <Text className='text-gray-400 text-center py-4'>
+              No recent scans
+            </Text>
+          )} */}
 
-          <TouchableOpacity
-            style={styles.manualButton}
+          <Button
+            size='lg'
+            className='bg-purple-600 rounded-xl'
             onPress={handleManualScan}
           >
-            <Ionicons name='keypad' size={20} color={Colors.white} />
-            <Text style={styles.manualButtonText}>Manual Entry</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+            <HStack space='sm' className='items-center'>
+              <Ionicons name='keypad' size={20} color='white' />
+              <ButtonText className='text-white font-bold'>
+                Manual Entry
+              </ButtonText>
+            </HStack>
+          </Button>
+        </VStack>
+      </Box>
 
-      <Modal
-        visible={showModal}
-        transparent
-        animationType='slide'
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Product Scanned</Text>
+      {/* Product Scan Modal */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+        <ModalBackdrop className='bg-black/70' />
+        <ModalContent className='m-6 max-w-md bg-white'>
+          <ModalHeader>
+            <Text className='text-2xl font-bold text-gray-900'>
+              Product Scanned
+            </Text>
+            <ModalCloseButton
+              onPress={() => {
+                setShowModal(false)
+                setScannedProduct(null)
+                setScannedUPC(null)
+                setIsScanning(true)
+              }}
+            >
+              <Ionicons name='close' size={24} color='#6B7280' />
+            </ModalCloseButton>
+          </ModalHeader>
 
+          <ModalBody>
             {scannedProduct && (
-              <>
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{scannedProduct.name}</Text>
-                  <Text style={styles.productDetails}>
-                    {scannedProduct.size} • Current Stock:{' '}
-                    {scannedProduct.currentStock} {scannedProduct.unit}
+              <VStack space='lg'>
+                <VStack space='sm'>
+                  <Text className='text-xl font-bold text-gray-900'>
+                    {scannedProduct.name}
                   </Text>
-                </View>
+                  <Text className='text-gray-600'>
+                    {scannedProduct.sku && `SKU: ${scannedProduct.sku} • `}
+                    Current: {scannedProduct.currentStock}{' '}
+                    {scannedProduct.currentStock > 1
+                      ? pluralize(scannedProduct.container || 'unit')
+                      : scannedProduct.container}
+                    {scannedProduct.parLevel > 0 &&
+                      ` • Par: ${scannedProduct.parLevel}`}
+                  </Text>
+                </VStack>
 
-                <View style={styles.quantityInput}>
-                  <Text style={styles.inputLabel}>Count Quantity</Text>
-                  <View style={styles.quantityControls}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
+                <VStack space='sm'>
+                  <Text className='text-gray-700 font-medium'>
+                    Count Quantity
+                  </Text>
+                  <HStack className='justify-center items-center' space='lg'>
+                    <Pressable
+                      className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
                       onPress={() =>
                         setQuantity(
                           String(Math.max(0, parseFloat(quantity) - 1))
                         )
                       }
                     >
-                      <Ionicons
-                        name='remove'
-                        size={24}
-                        color={Colors.primary}
+                      <Ionicons name='remove' size={24} color='#8B5CF6' />
+                    </Pressable>
+
+                    <Input variant='outline' size='md' className='w-20'>
+                      <InputField
+                        value={quantity}
+                        onChangeText={setQuantity}
+                        keyboardType='decimal-pad'
+                        className='text-center text-2xl font-bold'
+                        selectTextOnFocus
                       />
-                    </TouchableOpacity>
-                    <TextInput
-                      style={styles.quantityField}
-                      value={quantity}
-                      onChangeText={setQuantity}
-                      keyboardType='decimal-pad'
-                      selectTextOnFocus
-                    />
-                    <TouchableOpacity
-                      style={styles.quantityButton}
+                    </Input>
+
+                    <Pressable
+                      className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
                       onPress={() =>
                         setQuantity(String(parseFloat(quantity) + 1))
                       }
                     >
-                      <Ionicons name='add' size={24} color={Colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.modalButtons}>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => {
-                      setShowModal(false)
-                      setIsScanning(true)
-                    }}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={handleSaveCount}
-                  >
-                    <Text style={styles.saveButtonText}>Save Count</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
+                      <Ionicons name='add' size={24} color='#8B5CF6' />
+                    </Pressable>
+                  </HStack>
+                </VStack>
+              </VStack>
             )}
-          </View>
-        </View>
+          </ModalBody>
+
+          <ModalFooter>
+            <HStack space='md' className='w-full'>
+              <Button
+                variant='outline'
+                size='lg'
+                className='flex-1 border-gray-300'
+                onPress={() => {
+                  setShowModal(false)
+                  setScannedProduct(null)
+                  setScannedUPC(null)
+                  setIsScanning(true)
+                }}
+              >
+                <ButtonText className='text-gray-700'>Cancel</ButtonText>
+              </Button>
+
+              <Button
+                size='lg'
+                className='flex-1 bg-purple-600'
+                onPress={handleSaveCount}
+              >
+                <ButtonText className='text-white font-bold'>
+                  Save Count
+                </ButtonText>
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
       </Modal>
-    </LinearGradient>
+    </Box>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  mockCamera: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cameraPlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cameraText: {
-    fontSize: 18,
-    color: Colors.white,
-    marginTop: Spacing.md,
-    fontWeight: 600,
-  },
-  cameraSubtext: {
-    fontSize: 14,
-    color: Colors.gray[400],
-    marginTop: Spacing.xs,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-between',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xxl,
-    paddingBottom: Spacing.lg,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  headerButton: {
-    padding: Spacing.sm,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 600,
-    color: Colors.white,
-  },
-  scanArea: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scanFrame: {
-    width: 250,
-    height: 250,
-    position: 'relative',
-  },
-  scanCorner: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderColor: Colors.primary,
-    borderWidth: 3,
-  },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderLeftWidth: 0,
-    borderBottomWidth: 0,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-  },
-  scanHint: {
-    marginTop: Spacing.lg,
-    fontSize: 16,
-    color: Colors.white,
-    textAlign: 'center',
-  },
-  footer: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    padding: Spacing.lg,
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-  },
-  recentScansHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  recentScansTitle: {
-    fontSize: 16,
-    fontWeight: 600,
-    color: Colors.white,
-  },
-  clearButton: {
-    fontSize: 14,
-    color: Colors.primary,
-  },
-  recentScansList: {
-    marginBottom: Spacing.lg,
-  },
-  recentScanItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  recentScanName: {
-    fontSize: 14,
-    color: Colors.white,
-  },
-  recentScanQuantity: {
-    fontSize: 14,
-    color: Colors.gray[400],
-  },
-  manualButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-  },
-  manualButtonText: {
-    marginLeft: Spacing.sm,
-    fontSize: 16,
-    fontWeight: 600,
-    color: Colors.white,
-  },
-  permissionText: {
-    fontSize: 18,
-    color: Colors.gray[600],
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  permissionButton: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-  },
-  permissionButtonText: {
-    color: Colors.white,
-    fontWeight: 600,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 700,
-    color: Colors.gray[900],
-    marginBottom: Spacing.lg,
-    textAlign: 'center',
-  },
-  productInfo: {
-    marginBottom: Spacing.lg,
-  },
-  productName: {
-    fontSize: 18,
-    fontWeight: 600,
-    color: Colors.gray[900],
-    marginBottom: Spacing.xs,
-  },
-  productDetails: {
-    fontSize: 14,
-    color: Colors.gray[600],
-  },
-  quantityInput: {
-    marginBottom: Spacing.lg,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: 500,
-    color: Colors.gray[700],
-    marginBottom: Spacing.sm,
-  },
-  quantityControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quantityButton: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.gray[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quantityField: {
-    marginHorizontal: Spacing.lg,
-    fontSize: 32,
-    fontWeight: 700,
-    color: Colors.gray[900],
-    minWidth: 80,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.gray[300],
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: 500,
-    color: Colors.gray[700],
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: 600,
-    color: Colors.white,
-  },
-})

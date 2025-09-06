@@ -100,10 +100,6 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
     }
   )
 
-
-
-
-
   // Get inventory levels
   fastify.get(
     '/levels',
@@ -542,6 +538,55 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
         success: true,
         data: updatedItem,
       }
+    }
+  )
+
+  // Lookup UPC
+  fastify.get(
+    '/products/upc/:upc',
+    {
+      preHandler: [authMiddleware, requirePermission('products', 'read')],
+    },
+    async (request: any, reply) => {
+      const { upc } = request.params as { upc: string }
+
+      const product = await fastify.prisma.product.findFirst({
+        where: {
+          upc: { contains: upc, mode: 'insensitive' },
+          organizationId: getOrganizationId(request),
+        },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          inventoryItems: {
+            select: {
+              id: true,
+              currentQuantity: true,
+              maximumQuantity: true,
+              minimumQuantity: true,
+              location: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!product) {
+        return {
+          success: false,
+          error: 'Inventory item not found',
+        }
+      }
+
+      return { success: true, data: { product } }
     }
   )
 }
