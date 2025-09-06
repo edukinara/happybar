@@ -197,9 +197,9 @@ export default function CountSetupScreen() {
       //   areas: allAreas
       // })
 
-      // For now, create in local store
-      const { createCountSession } = useCountStore.getState()
-      const sessionId = createCountSession({
+      // Create count session with API integration
+      const { createCountSessionWithAPI } = useCountStore.getState()
+      const sessionId = await createCountSessionWithAPI({
         name: countName,
         type: countType,
         status: 'IN_PROGRESS',
@@ -210,7 +210,7 @@ export default function CountSetupScreen() {
         completedAt: null,
       })
 
-      console.log('Count session created:', sessionId)
+      console.log('Count session created with API:', sessionId)
 
       // Navigate directly to scanner to start counting
       navigation.reset({

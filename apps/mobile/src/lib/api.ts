@@ -93,3 +93,93 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_URL)
+
+// Count-related API functions
+export const countApi = {
+  // Create a new inventory count
+  async createCount(data: {
+    locationId: string
+    name?: string
+    type?: 'FULL' | 'CYCLE' | 'SPOT'
+    notes?: string
+    areas?: Array<{ name: string; order: number }>
+  }) {
+    return apiClient.post('/api/counts', data)
+  },
+
+  // Get all counts
+  async getCounts(params?: {
+    page?: number
+    limit?: number
+    status?: string
+    locationId?: string
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params?.page) searchParams.append('page', params.page.toString())
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    if (params?.status) searchParams.append('status', params.status)
+    if (params?.locationId) searchParams.append('locationId', params.locationId)
+
+    const endpoint = `/api/counts${searchParams.toString() ? '?' + searchParams.toString() : ''}`
+    return apiClient.get(endpoint)
+  },
+
+  // Get specific count
+  async getCount(id: string) {
+    return apiClient.get(`/api/counts/${id}`)
+  },
+
+  // Update count
+  async updateCount(id: string, data: {
+    name?: string
+    notes?: string
+    status?: 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED'
+  }) {
+    return apiClient.put(`/api/counts/${id}`, data)
+  },
+
+  // Delete count (drafts only)
+  async deleteCount(id: string) {
+    return apiClient.delete(`/api/counts/${id}`)
+  },
+
+  // Add item to count
+  async addCountItem(countId: string, data: {
+    areaId: string
+    productId: string
+    fullUnits?: number
+    partialUnit?: number
+    notes?: string
+  }) {
+    return apiClient.post(`/api/counts/${countId}/items`, data)
+  },
+
+  // Update count item
+  async updateCountItem(countId: string, itemId: string, data: {
+    fullUnits?: number
+    partialUnit?: number
+    notes?: string
+  }) {
+    return apiClient.put(`/api/counts/${countId}/items/${itemId}`, data)
+  },
+
+  // Delete count item
+  async deleteCountItem(countId: string, itemId: string) {
+    return apiClient.delete(`/api/counts/${countId}/items/${itemId}`)
+  },
+
+  // Get count report
+  async getCountReport(id: string) {
+    return apiClient.get(`/api/counts/${id}/report`)
+  },
+
+  // Add area to count
+  async addCountArea(countId: string, data: { name: string; order?: number }) {
+    return apiClient.post(`/api/counts/${countId}/areas`, data)
+  },
+
+  // Create default areas for count
+  async createDefaultAreas(countId: string) {
+    return apiClient.post(`/api/counts/${countId}/areas/default`, {})
+  },
+}

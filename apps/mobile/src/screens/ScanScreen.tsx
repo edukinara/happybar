@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { CameraView, useCameraPermissions } from 'expo-camera'
+import { CameraView, useCameraPermissions, Camera } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Dimensions } from 'react-native'
+import { Alert, Dimensions, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
@@ -35,6 +35,7 @@ import { useCountStore } from '../stores/countStore'
 export function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions()
   const [isScanning, setIsScanning] = useState(true)
+  const [isCameraReady, setIsCameraReady] = useState(false)
   const [scannedProduct, setScannedProduct] = useState<{
     id: string
     inventoryItemId: string
@@ -60,7 +61,8 @@ export function ScanScreen() {
     getRecentCountItems, 
     activeSessionId,
     getActiveSession,
-    completeCountSession
+    completeCountSession,
+    saveCountItemToAPI
   } = useCountStore()
   const recentScans = getRecentCountItems(1)
   const activeSession = getActiveSession()
@@ -145,6 +147,29 @@ export function ScanScreen() {
       setScannedUPC(null)
       setQuantity('1')
       setShowModal(false)
+      setIsCameraReady(false)
+
+      // iOS specific camera initialization
+      if (Platform.OS === 'ios') {
+        // Add a small delay for iOS camera initialization
+        setTimeout(() => {
+          if (permission?.granted) {
+            setIsCameraReady(true)
+          }
+        }, 500)
+      }
+
+      // Request permission on focus if not granted
+      if (!permission?.granted) {
+        requestPermission().then((result) => {
+          if (result.granted && Platform.OS === 'ios') {
+            // Additional delay after permission granted on iOS
+            setTimeout(() => {
+              setIsCameraReady(true)
+            }, 1000)
+          }
+        })
+      }
 
       return () => {
         // Cleanup when screen loses focus
@@ -152,9 +177,18 @@ export function ScanScreen() {
         setScannedProduct(null)
         setScannedUPC(null)
         setShowModal(false)
+        setIsCameraReady(false)
       }
-    }, [])
+    }, [permission, requestPermission])
   )
+
+  // Handle camera ready state for Android and other platforms
+  useEffect(() => {
+    if (permission?.granted && Platform.OS !== 'ios') {
+      // For Android, camera is usually ready immediately after permission is granted
+      setIsCameraReady(true)
+    }
+  }, [permission?.granted])
 
   const handleManualScan = () => {
     // Mock manual scan for testing
@@ -176,14 +210,14 @@ export function ScanScreen() {
     setShowModal(true)
   }
 
-  const handleSaveCount = () => {
+  const handleSaveCount = async () => {
     if (!scannedProduct) return
     
     const countedQuantity = parseFloat(quantity)
     const variance = countedQuantity - scannedProduct.currentStock
     
-    // Save to count store
-    addCountItem({
+    // Create count item object
+    const countItem = {
       inventoryItemId: scannedProduct.inventoryItemId,
       productId: scannedProduct.id,
       productName: scannedProduct.name,
@@ -196,7 +230,24 @@ export function ScanScreen() {
       variance,
       parLevel: scannedProduct.parLevel,
       countSessionId: activeSessionId,
-    })
+    }
+    
+    // Save to count store locally first
+    addCountItem(countItem)
+    
+    // Save to API in the background
+    try {
+      const fullCountItem = {
+        ...countItem,
+        id: `count-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date().toISOString(),
+      }
+      await saveCountItemToAPI(fullCountItem)
+      console.log('Count item saved to API successfully')
+    } catch (error) {
+      console.error('Failed to save count item to API:', error)
+      // Item is already saved locally, so we can continue
+    }
 
     // Reset all scan-related state
     setShowModal(false)
@@ -295,8 +346,29 @@ export function ScanScreen() {
             'codabar',
           ],
         }}
-        onBarcodeScanned={isScanning ? handleBarCodeScanned : undefined}
+        onBarcodeScanned={isScanning && isCameraReady ? handleBarCodeScanned : undefined}
+        onCameraReady={() => {
+          console.log('Camera ready callback triggered')
+          if (Platform.OS !== 'ios') {
+            // For non-iOS platforms, set ready immediately
+            setIsCameraReady(true)
+          } else {
+            // For iOS, add a small delay to ensure camera is fully initialized
+            setTimeout(() => {
+              console.log('iOS camera ready after delay')
+              setIsCameraReady(true)
+            }, 200)
+          }
+        }}
       />
+
+      {/* Camera Loading Overlay */}
+      {!isCameraReady && (
+        <Box className='absolute inset-0 bg-black/70 justify-center items-center'>
+          <Spinner size='large' color='white' />
+          <Text className='text-white text-lg mt-4'>Initializing camera...</Text>
+        </Box>
+      )}
 
       {/* Header Overlay */}
       <Box

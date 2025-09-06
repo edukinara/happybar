@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { countApi } from '../lib/api'
 
 export interface CountItem {
   id: string
@@ -30,6 +31,8 @@ export interface CountSession {
   completedAt: string | null
   totalItems: number
   totalVariance: number
+  apiId?: string // API count ID when synced
+  areas?: Array<{ id: string; name: string; order: number }>
 }
 
 interface CountStore {
@@ -52,10 +55,13 @@ interface CountStore {
   
   // Actions for count sessions
   createCountSession: (session: Omit<CountSession, 'id' | 'startedAt' | 'totalItems' | 'totalVariance'>) => string
+  createCountSessionWithAPI: (session: Omit<CountSession, 'id' | 'startedAt' | 'totalItems' | 'totalVariance'>) => Promise<string>
   updateCountSession: (id: string, updates: Partial<CountSession>) => void
   completeCountSession: (id: string) => void
   setActiveSession: (id: string | null) => void
   getActiveSession: () => CountSession | null
+  syncSessionWithAPI: (sessionId: string) => Promise<void>
+  saveCountItemToAPI: (item: CountItem) => Promise<void>
   
   // Utilities
   getTotalCounts: () => number
@@ -141,6 +147,47 @@ export const useCountStore = create<CountStore>()((set, get) => ({
         return sessionId
       },
 
+      createCountSessionWithAPI: async (sessionData) => {
+        try {
+          // Create count via API first
+          const response = await countApi.createCount({
+            locationId: sessionData.locationId,
+            name: sessionData.name,
+            type: sessionData.type,
+            notes: sessionData.notes,
+            areas: sessionData.storageAreas.map((name, index) => ({ name, order: index }))
+          })
+
+          const apiCount = response.data
+          
+          // Create local session with API ID
+          const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+          const newSession: CountSession = {
+            ...sessionData,
+            id: sessionId,
+            apiId: apiCount.id,
+            areas: apiCount.areas,
+            startedAt: new Date().toISOString(),
+            totalItems: 0,
+            totalVariance: 0,
+          }
+          
+          set((state) => ({
+            countSessions: [newSession, ...state.countSessions],
+            activeSessionId: sessionId,
+          }))
+          
+          // Update count status to IN_PROGRESS
+          await countApi.updateCount(apiCount.id, { status: 'IN_PROGRESS' })
+          
+          return sessionId
+        } catch (error) {
+          console.error('Failed to create count session with API:', error)
+          // Fallback to local creation if API fails
+          return get().createCountSession(sessionData)
+        }
+      },
+
       updateCountSession: (id, updates) => {
         set((state) => ({
           countSessions: state.countSessions.map(session =>
@@ -185,6 +232,69 @@ export const useCountStore = create<CountStore>()((set, get) => ({
         return {
           totalItems: sessionItems.length,
           totalVariance: sessionItems.reduce((sum, item) => sum + Math.abs(item.variance), 0),
+        }
+      },
+
+      // API integration methods
+      syncSessionWithAPI: async (sessionId) => {
+        const session = get().countSessions.find(s => s.id === sessionId)
+        if (!session || session.apiId) return // Already synced or doesn't exist
+
+        try {
+          const response = await countApi.createCount({
+            locationId: session.locationId,
+            name: session.name,
+            type: session.type,
+            notes: session.notes,
+            areas: session.storageAreas.map((name, index) => ({ name, order: index }))
+          })
+
+          const apiCount = response.data
+          
+          // Update local session with API ID
+          get().updateCountSession(sessionId, {
+            apiId: apiCount.id,
+            areas: apiCount.areas
+          })
+
+          // Update API status to IN_PROGRESS if session is active
+          if (session.status === 'IN_PROGRESS') {
+            await countApi.updateCount(apiCount.id, { status: 'IN_PROGRESS' })
+          }
+        } catch (error) {
+          console.error('Failed to sync session with API:', error)
+        }
+      },
+
+      saveCountItemToAPI: async (item) => {
+        try {
+          const session = get().countSessions.find(s => s.id === item.countSessionId)
+          if (!session?.apiId || !session.areas) {
+            console.warn('Cannot save item to API: session not synced or no areas')
+            return
+          }
+
+          // Find the appropriate area for this item
+          // For now, we'll use the first area - in a real app, you'd determine this based on item location
+          const area = session.areas[0]
+          if (!area) {
+            console.warn('No areas available for this session')
+            return
+          }
+
+          // Convert our local item format to API format
+          await countApi.addCountItem(session.apiId, {
+            areaId: area.id,
+            productId: item.productId,
+            fullUnits: Math.floor(item.countedQuantity),
+            partialUnit: item.countedQuantity % 1,
+            notes: `Scanned via mobile app - Barcode: ${item.barcode}`
+          })
+
+          console.log('Successfully saved count item to API')
+        } catch (error) {
+          console.error('Failed to save count item to API:', error)
+          // In a production app, you might want to queue failed items for retry
         }
       },
     }))
