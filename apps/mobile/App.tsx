@@ -7,8 +7,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect } from 'react'
+import { SafeAreaView } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { GluestackUIProvider } from './components/ui/gluestack-ui-provider'
 import { queryClient, setupPeriodicSync } from './src/lib/queryClient'
@@ -44,7 +44,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1 }}>
         <QueryClientProvider client={queryClient}>
           <NavigationContainer>
             <GluestackUIProvider>
@@ -53,7 +53,7 @@ export default function App() {
             </GluestackUIProvider>
           </NavigationContainer>
         </QueryClientProvider>
-      </SafeAreaProvider>
+      </SafeAreaView>
     </GestureHandlerRootView>
   )
 }

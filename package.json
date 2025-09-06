@@ -27,7 +27,9 @@
     "deploy:admin": "cd apps/admin && vercel --prod",
     "deploy:api": "railway up",
     "deploy:mobile": "cd apps/mobile && eas build --platform all",
-    "deploy:all": "pnpm run deploy:api && pnpm run deploy:web && pnpm run deploy:admin"
+    "deploy:all": "pnpm run deploy:api && pnpm run deploy:web && pnpm run deploy:admin",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "devDependencies": {
     "@turbo/gen": "^2.3.0",
@@ -44,12 +46,15 @@
   },
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
-    "react": "19.0.0"
+    "react": "19.0.0",
+    "expo": "~53.0.22",
+    "react-native": "0.79.6"
   },
   "pnpm": {
     "overrides": {
       "react": "19.0.0",
-      "react-dom": "19.0.0"
+      "react-dom": "19.0.0",
+      "react-native-svg": "15.11.2"
     }
   }
 }

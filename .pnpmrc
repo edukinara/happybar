@@ -1,0 +1,5 @@
+public-hoist-pattern[]=*@gluestack-ui*
+public-hoist-pattern[]=*nativewind*
+public-hoist-pattern[]=*tailwindcss*
+public-hoist-pattern[]=*react-native-svg*
+shamefully-hoist=true
