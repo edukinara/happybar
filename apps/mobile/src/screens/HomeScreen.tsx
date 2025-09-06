@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
 import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
 
 import { Box } from '@/components/ui/box'
 import { Card } from '@/components/ui/card'
@@ -19,6 +20,7 @@ import { useAuthStore } from '../stores/authStore'
 export function HomeScreen() {
   const user = useAuthStore((state) => state.user)
   const insets = useSafeAreaInsets()
+  const navigation = useNavigation()
 
   // Fetch real data
   const { data: analytics, isLoading: analyticsLoading } =
@@ -152,7 +154,10 @@ export function HomeScreen() {
           </Pressable>
         </HStack>
         <HStack space='md'>
-          <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
+          <Pressable 
+            className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
+            onPress={() => navigation.navigate('Count' as never)}
+          >
             <VStack className='items-center' space='sm'>
               <Box className='size-12 bg-amber-100 rounded-full justify-center items-center'>
                 <Ionicons name='clipboard' size={24} color='#D97706' />

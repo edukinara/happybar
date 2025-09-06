@@ -2,6 +2,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 
 // Types for inventory data
+export interface Location {
+  id: string
+  name: string
+  organizationId: string
+  createdAt: string
+  updatedAt: string
+  _count?: {
+    inventoryItems: number
+  }
+}
 export interface Product {
   id: string
   name: string
@@ -280,6 +290,20 @@ export const useStartInventoryCount = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.counts() })
+    },
+  })
+}
+
+// Locations hook
+export const useLocations = () => {
+  return useQuery({
+    queryKey: ['locations'],
+    queryFn: async () => {
+      const response = await apiClient.get<{
+        success: boolean
+        data: { locations: Location[] }
+      }>('/api/locations')
+      return response.data.locations
     },
   })
 }

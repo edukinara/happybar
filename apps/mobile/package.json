@@ -47,6 +47,7 @@
     "hoist-non-react-statics": "^3.3.2",
     "invariant": "^2.2.4",
     "loose-envify": "^1.4.0",
+    "lucide-react-native": "^0.542.0",
     "nativewind": "^4.1.23",
     "pluralize": "^8.0.0",
     "react": "19.0.0",

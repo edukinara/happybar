@@ -3,11 +3,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '../stores/authStore';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
+import { CountNavigator } from './CountNavigator';
 import { Colors } from '../constants/theme';
 
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  Count: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,7 +33,10 @@ export function RootNavigator() {
       }}
     >
       {isAuthenticated ? (
-        <Stack.Screen name="Main" component={MainNavigator} />
+        <>
+          <Stack.Screen name="Main" component={MainNavigator} />
+          <Stack.Screen name="Count" component={CountNavigator} />
+        </>
       ) : (
         <Stack.Screen name="Auth" component={AuthNavigator} />
       )}
