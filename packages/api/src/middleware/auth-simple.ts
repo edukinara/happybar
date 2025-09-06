@@ -93,7 +93,6 @@ export const createAuthMiddleware = (prisma: PrismaClient) => {
       headers: request.headers as Record<string, string>
     })
 
-
     if (!session) {
       throw new AppError('Authentication required', ErrorCode.UNAUTHORIZED, 401)
     }

@@ -7,7 +7,6 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect } from 'react'
-import { SafeAreaView } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 import { GluestackUIProvider } from './components/ui/gluestack-ui-provider'
@@ -44,16 +43,14 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <QueryClientProvider client={queryClient}>
-          <NavigationContainer>
-            <GluestackUIProvider>
-              <RootNavigator />
-              <StatusBar style='auto' />
-            </GluestackUIProvider>
-          </NavigationContainer>
-        </QueryClientProvider>
-      </SafeAreaView>
+      <QueryClientProvider client={queryClient}>
+        <NavigationContainer>
+          <GluestackUIProvider>
+            <RootNavigator />
+            <StatusBar style='auto' />
+          </GluestackUIProvider>
+        </NavigationContainer>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   )
 }

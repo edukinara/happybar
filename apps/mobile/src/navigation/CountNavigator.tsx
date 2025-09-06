@@ -1,8 +1,7 @@
-import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import CountTypeScreen from '../screens/CountTypeScreen'
+import React from 'react'
 import CountSetupScreen from '../screens/CountSetupScreen'
-import { Colors } from '../constants/theme'
+import CountTypeScreen from '../screens/CountTypeScreen'
 
 export type CountStackParamList = {
   CountType: undefined
@@ -16,19 +15,13 @@ export function CountNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#F9FAFB' },
+        contentStyle: { backgroundColor: '#A855F7' },
         animation: 'slide_from_right',
         animationDuration: 200,
       }}
     >
-      <Stack.Screen 
-        name="CountType" 
-        component={CountTypeScreen}
-      />
-      <Stack.Screen 
-        name="CountSetup" 
-        component={CountSetupScreen}
-      />
+      <Stack.Screen name='CountType' component={CountTypeScreen} />
+      <Stack.Screen name='CountSetup' component={CountSetupScreen} />
     </Stack.Navigator>
   )
 }

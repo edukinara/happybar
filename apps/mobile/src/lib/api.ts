@@ -18,6 +18,7 @@ class ApiClient {
         'Authorization': `Bearer ${session.data.session.token}`,
       }
     }
+    
     return {
       'Content-Type': 'application/json',
     }
@@ -27,36 +28,17 @@ class ApiClient {
     const headers = await this.getAuthHeaders()
     const url = `${this.baseURL}${endpoint}`
 
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers,
-        credentials: 'omit',
-      })
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      credentials: 'omit',
+    })
 
-      const responseText = await response.text()
-
-      if (!response.ok) {
-        console.error('❌ API Error:', {
-          url,
-          status: response.status,
-          response: responseText,
-        })
-        throw new Error(
-          `HTTP error! status: ${response.status} - ${responseText}`
-        )
-      }
-
-      try {
-        return JSON.parse(responseText)
-      } catch (e) {
-        console.error('❌ JSON Parse Error:', { url, responseText })
-        throw new Error(`Failed to parse JSON response: ${e}`)
-      }
-    } catch (error) {
-      console.error('❌ API Error:', { url, error })
-      throw error
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
+
+    return response.json()
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {

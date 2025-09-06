@@ -81,12 +81,12 @@ export function InsightsScreen() {
   return (
     <LinearGradient
       colors={[colors.primary, colors.accent, '#A855F7']}
-      className='flex-1 pb-6'
+      style={{ flex: 1, paddingBottom: 24 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
       {/* Header */}
-      <SafeAreaView>
+      <SafeAreaView edges={['top']}>
         <HStack className='items-center justify-between p-4'>
           <Heading size='xl' className='text-white font-bold'>
             Insights

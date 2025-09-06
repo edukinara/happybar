@@ -1,26 +1,27 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAuthStore } from '../stores/authStore';
-import { AuthNavigator } from './AuthNavigator';
-import { MainNavigator } from './MainNavigator';
-import { CountNavigator } from './CountNavigator';
-import { Colors } from '../constants/theme';
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import React from 'react'
+import { CountHistoryScreen } from '../screens/CountHistoryScreen'
+import { useAuthStore } from '../stores/authStore'
+import { AuthNavigator } from './AuthNavigator'
+import { CountNavigator } from './CountNavigator'
+import { MainNavigator } from './MainNavigator'
 
 export type RootStackParamList = {
-  Auth: undefined;
-  Main: undefined;
-  Count: undefined;
-};
+  Auth: undefined
+  Main: undefined
+  Count: undefined
+  CountHistory: undefined
+}
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function RootNavigator() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const isLoading = useAuthStore((state) => state.isLoading)
 
   if (isLoading) {
     // TODO: Add a proper loading screen
-    return null;
+    return null
   }
 
   return (
@@ -34,12 +35,27 @@ export function RootNavigator() {
     >
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="Main" component={MainNavigator} />
-          <Stack.Screen name="Count" component={CountNavigator} />
+          <Stack.Screen name='Main' component={MainNavigator} />
+          <Stack.Screen
+            name='Count'
+            component={CountNavigator}
+            options={{
+              title: 'Count',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='CountHistory'
+            component={CountHistoryScreen}
+            options={{
+              title: 'Count History',
+              headerShown: false,
+            }}
+          />
         </>
       ) : (
-        <Stack.Screen name="Auth" component={AuthNavigator} />
+        <Stack.Screen name='Auth' component={AuthNavigator} />
       )}
     </Stack.Navigator>
-  );
+  )
 }

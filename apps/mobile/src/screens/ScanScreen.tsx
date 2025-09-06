@@ -28,8 +28,9 @@ import { VStack } from '@/components/ui/vstack'
 
 import pluralize from 'pluralize'
 import { useProductByUPC } from '../hooks/useInventoryData'
+import { useCountStore } from '../stores/countStore'
 
-const { width, height } = Dimensions.get('window')
+// Removed unused Dimensions import
 
 export function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions()
@@ -48,11 +49,21 @@ export function ScanScreen() {
   } | null>(null)
   const [quantity, setQuantity] = useState('1')
   const [showModal, setShowModal] = useState(false)
-  const [recentScans, setRecentScans] = useState<any[]>([])
   const [flashOn, setFlashOn] = useState(false)
   const [scannedUPC, setScannedUPC] = useState<string | null>(null)
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
+  
+  // Count store
+  const { 
+    addCountItem, 
+    getRecentCountItems, 
+    activeSessionId,
+    getActiveSession,
+    completeCountSession
+  } = useCountStore()
+  const recentScans = getRecentCountItems(1)
+  const activeSession = getActiveSession()
 
   // Query to lookup product by UPC
   const {
@@ -61,7 +72,7 @@ export function ScanScreen() {
     isError: lookupError,
   } = useProductByUPC(scannedUPC || '')
 
-  const handleBarCodeScanned = ({ type, data }: any) => {
+  const handleBarCodeScanned = ({ data }: any) => {
     if (!isScanning) return
 
     setIsScanning(false)
@@ -166,13 +177,26 @@ export function ScanScreen() {
   }
 
   const handleSaveCount = () => {
-    const scan = {
-      ...scannedProduct,
-      quantity: parseFloat(quantity),
-      timestamp: new Date().toISOString(),
-    }
-
-    setRecentScans([scan, ...recentScans])
+    if (!scannedProduct) return
+    
+    const countedQuantity = parseFloat(quantity)
+    const variance = countedQuantity - scannedProduct.currentStock
+    
+    // Save to count store
+    addCountItem({
+      inventoryItemId: scannedProduct.inventoryItemId,
+      productId: scannedProduct.id,
+      productName: scannedProduct.name,
+      sku: scannedProduct.sku,
+      barcode: scannedProduct.barcode,
+      unit: scannedProduct.unit,
+      container: scannedProduct.container,
+      currentStock: scannedProduct.currentStock,
+      countedQuantity,
+      variance,
+      parLevel: scannedProduct.parLevel,
+      countSessionId: activeSessionId,
+    })
 
     // Reset all scan-related state
     setShowModal(false)
@@ -181,14 +205,14 @@ export function ScanScreen() {
     setQuantity('1')
     setIsScanning(true)
 
-    // Navigate away first to stop camera, then show alert
+    // Navigate away first to stop camera, then show success alert
     navigation.navigate('Home' as never)
 
-    // Show alert after a brief delay to ensure navigation completes
+    // Show success alert after a brief delay
     setTimeout(() => {
       Alert.alert(
-        'Success',
-        `Count saved: ${scan.quantity} ${scan.unit} of ${scan.name}`
+        'Count Saved',
+        `${countedQuantity} ${scannedProduct.unit} of ${scannedProduct.name}`
       )
     }, 300)
   }
@@ -290,9 +314,25 @@ export function ScanScreen() {
               color='white'
             />
           </Pressable>
-          <Text className='text-white text-xl font-bold'>Quick Count</Text>
-          <Pressable className='w-12 h-12 rounded-full bg-black/30 justify-center items-center'>
-            <Ionicons name='help-circle-outline' size={24} color='white' />
+          <VStack className='items-center'>
+            <Text className='text-white text-xl font-bold'>
+              {activeSession ? activeSession.name : 'Quick Count'}
+            </Text>
+            {activeSession && (
+              <Text className='text-white/80 text-sm'>
+                {activeSession.type} • {activeSession.locationName}
+              </Text>
+            )}
+          </VStack>
+          <Pressable 
+            className='w-12 h-12 rounded-full bg-black/30 justify-center items-center'
+            onPress={() => activeSession && completeCountSession(activeSession.id)}
+          >
+            <Ionicons 
+              name={activeSession ? 'checkmark' : 'help-circle-outline'} 
+              size={24} 
+              color='white' 
+            />
           </Pressable>
         </HStack>
       </Box>
@@ -327,36 +367,44 @@ export function ScanScreen() {
         style={{ paddingBottom: insets.bottom + 20 }}
       >
         <VStack className='p-6 mb-16' space='lg'>
-          {/* <HStack className='justify-between items-center'>
-            <Text className='text-white text-lg font-bold'>
-              Recent Scans ({recentScans.length})
-            </Text>
-            {recentScans.length > 0 && (
-              <Pressable onPress={() => setRecentScans([])}>
-                <Text className='text-purple-400 font-medium'>Clear All</Text>
-              </Pressable>
-            )}
-          </HStack> */}
-
-          {/* {recentScans.length > 0 ? (
+          {recentScans.length > 0 && (
             <VStack space='sm'>
-              {recentScans.slice(0, 3).map((scan, index) => (
-                <HStack
-                  key={index}
-                  className='justify-between py-3 border-b border-white/10'
-                >
-                  <Text className='text-white font-medium'>{scan.name}</Text>
-                  <Text className='text-gray-400'>
-                    {scan.quantity} {scan.unit}
+              <HStack className='justify-between items-center'>
+                <Text className='text-white text-lg font-bold'>
+                  Last Scanned
+                </Text>
+                <Pressable onPress={() => navigation.navigate('CountHistory' as never)}>
+                  <Text className='text-purple-400 font-medium'>View All</Text>
+                </Pressable>
+              </HStack>
+
+              <HStack
+                className='justify-between items-center py-3 px-4 bg-white/10 rounded-lg backdrop-blur-sm'
+              >
+                <VStack className='flex-1'>
+                  <Text className='text-white font-medium' numberOfLines={1}>
+                    {recentScans[0].productName}
                   </Text>
-                </HStack>
-              ))}
+                  <Text className='text-gray-400 text-sm'>
+                    {new Date(recentScans[0].timestamp).toLocaleTimeString()}
+                  </Text>
+                </VStack>
+                <VStack className='items-end'>
+                  <Text className='text-white font-bold'>
+                    {recentScans[0].countedQuantity} {recentScans[0].unit}
+                  </Text>
+                  <Text 
+                    className={`text-sm font-medium ${
+                      recentScans[0].variance === 0 ? 'text-green-400' : 
+                      recentScans[0].variance > 0 ? 'text-blue-400' : 'text-orange-400'
+                    }`}
+                  >
+                    {recentScans[0].variance > 0 ? '+' : ''}{recentScans[0].variance}
+                  </Text>
+                </VStack>
+              </HStack>
             </VStack>
-          ) : (
-            <Text className='text-gray-400 text-center py-4'>
-              No recent scans
-            </Text>
-          )} */}
+          )}
 
           <Button
             size='lg'

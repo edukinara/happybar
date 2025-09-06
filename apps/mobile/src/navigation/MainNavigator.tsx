@@ -129,6 +129,7 @@ export function MainNavigator() {
         options={{
           title: 'Quick Count',
           tabBarLabel: '',
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -136,6 +137,7 @@ export function MainNavigator() {
         component={InsightsScreen}
         options={{
           title: 'Insights',
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -143,6 +145,7 @@ export function MainNavigator() {
         component={SettingsScreen}
         options={{
           title: 'Settings',
+          headerShown: false,
         }}
       />
     </Tab.Navigator>

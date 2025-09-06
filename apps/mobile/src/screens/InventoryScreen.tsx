@@ -175,29 +175,54 @@ export function InventoryScreen() {
   return (
     <LinearGradient
       colors={[colors.primary, colors.accent, '#A855F7']}
-      className='flex-1 pb-4'
+      style={{ flex: 1, paddingBottom: 16 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
       {/* Header */}
-      <SafeAreaView>
+      <SafeAreaView edges={['top']}>
         <HStack className='items-center justify-between p-4'>
           <Heading size='xl' className='text-white font-bold'>
             Inventory
           </Heading>
-          <Pressable
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <Ionicons name='add' size={24} color='white' />
-          </Pressable>
+          <HStack style={{ gap: 8 }}>
+            <Pressable
+              onPress={() => refetch()}
+              disabled={isFetching}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backdropFilter: 'blur(10px)',
+                opacity: isFetching ? 0.5 : 1,
+              }}
+            >
+              <Ionicons
+                name='refresh'
+                size={20}
+                color='white'
+                style={{
+                  transform: [{ rotate: isFetching ? '180deg' : '0deg' }],
+                }}
+              />
+            </Pressable>
+            <Pressable
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <Ionicons name='add' size={24} color='white' />
+            </Pressable>
+          </HStack>
         </HStack>
       </SafeAreaView>
 
@@ -210,55 +235,29 @@ export function InventoryScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <VStack style={{ gap: 20 }}>
+        <VStack style={{ gap: 16 }}>
           {/* Search Bar */}
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder='Search products...'
             style={{
-              borderRadius: 16,
-              padding: 16,
+              flex: 1,
+              backgroundColor: 'rgb(255, 255, 255)',
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 16,
+              color: '#374151',
+              borderWidth: 1,
+              borderColor: 'rgba(99, 102, 241, 0.2)',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.05,
               shadowRadius: 12,
               elevation: 5,
-              borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
             }}
-          >
-            <HStack style={{ alignItems: 'center', gap: 12 }}>
-              <Box
-                style={{
-                  backgroundColor: colors.primaryLight,
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Ionicons name='search' size={16} color={colors.primary} />
-              </Box>
-              <TextInput
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder='Search products...'
-                style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  borderRadius: 12,
-                  padding: 14,
-                  fontSize: 16,
-                  color: '#374151',
-                  borderWidth: 1,
-                  borderColor: 'rgba(99, 102, 241, 0.2)',
-                }}
-                placeholderTextColor='#9CA3AF'
-              />
-            </HStack>
-          </LinearGradient>
+            placeholderTextColor='#9CA3AF'
+          />
 
           {/* Filter Buttons */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>

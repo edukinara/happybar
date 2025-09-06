@@ -291,7 +291,7 @@ async function buildServer() {
       try {
         // Check if this is a mobile app request
         const userAgent = request.headers['user-agent'] || ''
-        const isMobileApp = userAgent.includes('okhttp')
+        const isMobileApp = userAgent.includes('okhttp') || userAgent.includes('HappyBar') || userAgent.includes('CFNetwork')
 
         if (isMobileApp && request.headers.authorization) {
           // For mobile app, try direct token validation via Redis

@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
 import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
 
 import { Box } from '@/components/ui/box'
 import { Card } from '@/components/ui/card'
@@ -16,6 +16,7 @@ import { HappyBarLogo } from '../components/brand/HappyBarLogo'
 import { useInventoryAnalytics } from '../hooks/useAnalyticsData'
 import { useLowStockItems } from '../hooks/useInventoryData'
 import { useAuthStore } from '../stores/authStore'
+import { useCountStore } from '../stores/countStore'
 
 export function HomeScreen() {
   const user = useAuthStore((state) => state.user)
@@ -25,7 +26,12 @@ export function HomeScreen() {
   // Fetch real data
   const { data: analytics, isLoading: analyticsLoading } =
     useInventoryAnalytics('7d')
-  const { data: lowStockItems, isLoading: lowStockLoading } = useLowStockItems()
+  const { isLoading: lowStockLoading } = useLowStockItems()
+
+  // Count store data
+  const { getTotalCounts, getActiveSession } = useCountStore()
+  const totalCounts = getTotalCounts()
+  const activeSession = getActiveSession()
 
   const isLoading = analyticsLoading || lowStockLoading
 
@@ -127,60 +133,164 @@ export function HomeScreen() {
     </VStack>
   )
 
-  const renderQuickActions = () => (
-    <VStack className='mb-8' space='lg'>
-      <Text className='text-white text-xl font-bold'>Quick Actions</Text>
-      <VStack space='md'>
-        <HStack space='md'>
-          <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
-            <VStack className='items-center' space='sm'>
-              <Box className='size-12 bg-purple-100 rounded-full justify-center items-center'>
-                <Ionicons name='scan' size={24} color='#7C3AED' />
-              </Box>
-              <Text className='text-sm font-semibold text-gray-900'>
-                Quick Count
-              </Text>
-            </VStack>
-          </Pressable>
-          <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
-            <VStack className='items-center' space='sm'>
-              <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
-                <Ionicons name='add-circle' size={24} color='#059669' />
-              </Box>
-              <Text className='text-sm font-semibold text-gray-900'>
-                Add Product
-              </Text>
-            </VStack>
-          </Pressable>
-        </HStack>
-        <HStack space='md'>
-          <Pressable 
-            className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
-            onPress={() => navigation.navigate('Count' as never)}
+  const renderStartCountButton = () => {
+    return (
+      <VStack className='mb-8' space='lg'>
+        <LinearGradient
+          colors={['#8B5CF6', '#6366F1']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            borderRadius: 24,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.3,
+            shadowRadius: 16,
+            elevation: 8,
+          }}
+        >
+          <Pressable
+            className='p-6 border-2 border-white/20 rounded-3xl'
+            onPress={() => {
+              if (activeSession) {
+                // Resume active count
+                navigation.navigate('Scan' as never)
+              } else {
+                // Start new count - go directly to setup with progressive flow
+                navigation.navigate('Count' as never)
+              }
+            }}
           >
-            <VStack className='items-center' space='sm'>
-              <Box className='size-12 bg-amber-100 rounded-full justify-center items-center'>
-                <Ionicons name='clipboard' size={24} color='#D97706' />
+            <VStack className='items-center' space='md'>
+              <Box className='size-16 bg-white/20 rounded-full justify-center items-center border border-white/30'>
+                <Ionicons
+                  name={activeSession ? 'play-circle' : 'add-circle'}
+                  size={32}
+                  color='white'
+                />
               </Box>
-              <Text className='text-sm font-semibold text-gray-900'>
-                Full Count
-              </Text>
+              <VStack className='items-center' space='xs'>
+                <Text className='text-white text-xl font-bold'>
+                  {activeSession ? 'Resume Count' : 'Start New Count'}
+                </Text>
+                {activeSession ? (
+                  <VStack className='items-center' space='xs'>
+                    <Text className='text-white/80 text-sm text-center'>
+                      {activeSession.name}
+                    </Text>
+                    <Text className='text-white/60 text-xs'>
+                      {activeSession.type} • {activeSession.locationName}
+                    </Text>
+                  </VStack>
+                ) : (
+                  <Text className='text-white/80 text-sm text-center'>
+                    Create a new inventory count
+                  </Text>
+                )}
+              </VStack>
             </VStack>
           </Pressable>
-          <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
-            <VStack className='items-center' space='sm'>
-              <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
-                <Ionicons name='cart' size={24} color='#2563EB' />
-              </Box>
-              <Text className='text-sm font-semibold text-gray-900'>
-                Create Order
-              </Text>
-            </VStack>
-          </Pressable>
-        </HStack>
+        </LinearGradient>
       </VStack>
-    </VStack>
-  )
+    )
+  }
+
+  const renderQuickActions = () => {
+    const hasActiveFullOrCycleCount =
+      activeSession &&
+      (activeSession.type === 'FULL' || activeSession.type === 'CYCLE')
+
+    return (
+      <VStack className='mb-8' space='lg'>
+        <Text className='text-white text-xl font-bold'>Quick Actions</Text>
+        <VStack space='md'>
+          <HStack space='md'>
+            {/* Only show Quick Count if no full/cycle count is in progress */}
+            {!hasActiveFullOrCycleCount && (
+              <Pressable
+                className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
+                onPress={() => {
+                  // If there's any active count (even SPOT), resume it. Otherwise start quick count
+                  if (activeSession) {
+                    navigation.navigate('Scan' as never)
+                  } else {
+                    navigation.navigate('Scan' as never)
+                  }
+                }}
+              >
+                <VStack className='items-center' space='sm'>
+                  <Box className='size-12 bg-purple-100 rounded-full justify-center items-center'>
+                    <Ionicons name='scan' size={24} color='#7C3AED' />
+                  </Box>
+                  <Text className='text-sm font-semibold text-gray-900'>
+                    Quick Count
+                  </Text>
+                  {totalCounts > 0 && (
+                    <Text className='text-xs text-purple-600 font-medium'>
+                      {totalCounts} counted
+                    </Text>
+                  )}
+                </VStack>
+              </Pressable>
+            )}
+
+            <Pressable
+              className={`${hasActiveFullOrCycleCount ? 'flex-1' : 'flex-1'} p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg`}
+            >
+              <VStack className='items-center' space='sm'>
+                <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
+                  <Ionicons name='add-circle' size={24} color='#059669' />
+                </Box>
+                <Text className='text-sm font-semibold text-gray-900'>
+                  Add Product
+                </Text>
+              </VStack>
+            </Pressable>
+
+            {/* Add second button in first row if Quick Count is hidden */}
+            {hasActiveFullOrCycleCount && (
+              <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
+                <VStack className='items-center' space='sm'>
+                  <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
+                    <Ionicons name='cart' size={24} color='#2563EB' />
+                  </Box>
+                  <Text className='text-sm font-semibold text-gray-900'>
+                    Create Order
+                  </Text>
+                </VStack>
+              </Pressable>
+            )}
+          </HStack>
+
+          {/* Second row - only show if Quick Count is visible */}
+          {!hasActiveFullOrCycleCount && (
+            <HStack space='md'>
+              <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
+                <VStack className='items-center' space='sm'>
+                  <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
+                    <Ionicons name='cart' size={24} color='#2563EB' />
+                  </Box>
+                  <Text className='text-sm font-semibold text-gray-900'>
+                    Create Order
+                  </Text>
+                </VStack>
+              </Pressable>
+              <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
+                <VStack className='items-center' space='sm'>
+                  <Box className='size-12 bg-gray-100 rounded-full justify-center items-center'>
+                    <Ionicons name='settings' size={24} color='#6B7280' />
+                  </Box>
+                  <Text className='text-sm font-semibold text-gray-900'>
+                    Settings
+                  </Text>
+                </VStack>
+              </Pressable>
+            </HStack>
+          )}
+        </VStack>
+      </VStack>
+    )
+  }
 
   const renderAlerts = () => {
     if (isLoading) return null
@@ -252,7 +362,7 @@ export function HomeScreen() {
   return (
     <LinearGradient
       colors={['#6366F1', '#8B5CF6', '#A855F7']}
-      className='flex-1'
+      style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
@@ -274,6 +384,7 @@ export function HomeScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
+        {renderStartCountButton()}
         {renderAlerts()}
         {renderStats()}
         {renderQuickActions()}
