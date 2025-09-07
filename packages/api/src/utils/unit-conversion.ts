@@ -8,7 +8,8 @@ const VOLUME_TO_ML: Record<string, number> = {
   'ml': 1,
   'cl': 10,
   'dl': 100,
-  'L': 1000,
+  'l': 1000,      // Lowercase for consistency with toLowerCase()
+  'L': 1000,      // Keep uppercase for compatibility
   'fl oz': 29.5735, // US fluid ounce
   'oz': 29.5735,   // Assume fluid ounce for beverages
   'cup': 236.588,

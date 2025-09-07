@@ -10,6 +10,7 @@ import React, { useState } from 'react'
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   TextInput,
 } from 'react-native'
@@ -182,47 +183,32 @@ export function InventoryScreen() {
       {/* Header */}
       <SafeAreaView edges={['top']}>
         <HStack className='items-center justify-between p-4'>
-          <Heading size='xl' className='text-white font-bold'>
-            Inventory
-          </Heading>
-          <HStack style={{ gap: 8 }}>
-            <Pressable
-              onPress={() => refetch()}
-              disabled={isFetching}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backdropFilter: 'blur(10px)',
-                opacity: isFetching ? 0.5 : 1,
-              }}
-            >
-              <Ionicons
-                name='refresh'
-                size={20}
-                color='white'
-                style={{
-                  transform: [{ rotate: isFetching ? '180deg' : '0deg' }],
-                }}
-              />
-            </Pressable>
-            <Pressable
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <Ionicons name='add' size={24} color='white' />
-            </Pressable>
-          </HStack>
+          <VStack>
+            <Heading size='xl' className='text-white font-bold'>
+              Inventory
+            </Heading>
+            {isFetching && !isLoading && (
+              <HStack className='items-center' style={{ marginTop: 4 }}>
+                <ActivityIndicator size='small' color='white' />
+                <Text className='text-white/80 text-sm ml-2'>
+                  Refreshing...
+                </Text>
+              </HStack>
+            )}
+          </VStack>
+          <Pressable
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <Ionicons name='add' size={24} color='white' />
+          </Pressable>
         </HStack>
       </SafeAreaView>
 
@@ -234,6 +220,15 @@ export function InventoryScreen() {
           paddingBottom: 100,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={refetch}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+            progressBackgroundColor='white'
+          />
+        }
       >
         <VStack style={{ gap: 16 }}>
           {/* Search Bar */}
