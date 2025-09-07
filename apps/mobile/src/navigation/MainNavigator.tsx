@@ -4,14 +4,14 @@ import React from 'react'
 import { Platform, View } from 'react-native'
 import { HomeScreen } from '../screens/HomeScreen'
 import { InsightsScreen } from '../screens/InsightsScreen'
-import { ScanScreen } from '../screens/ScanScreen'
+import { CountNavigator } from './CountNavigator'
 import { SettingsScreen } from '../screens/SettingsScreen'
 import { InventoryNavigator } from './InventoryNavigator'
 
 export type MainTabParamList = {
   Home: undefined
   Inventory: undefined
-  Scan: undefined
+  Count: undefined
   Insights: undefined
   Settings: undefined
 }
@@ -29,8 +29,8 @@ export function MainNavigator() {
             iconName = focused ? 'home' : 'home-outline'
           } else if (route.name === 'Inventory') {
             iconName = focused ? 'cube' : 'cube-outline'
-          } else if (route.name === 'Scan') {
-            iconName = focused ? 'scan' : 'scan-outline'
+          } else if (route.name === 'Count') {
+            iconName = focused ? 'clipboard' : 'clipboard-outline'
           } else if (route.name === 'Insights') {
             iconName = focused ? 'analytics' : 'analytics-outline'
           } else if (route.name === 'Settings') {
@@ -39,8 +39,8 @@ export function MainNavigator() {
             iconName = 'help-outline'
           }
 
-          // Special treatment for scan button - premium floating action button
-          if (route.name === 'Scan') {
+          // Special treatment for count button - premium floating action button
+          if (route.name === 'Count') {
             return (
               <View
                 style={{
@@ -124,10 +124,10 @@ export function MainNavigator() {
         }}
       />
       <Tab.Screen
-        name='Scan'
-        component={ScanScreen}
+        name='Count'
+        component={CountNavigator}
         options={{
-          title: 'Quick Count',
+          title: 'Count',
           tabBarLabel: '',
           headerShown: false,
         }}

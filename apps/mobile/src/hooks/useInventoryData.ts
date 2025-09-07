@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '../lib/api'
+import { apiClient, countApi } from '../lib/api'
 
 // Types for inventory data
 export interface Location {
@@ -12,20 +12,48 @@ export interface Location {
     inventoryItems: number
   }
 }
+
+// Basic Product type (matches backend)
 export interface Product {
   id: string
   name: string
-  sku?: string
-  upc?: string
+  sku: string | null
+  upc: string | null
   categoryId: string
   unit: string
-  container: string
+  container: string | null
+  unitSize: number
+  caseSize: number
+  costPerUnit: number
+  costPerCase: number | null
+  sellPrice: number | null
+  alcoholContent: number | null
+  image: string | null
+  isActive: boolean
+  posProductId: string | null
+  organizationId: string
   createdAt: string
   updatedAt: string
   category?: {
     id: string
     name: string
   }
+}
+
+// Inventory Product with inventory items (for counting)
+export interface InventoryProduct extends Product {
+  inventoryItems: Array<{
+    id: string
+    productId: string
+    locationId: string
+    currentQuantity: number
+    minimumQuantity: number
+    maximumQuantity: number | null
+    location: {
+      id: string
+      name: string
+    }
+  }>
 }
 
 export interface ProductByUPC {
@@ -108,16 +136,24 @@ export const inventoryKeys = {
   count: (id: string) => [...inventoryKeys.counts(), id] as const,
 }
 
-// Products hooks
+// Products hooks - returns InventoryProduct with inventory items
 export const useProducts = () => {
   return useQuery({
     queryKey: inventoryKeys.products(),
     queryFn: async () => {
       const response = await apiClient.get<{
         success: boolean
-        data: Product[]
-      }>('/api/inventory/products')
-      return response.data
+        data: {
+          products: InventoryProduct[]
+          pagination: {
+            page: number
+            limit: number
+            total: number
+            pages: number
+          }
+        }
+      }>('/api/products')
+      return response.data.products
     },
   })
 }
@@ -191,7 +227,7 @@ export const useInventoryCounts = () => {
       const response = await apiClient.get<{
         success: boolean
         data: InventoryCount[]
-      }>('/api/inventory/counts')
+      }>('/api/inventory-counts')
       return response.data
     },
   })
@@ -204,7 +240,7 @@ export const useInventoryCount = (id: string) => {
       const response = await apiClient.get<{
         success: boolean
         data: InventoryCount
-      }>(`/api/inventory/counts/${id}`)
+      }>(`/api/inventory-counts/${id}`)
       return response.data
     },
     enabled: !!id,
@@ -285,7 +321,7 @@ export const useStartInventoryCount = () => {
       const response = await apiClient.post<{
         success: boolean
         data: InventoryCount
-      }>('/api/inventory/counts', data)
+      }>('/api/inventory-counts', data)
       return response.data
     },
     onSuccess: () => {
@@ -304,6 +340,35 @@ export const useLocations = () => {
         data: { locations: Location[] }
       }>('/api/locations')
       return response.data.locations
+    },
+  })
+}
+
+// Completed counts hook for approval
+export const useCompletedCounts = () => {
+  return useQuery({
+    queryKey: ['completed-counts'],
+    queryFn: async () => {
+      const response = await countApi.getCompletedCounts()
+      return response.data.counts
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds to stay current
+  })
+}
+
+// Count approval mutation
+export const useApproveCount = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (countId: string) => {
+      const response = await countApi.approveCount(countId)
+      return response.data
+    },
+    onSuccess: () => {
+      // Invalidate completed counts and general counts queries
+      queryClient.invalidateQueries({ queryKey: ['completed-counts'] })
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.counts() })
     },
   })
 }

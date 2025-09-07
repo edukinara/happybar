@@ -363,8 +363,32 @@ async function buildServer() {
               })
 
               if (user) {
+                // Get organization ID for this user
+                const membership = await fastify.prisma.member.findFirst({
+                  where: { userId: foundUserId },
+                  include: { organization: true },
+                })
+
+                if (!membership) {
+                  reply.code(403).send({
+                    success: false,
+                    error: 'Organization setup required',
+                    needsOnboarding: true,
+                  })
+                  return
+                }
+
                 // Set session data on request for downstream handlers
-                ;(request as any).user = user
+                ;(request as any).user = {
+                  id: foundUserId,
+                  email: user.email,
+                  name: user.name,
+                }
+                ;(request as any).organization = {
+                  id: membership.organization.id,
+                  name: membership.organization.name,
+                  slug: membership.organization.slug || '',
+                }
                 ;(request as any).sessionData = {
                   user: user,
                   session: {

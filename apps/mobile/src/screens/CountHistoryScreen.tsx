@@ -8,16 +8,11 @@ import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useState } from 'react'
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Alert,
-  ActivityIndicator,
-} from 'react-native'
+import { Alert, FlatList, Pressable, RefreshControl } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { useCountStore, CountItem } from '../stores/countStore'
+import { CountItem, useCountStore } from '../stores/countStore'
+import { pluralize } from '../utils/pluralize'
 
 // Design system colors
 const colors = {
@@ -47,25 +42,33 @@ export function CountHistoryScreen() {
     getTotalCounts,
   } = useCountStore()
 
+  // Helper function to get area name by ID
+  const getAreaName = (areaId: string | undefined, sessionId: string | null) => {
+    if (!areaId || !sessionId) return null
+    const session = countSessions.find(s => s.id === sessionId)
+    const area = session?.areas?.find(a => a.id === areaId)
+    return area?.name || null
+  }
+
   const onRefresh = async () => {
     setRefreshing(true)
     // Simulate refresh delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     setRefreshing(false)
   }
 
   const getFilteredItems = () => {
     const today = new Date().toDateString()
-    
+
     switch (filter) {
       case 'today':
-        return countItems.filter(item => 
-          new Date(item.timestamp).toDateString() === today
+        return countItems.filter(
+          (item) => new Date(item.timestamp).toDateString() === today
         )
       case 'variance':
-        return countItems.filter(item => item.variance !== 0)
+        return countItems.filter((item) => item.variance !== 0)
       case 'session':
-        return countItems.filter(item => item.countSessionId !== null)
+        return countItems.filter((item) => item.countSessionId !== null)
       default:
         return countItems
     }
@@ -89,18 +92,14 @@ export function CountHistoryScreen() {
   }
 
   const handleDeleteItem = (item: CountItem) => {
-    Alert.alert(
-      'Delete Count',
-      `Delete count for ${item.productName}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => removeCountItem(item.id),
-        },
-      ]
-    )
+    Alert.alert('Delete Count', `Delete count for ${item.productName}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => removeCountItem(item.id),
+      },
+    ])
   }
 
   const getVarianceColor = (variance: number) => {
@@ -126,7 +125,11 @@ export function CountHistoryScreen() {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return `Yesterday ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     } else {
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      return (
+        date.toLocaleDateString() +
+        ' ' +
+        date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      )
     }
   }
 
@@ -149,35 +152,43 @@ export function CountHistoryScreen() {
         style={{ padding: 16 }}
         onLongPress={() => handleDeleteItem(item)}
       >
-        <HStack className="items-center justify-between">
+        <HStack className='items-center justify-between'>
           {/* Product Info */}
-          <VStack className="flex-1" style={{ marginRight: 16 }}>
-            <Text className="text-gray-900 font-semibold text-base mb-1">
+          <VStack className='flex-1' style={{ marginRight: 16 }}>
+            <Text className='text-gray-900 font-semibold text-base mb-1'>
               {item.productName}
             </Text>
-            <Text className="text-gray-500 text-sm">
+            <Text className='text-gray-500 text-sm'>
               {item.sku && `SKU: ${item.sku} • `}
               {formatTimestamp(item.timestamp)}
             </Text>
-            {item.countSessionId && (
-              <Text className="text-blue-600 text-xs mt-1">
-                Session Count
-              </Text>
-            )}
+            <HStack className='items-center mt-1' space='sm'>
+              {item.countSessionId && (
+                <Text className='text-blue-600 text-xs'>Session Count</Text>
+              )}
+              {getAreaName(item.areaId, item.countSessionId) && (
+                <>
+                  {item.countSessionId && <Text className='text-gray-400 text-xs'>•</Text>}
+                  <Text className='text-purple-600 text-xs'>
+                    Area: {getAreaName(item.areaId, item.countSessionId)}
+                  </Text>
+                </>
+              )}
+            </HStack>
           </VStack>
 
           {/* Count Details */}
-          <VStack className="items-center" style={{ marginRight: 16 }}>
-            <Text className="text-gray-900 font-bold text-lg">
+          <VStack className='items-center' style={{ marginRight: 16 }}>
+            <Text className='text-gray-900 font-bold text-lg'>
               {item.countedQuantity}
             </Text>
-            <Text className="text-gray-500 text-xs">
-              {item.unit}
+            <Text className='text-gray-500 text-xs'>
+              {pluralize(item.countedQuantity, item.container || 'unit')}
             </Text>
           </VStack>
 
           {/* Variance Indicator */}
-          <VStack className="items-center">
+          <VStack className='items-center'>
             <Box
               style={{
                 backgroundColor: getVarianceBackground(item.variance),
@@ -188,13 +199,14 @@ export function CountHistoryScreen() {
               }}
             >
               <Text
-                className="font-bold text-sm text-center"
+                className='font-bold text-sm text-center'
                 style={{ color: getVarianceColor(item.variance) }}
               >
-                {item.variance > 0 ? '+' : ''}{item.variance}
+                {item.variance > 0 ? '+' : ''}
+                {item.variance}
               </Text>
             </Box>
-            <Text className="text-gray-400 text-xs mt-1">
+            <Text className='text-gray-400 text-xs mt-1'>
               vs {item.currentStock}
             </Text>
           </VStack>
@@ -205,18 +217,23 @@ export function CountHistoryScreen() {
 
   const filterButtons = [
     { key: 'all', label: 'All', count: countItems.length },
-    { 
-      key: 'today', 
-      label: 'Today', 
-      count: countItems.filter(item => 
-        new Date(item.timestamp).toDateString() === new Date().toDateString()
-      ).length 
+    {
+      key: 'today',
+      label: 'Today',
+      count: countItems.filter(
+        (item) =>
+          new Date(item.timestamp).toDateString() === new Date().toDateString()
+      ).length,
     },
-    { key: 'variance', label: 'Variance', count: countItems.filter(item => item.variance !== 0).length },
-    { 
-      key: 'session', 
-      label: 'Sessions', 
-      count: countItems.filter(item => item.countSessionId !== null).length 
+    {
+      key: 'variance',
+      label: 'Variance',
+      count: countItems.filter((item) => item.variance !== 0).length,
+    },
+    {
+      key: 'session',
+      label: 'Sessions',
+      count: countItems.filter((item) => item.countSessionId !== null).length,
     },
   ]
 
@@ -229,20 +246,20 @@ export function CountHistoryScreen() {
     >
       {/* Header */}
       <SafeAreaView>
-        <HStack className="items-center justify-between p-4">
+        <HStack className='items-center justify-between p-4'>
           <Pressable
             onPress={() => navigation.goBack()}
-            className="p-3 rounded-xl"
+            className='p-3 rounded-xl'
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
           >
-            <Ionicons name="arrow-back" size={24} color="white" />
+            <Ionicons name='arrow-back' size={24} color='white' />
           </Pressable>
-          
-          <VStack className="items-center">
-            <Heading className="text-white font-bold text-xl">
+
+          <VStack className='items-center'>
+            <Heading className='text-white font-bold text-xl'>
               Count History
             </Heading>
-            <Text className="text-white/80 text-sm">
+            <Text className='text-white/80 text-sm'>
               {getTotalCounts()} total counts
             </Text>
           </VStack>
@@ -250,21 +267,21 @@ export function CountHistoryScreen() {
           <Pressable
             onPress={handleClearAll}
             disabled={countItems.length === 0}
-            className="p-3 rounded-xl"
-            style={{ 
+            className='p-3 rounded-xl'
+            style={{
               backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              opacity: countItems.length === 0 ? 0.5 : 1 
+              opacity: countItems.length === 0 ? 0.5 : 1,
             }}
           >
-            <Ionicons name="trash" size={24} color="white" />
+            <Ionicons name='trash' size={24} color='white' />
           </Pressable>
         </HStack>
       </SafeAreaView>
 
       {/* Content */}
-      <VStack className="flex-1" style={{ paddingHorizontal: 16 }}>
+      <VStack className='flex-1' style={{ paddingHorizontal: 16 }}>
         {/* Filter Buttons */}
-        <HStack className="mb-4" space="sm">
+        <HStack className='mb-4' space='sm'>
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -274,9 +291,10 @@ export function CountHistoryScreen() {
               <Pressable
                 onPress={() => setFilter(item.key as FilterType)}
                 style={{
-                  backgroundColor: filter === item.key 
-                    ? 'rgba(255, 255, 255, 0.9)' 
-                    : 'rgba(255, 255, 255, 0.2)',
+                  backgroundColor:
+                    filter === item.key
+                      ? 'rgba(255, 255, 255, 0.9)'
+                      : 'rgba(255, 255, 255, 0.2)',
                   paddingVertical: 8,
                   paddingHorizontal: 16,
                   borderRadius: 20,
@@ -285,9 +303,9 @@ export function CountHistoryScreen() {
                 }}
               >
                 <Text
-                  className="font-semibold text-center text-sm"
+                  className='font-semibold text-center text-sm'
                   style={{
-                    color: filter === item.key ? colors.primary : 'white'
+                    color: filter === item.key ? colors.primary : 'white',
                   }}
                 >
                   {item.label} ({item.count})
@@ -332,23 +350,26 @@ export function CountHistoryScreen() {
                 marginBottom: 16,
               }}
             >
-              <Ionicons name="clipboard-outline" size={28} color={colors.primary} />
+              <Ionicons
+                name='clipboard-outline'
+                size={28}
+                color={colors.primary}
+              />
             </Box>
-            <Text className="text-gray-900 font-semibold text-lg text-center">
+            <Text className='text-gray-900 font-semibold text-lg text-center'>
               No counts found
             </Text>
-            <Text className="text-gray-500 text-center mt-2">
-              {filter === 'all' 
+            <Text className='text-gray-500 text-center mt-2'>
+              {filter === 'all'
                 ? 'Start scanning items to see count history'
-                : `No counts found for "${filterButtons.find(b => b.key === filter)?.label}" filter`
-              }
+                : `No counts found for "${filterButtons.find((b) => b.key === filter)?.label}" filter`}
             </Text>
-            
+
             <Button
               onPress={() => navigation.navigate('Main' as never)}
-              className="bg-purple-600 mt-6"
+              className='bg-purple-600 mt-6'
             >
-              <ButtonText className="text-white font-semibold">
+              <ButtonText className='text-white font-semibold'>
                 Go to Scanner
               </ButtonText>
             </Button>

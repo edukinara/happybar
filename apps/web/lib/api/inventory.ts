@@ -137,7 +137,7 @@ export const inventoryApi = {
 
   async getCounts(): Promise<RecentCount[]> {
     const response = await apiClient.get<APIRes<RecentCount[]>>(
-      '/api/inventory/counts'
+      '/api/inventory-counts'
     )
     if (!response.success || !response.data) {
       throw new Error('Failed to get counts')
@@ -399,7 +399,7 @@ export const inventoryApi = {
     scheduledAt?: Date
   }): Promise<Count> {
     const response = await apiClient.post<APIRes<Count>>(
-      '/api/inventory/counts',
+      '/api/inventory-counts',
       data
     )
     if (!response.success || !response.data) {

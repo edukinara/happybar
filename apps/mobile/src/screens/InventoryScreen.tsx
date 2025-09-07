@@ -124,7 +124,7 @@ export function InventoryScreen() {
                 className='font-bold text-xl'
                 style={{ color: status.color, marginBottom: 2 }}
               >
-                {item.currentQuantity}
+                {+item.currentQuantity.toFixed(2)}
               </Text>
               <Text className='text-gray-500 text-xs'>
                 {item.currentQuantity > 1

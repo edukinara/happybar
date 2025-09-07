@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { inventoryApi } from '@/lib/api/inventory'
 import {
   CountType,
@@ -31,7 +32,6 @@ import {
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useAlertDialog } from '@/hooks/use-alert-dialog'
 
 export default function InventoryCountDetailPage() {
   const { showSuccess } = useAlertDialog()
@@ -72,19 +72,22 @@ export default function InventoryCountDetailPage() {
     const confirmed = window.confirm(
       'Approving this count will immediately update your inventory levels based on the count results.\n\nThis action cannot be undone.\n\nAre you sure you want to approve and apply this count?'
     )
-    
+
     if (!confirmed) return
 
     try {
       setApproving(true)
       setError(null) // Clear any previous errors
-      
+
       await inventoryApi.updateInventoryCount(count.id, {
         status: InventoryCountStatus.APPROVED,
       })
 
       // Show success message
-      showSuccess('Your inventory levels have been updated based on the count results.', 'Count approved successfully!')
+      showSuccess(
+        'Your inventory levels have been updated based on the count results.',
+        'Count approved successfully!'
+      )
 
       // Refresh the count data to show updated status
       await fetchCount()
@@ -95,7 +98,6 @@ export default function InventoryCountDetailPage() {
       setApproving(false)
     }
   }
-
 
   const getStatusColor = (status: InventoryCountStatus) => {
     switch (status) {
@@ -223,15 +225,19 @@ export default function InventoryCountDetailPage() {
             </Button>
           )}
           {count.status === InventoryCountStatus.COMPLETED && (
-            <Button onClick={handleApproveCount} disabled={approving}>
+            <Button
+              onClick={handleApproveCount}
+              disabled={approving}
+              loading={approving}
+            >
               <CheckCircle className='size-4 mr-2' />
               {approving ? 'Approving...' : 'Approve & Apply to Inventory'}
             </Button>
           )}
           {count.status === InventoryCountStatus.APPROVED && (
-            <div className="flex items-center gap-2 text-green-600">
+            <div className='flex items-center gap-2 text-green-600'>
               <CheckCircle className='size-5' />
-              <span className="font-medium">Count Approved & Applied</span>
+              <span className='font-medium'>Count Approved & Applied</span>
             </div>
           )}
         </div>

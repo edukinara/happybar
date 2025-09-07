@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions, Camera } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Dimensions, Platform } from 'react-native'
+import { Alert, Dimensions, Platform, BackHandler } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
@@ -62,10 +62,29 @@ export function ScanScreen() {
     activeSessionId,
     getActiveSession,
     completeCountSession,
-    saveCountItemToAPI
+    saveCountItemToAPI,
+    updateCountItem,
+    getCountItemsBySession
   } = useCountStore()
   const recentScans = getRecentCountItems(1)
   const activeSession = getActiveSession()
+  const currentArea = activeSession?.areas?.find(
+    (area) => area.id === activeSession.currentAreaId
+  )
+
+  // Handle hardware back button press
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // Navigate to home screen instead of going back in stack
+        navigation.getParent()?.getParent()?.navigate('Home' as never)
+        return true // Prevent default back behavior
+      }
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+      return () => subscription.remove()
+    }, [navigation])
+  )
 
   // Query to lookup product by UPC
   const {
@@ -190,63 +209,92 @@ export function ScanScreen() {
     }
   }, [permission?.granted])
 
-  const handleManualScan = () => {
-    // Mock manual scan for testing
-    const mockProduct = {
-      id: '1',
-      inventoryItemId: '1',
-      sku: '123456789',
-      image: null,
-      container: 'bottle',
-      parLevel: 12,
-      barcode: '123456789',
-      name: 'Grey Goose Vodka',
-      size: '750ml',
-      currentStock: 12,
-      unit: 'bottles',
-    }
-
-    setScannedProduct(mockProduct)
-    setShowModal(true)
+  const navigateToCount = () => {
+    navigation.goBack() // Go back to the count screen
   }
 
   const handleSaveCount = async () => {
     if (!scannedProduct) return
     
+    // Get FRESH session and area data at save time, not render time
+    const freshActiveSession = getActiveSession()
+    if (!freshActiveSession) return
+
+    const freshCurrentArea = freshActiveSession?.areas?.find(
+      (area) => area.id === freshActiveSession.currentAreaId
+    )
+    
     const countedQuantity = parseFloat(quantity)
     const variance = countedQuantity - scannedProduct.currentStock
     
-    // Create count item object
-    const countItem = {
-      inventoryItemId: scannedProduct.inventoryItemId,
-      productId: scannedProduct.id,
-      productName: scannedProduct.name,
-      sku: scannedProduct.sku,
-      barcode: scannedProduct.barcode,
-      unit: scannedProduct.unit,
-      container: scannedProduct.container,
-      currentStock: scannedProduct.currentStock,
-      countedQuantity,
-      variance,
-      parLevel: scannedProduct.parLevel,
-      countSessionId: activeSessionId,
-    }
+    // Check for existing count item in the same area for this product
+    const sessionItems = getCountItemsBySession(freshActiveSession.id)
+    const existingItem = sessionItems.find(
+      item => item.productId === scannedProduct.id && item.areaId === freshCurrentArea?.id
+    )
     
-    // Save to count store locally first
-    addCountItem(countItem)
-    
-    // Save to API in the background
-    try {
-      const fullCountItem = {
-        ...countItem,
-        id: `count-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    if (existingItem) {
+      // Update existing item instead of creating new one
+      const updatedItem = {
+        ...existingItem,
+        countedQuantity,
+        variance,
         timestamp: new Date().toISOString(),
       }
-      await saveCountItemToAPI(fullCountItem)
-      console.log('Count item saved to API successfully')
-    } catch (error) {
-      console.error('Failed to save count item to API:', error)
-      // Item is already saved locally, so we can continue
+      
+      updateCountItem(existingItem.id, updatedItem)
+      
+      // Update API in the background
+      try {
+        await saveCountItemToAPI(updatedItem)
+        console.log('Count item updated in API successfully')
+      } catch (error) {
+        console.error('Failed to update count item in API:', error)
+      }
+      
+      Alert.alert(
+        'Count Updated',
+        `Updated ${scannedProduct.name} in ${freshCurrentArea?.name || 'current area'} to ${countedQuantity} ${scannedProduct.unit}`
+      )
+    } else {
+      // Create new count item object with area ID
+      const countItem = {
+        inventoryItemId: scannedProduct.inventoryItemId,
+        productId: scannedProduct.id,
+        productName: scannedProduct.name,
+        sku: scannedProduct.sku,
+        barcode: scannedProduct.barcode,
+        unit: scannedProduct.unit,
+        container: scannedProduct.container,
+        currentStock: scannedProduct.currentStock,
+        countedQuantity,
+        variance,
+        parLevel: scannedProduct.parLevel,
+        countSessionId: freshActiveSession.id,
+        areaId: freshCurrentArea?.id, // Add current area ID
+      }
+      
+      // Save to count store locally first
+      addCountItem(countItem)
+      
+      // Save to API in the background
+      try {
+        const fullCountItem = {
+          ...countItem,
+          id: `count-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          timestamp: new Date().toISOString(),
+        }
+        await saveCountItemToAPI(fullCountItem)
+        console.log('Count item saved to API successfully')
+      } catch (error) {
+        console.error('Failed to save count item to API:', error)
+        // Item is already saved locally, so we can continue
+      }
+      
+      Alert.alert(
+        'Count Saved',
+        `${countedQuantity} ${scannedProduct.unit} of ${scannedProduct.name} in ${freshCurrentArea?.name || 'current area'}`
+      )
     }
 
     // Reset all scan-related state
@@ -256,16 +304,8 @@ export function ScanScreen() {
     setQuantity('1')
     setIsScanning(true)
 
-    // Navigate away first to stop camera, then show success alert
-    navigation.navigate('Home' as never)
-
-    // Show success alert after a brief delay
-    setTimeout(() => {
-      Alert.alert(
-        'Count Saved',
-        `${countedQuantity} ${scannedProduct.unit} of ${scannedProduct.name}`
-      )
-    }, 300)
+    // Navigate back to count screen
+    navigation.goBack()
   }
 
   if (!permission) {
@@ -376,33 +416,60 @@ export function ScanScreen() {
         style={{ paddingTop: insets.top }}
       >
         <HStack className='justify-between items-center px-5 py-4'>
-          <Pressable
-            className='w-12 h-12 rounded-full bg-black/30 justify-center items-center'
-            onPress={() => setFlashOn(!flashOn)}
-          >
-            <Ionicons
-              name={flashOn ? 'flash' : 'flash-off'}
-              size={24}
-              color='white'
-            />
-          </Pressable>
-          <VStack className='items-center'>
-            <Text className='text-white text-xl font-bold'>
+          <HStack className='items-center' space='sm'>
+            <Pressable 
+              className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
+              onPress={() => {
+                // Navigate back to home screen (exit count tab)
+                navigation.getParent()?.getParent()?.navigate('Home' as never)
+              }}
+            >
+              <Ionicons name='arrow-back' size={20} color='white' />
+            </Pressable>
+            <Pressable
+              className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
+              onPress={() => setFlashOn(!flashOn)}
+            >
+              <Ionicons
+                name={flashOn ? 'flash' : 'flash-off'}
+                size={20}
+                color='white'
+              />
+            </Pressable>
+          </HStack>
+          <VStack className='items-center flex-1'>
+            <Text className='text-white text-lg font-bold'>
               {activeSession ? activeSession.name : 'Quick Count'}
             </Text>
             {activeSession && (
-              <Text className='text-white/80 text-sm'>
+              <Text className='text-white/70 text-xs'>
                 {activeSession.type} • {activeSession.locationName}
+              </Text>
+            )}
+            {currentArea && (
+              <Text className='text-white/80 text-sm font-medium'>
+                Area: {currentArea.name}
               </Text>
             )}
           </VStack>
           <Pressable 
-            className='w-12 h-12 rounded-full bg-black/30 justify-center items-center'
-            onPress={() => activeSession && completeCountSession(activeSession.id)}
+            className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
+            onPress={async () => {
+              if (activeSession) {
+                try {
+                  await completeCountSession(activeSession.id)
+                  // After completing, go back to home
+                  navigation.getParent()?.getParent()?.navigate('Home' as never)
+                } catch (error) {
+                  console.error('Failed to complete count session:', error)
+                  Alert.alert('Error', 'Failed to complete count. Please try again.')
+                }
+              }
+            }}
           >
             <Ionicons 
               name={activeSession ? 'checkmark' : 'help-circle-outline'} 
-              size={24} 
+              size={20} 
               color='white' 
             />
           </Pressable>
@@ -481,12 +548,12 @@ export function ScanScreen() {
           <Button
             size='lg'
             className='bg-purple-600 rounded-xl'
-            onPress={handleManualScan}
+            onPress={navigateToCount}
           >
             <HStack space='sm' className='items-center'>
-              <Ionicons name='keypad' size={20} color='white' />
+              <Ionicons name='list' size={20} color='white' />
               <ButtonText className='text-white font-bold'>
-                Manual Entry
+                Select from List
               </ButtonText>
             </HStack>
           </Button>

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
-import React from 'react'
-import { ScrollView } from 'react-native'
+import React, { useCallback, useState } from 'react'
+import { Alert, RefreshControl, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
@@ -14,7 +14,12 @@ import { VStack } from '@/components/ui/vstack'
 
 import { HappyBarLogo } from '../components/brand/HappyBarLogo'
 import { useInventoryAnalytics } from '../hooks/useAnalyticsData'
-import { useLowStockItems } from '../hooks/useInventoryData'
+import { useCountSync } from '../hooks/useCountSync'
+import {
+  useApproveCount,
+  useCompletedCounts,
+  useLowStockItems,
+} from '../hooks/useInventoryData'
 import { useAuthStore } from '../stores/authStore'
 import { useCountStore } from '../stores/countStore'
 
@@ -22,18 +27,96 @@ export function HomeScreen() {
   const user = useAuthStore((state) => state.user)
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
+  const [refreshing, setRefreshing] = useState(false)
 
   // Fetch real data
-  const { data: analytics, isLoading: analyticsLoading } =
-    useInventoryAnalytics('7d')
-  const { isLoading: lowStockLoading } = useLowStockItems()
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    refetch: refetchAnalytics,
+  } = useInventoryAnalytics('7d')
+  const { isLoading: lowStockLoading, refetch: refetchLowStock } =
+    useLowStockItems()
+
+  // Completed counts data
+  const {
+    data: completedCounts = [],
+    isLoading: completedCountsLoading,
+    refetch: refetchCompletedCounts,
+  } = useCompletedCounts()
+  const approveCountMutation = useApproveCount()
 
   // Count store data
   const { getTotalCounts, getActiveSession } = useCountStore()
   const totalCounts = getTotalCounts()
   const activeSession = getActiveSession()
 
+  // Sync functionality
+  const { syncNow } = useCountSync()
+
   const isLoading = analyticsLoading || lowStockLoading
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      // Refresh all data in parallel including count sync
+      await Promise.all([
+        refetchAnalytics(),
+        refetchLowStock(),
+        refetchCompletedCounts(),
+        syncNow(),
+      ])
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    } finally {
+      setRefreshing(false)
+    }
+  }, [refetchAnalytics, refetchLowStock, refetchCompletedCounts, syncNow])
+
+  // Handle count approval with confirmation
+  const handleApproveCount = useCallback(
+    (count: any) => {
+      Alert.alert(
+        'Approve Count',
+        `Are you sure you want to approve "${count.name}"?\n\nThis will apply the count results to your inventory and cannot be undone.`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Approve',
+            style: 'default',
+            onPress: async () => {
+              try {
+                await approveCountMutation.mutateAsync(count.id)
+                
+                // Refresh all data after successful approval
+                await Promise.all([
+                  refetchAnalytics(),
+                  refetchLowStock(),
+                  refetchCompletedCounts(),
+                  syncNow(),
+                ])
+                
+                Alert.alert(
+                  'Success',
+                  `Count "${count.name}" has been approved and applied to inventory.`
+                )
+              } catch (error) {
+                console.error('Failed to approve count:', error)
+                Alert.alert(
+                  'Error',
+                  'Failed to approve count. Please try again.'
+                )
+              }
+            },
+          },
+        ]
+      )
+    },
+    [approveCountMutation, refetchAnalytics, refetchLowStock, refetchCompletedCounts, syncNow]
+  )
 
   const renderHeader = () => (
     <HStack className='justify-between items-center'>
@@ -153,11 +236,15 @@ export function HomeScreen() {
             className='p-6 border-2 border-white/20 rounded-3xl'
             onPress={() => {
               if (activeSession) {
-                // Resume active count
-                navigation.navigate('Scan' as never)
+                // Resume active count - navigate to Count tab, then to Scan screen
+                ;(navigation.navigate as any)('Count', {
+                  screen: 'CountMain',
+                })
               } else {
                 // Start new count - go directly to setup with progressive flow
-                navigation.navigate('Count' as never)
+                ;(navigation.navigate as any)('Count', {
+                  screen: 'CountSetup',
+                })
               }
             }}
           >
@@ -210,11 +297,20 @@ export function HomeScreen() {
               <Pressable
                 className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
                 onPress={() => {
-                  // If there's any active count (even SPOT), resume it. Otherwise start quick count
                   if (activeSession) {
-                    navigation.navigate('Scan' as never)
+                    // Resume active count by going to the count screen
+                    ;(navigation.navigate as any)('Count', {
+                      screen: 'CountMain',
+                    })
                   } else {
-                    navigation.navigate('Scan' as never)
+                    // Quick count - go to setup with SPOT type pre-selected
+                    ;(navigation.navigate as any)('Count', {
+                      screen: 'CountSetup',
+                      params: {
+                        isQuickCount: true,
+                        presetType: 'SPOT',
+                      },
+                    })
                   }
                 }}
               >
@@ -359,6 +455,73 @@ export function HomeScreen() {
     )
   }
 
+  const renderCompletedCounts = () => {
+    if (completedCountsLoading || completedCounts.length === 0) {
+      return null
+    }
+
+    return (
+      <VStack className='mb-8' space='lg'>
+        <HStack className='justify-between items-center'>
+          <Text className='text-white text-xl font-bold'>Pending Approval</Text>
+          <Box className='px-2 py-1 bg-orange-500 rounded-full'>
+            <Text className='text-white text-xs font-bold'>
+              {completedCounts.length}
+            </Text>
+          </Box>
+        </HStack>
+        <VStack space='md'>
+          {completedCounts.map((count) => (
+            <Card
+              key={count.id}
+              className='p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-lg'
+            >
+              <HStack className='justify-between items-start'>
+                <VStack className='flex-1 mr-4' space='xs'>
+                  <Text className='text-lg font-bold text-gray-900'>
+                    {count.name}
+                  </Text>
+                  <Text className='text-sm text-gray-600'>
+                    {count.type} • {count.location.name}
+                  </Text>
+                  <Text className='text-xs text-gray-500'>
+                    Completed:{' '}
+                    {new Date(count.completedAt).toLocaleDateString()}
+                  </Text>
+                  {count.itemsCounted && (
+                    <Text className='text-xs text-blue-600 font-medium'>
+                      {count.itemsCounted} items counted
+                    </Text>
+                  )}
+                </VStack>
+                <Pressable
+                  className='px-4 py-2 bg-green-500 rounded-lg items-center justify-center min-w-[80px]'
+                  onPress={() => handleApproveCount(count)}
+                  disabled={approveCountMutation.isPending}
+                >
+                  {approveCountMutation.isPending ? (
+                    <Text className='text-white text-sm font-bold'>...</Text>
+                  ) : (
+                    <>
+                      <Ionicons
+                        name='checkmark-circle'
+                        size={16}
+                        color='white'
+                      />
+                      <Text className='text-white text-sm font-bold mt-1'>
+                        Approve
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </HStack>
+            </Card>
+          ))}
+        </VStack>
+      </VStack>
+    )
+  }
+
   return (
     <LinearGradient
       colors={['#6366F1', '#8B5CF6', '#A855F7']}
@@ -383,8 +546,18 @@ export function HomeScreen() {
           paddingBottom: 100,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='white'
+            colors={['#8B5CF6']}
+            progressBackgroundColor='white'
+          />
+        }
       >
         {renderStartCountButton()}
+        {renderCompletedCounts()}
         {renderAlerts()}
         {renderStats()}
         {renderQuickActions()}
