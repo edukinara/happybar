@@ -43,10 +43,13 @@ export function CountHistoryScreen() {
   } = useCountStore()
 
   // Helper function to get area name by ID
-  const getAreaName = (areaId: string | undefined, sessionId: string | null) => {
+  const getAreaName = (
+    areaId: string | undefined,
+    sessionId: string | null
+  ) => {
     if (!areaId || !sessionId) return null
-    const session = countSessions.find(s => s.id === sessionId)
-    const area = session?.areas?.find(a => a.id === areaId)
+    const session = countSessions.find((s) => s.id === sessionId)
+    const area = session?.areas?.find((a) => a.id === areaId)
     return area?.name || null
   }
 
@@ -133,87 +136,93 @@ export function CountHistoryScreen() {
     }
   }
 
-  const renderCountItem = ({ item }: { item: CountItem }) => (
-    <LinearGradient
-      colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        borderRadius: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
-      }}
-    >
-      <Pressable
-        style={{ padding: 16 }}
-        onLongPress={() => handleDeleteItem(item)}
+  const renderCountItem = ({ item }: { item: CountItem }) => {
+    const areaName = getAreaName(item.areaId, item.countSessionId)
+    return (
+      <Box
+        className='bg-white'
+        style={{
+          borderRadius: 16,
+          marginBottom: 12,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 3,
+        }}
       >
-        <HStack className='items-center justify-between'>
-          {/* Product Info */}
-          <VStack className='flex-1' style={{ marginRight: 16 }}>
-            <Text className='text-gray-900 font-semibold text-base mb-1'>
-              {item.productName}
-            </Text>
-            <Text className='text-gray-500 text-sm'>
-              {item.sku && `SKU: ${item.sku} • `}
-              {formatTimestamp(item.timestamp)}
-            </Text>
-            <HStack className='items-center mt-1' space='sm'>
-              {item.countSessionId && (
-                <Text className='text-blue-600 text-xs'>Session Count</Text>
-              )}
-              {getAreaName(item.areaId, item.countSessionId) && (
-                <>
-                  {item.countSessionId && <Text className='text-gray-400 text-xs'>•</Text>}
-                  <Text className='text-purple-600 text-xs'>
-                    Area: {getAreaName(item.areaId, item.countSessionId)}
-                  </Text>
-                </>
-              )}
-            </HStack>
-          </VStack>
-
-          {/* Count Details */}
-          <VStack className='items-center' style={{ marginRight: 16 }}>
-            <Text className='text-gray-900 font-bold text-lg'>
-              {item.countedQuantity}
-            </Text>
-            <Text className='text-gray-500 text-xs'>
-              {pluralize(item.countedQuantity, item.container || 'unit')}
-            </Text>
-          </VStack>
-
-          {/* Variance Indicator */}
-          <VStack className='items-center'>
-            <Box
-              style={{
-                backgroundColor: getVarianceBackground(item.variance),
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 12,
-                minWidth: 60,
-              }}
-            >
-              <Text
-                className='font-bold text-sm text-center'
-                style={{ color: getVarianceColor(item.variance) }}
-              >
-                {item.variance > 0 ? '+' : ''}
-                {item.variance}
+        <Pressable
+          style={{ padding: 16 }}
+          onLongPress={() => handleDeleteItem(item)}
+        >
+          <HStack className='items-center justify-between'>
+            {/* Product Info */}
+            <VStack className='flex-1' style={{ marginRight: 16 }}>
+              <Text className='text-gray-900 font-semibold text-base mb-1'>
+                {item.productName}
               </Text>
-            </Box>
-            <Text className='text-gray-400 text-xs mt-1'>
-              vs {item.currentStock}
-            </Text>
-          </VStack>
-        </HStack>
-      </Pressable>
-    </LinearGradient>
-  )
+              <Text className='text-gray-500 text-sm'>
+                {item.sku && `SKU: ${item.sku} • `}
+                {formatTimestamp(item.timestamp)}
+              </Text>
+              <HStack className='items-center mt-1' space='sm'>
+                {item.countSessionId && (
+                  <Text className='text-blue-600 text-xs'>Session Count</Text>
+                )}
+                {areaName && (
+                  <>
+                    {item.countSessionId && (
+                      <Text className='text-gray-400 text-xs'>•</Text>
+                    )}
+                    <Text
+                      className='text-purple-600 text-xs text-ellipsis w-full'
+                      style={{ textWrap: 'nowrap' }}
+                    >
+                      {areaName}
+                    </Text>
+                  </>
+                )}
+              </HStack>
+            </VStack>
+
+            {/* Count Details */}
+            <VStack className='items-center' style={{ marginRight: 16 }}>
+              <Text className='text-gray-900 font-bold text-lg'>
+                {item.countedQuantity}
+              </Text>
+              <Text className='text-gray-500 text-xs'>
+                {pluralize(item.countedQuantity, item.container || 'unit')}
+              </Text>
+            </VStack>
+
+            {/* Variance Indicator */}
+            <VStack className='items-center'>
+              <Box
+                style={{
+                  backgroundColor: getVarianceBackground(item.variance),
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 12,
+                  minWidth: 60,
+                }}
+              >
+                <Text
+                  className='font-bold text-sm text-center'
+                  style={{ color: getVarianceColor(item.variance) }}
+                >
+                  {item.variance > 0 ? '+' : ''}
+                  {item.variance}
+                </Text>
+              </Box>
+              <Text className='text-gray-400 text-xs mt-1'>
+                vs {item.currentStock}
+              </Text>
+            </VStack>
+          </HStack>
+        </Pressable>
+      </Box>
+    )
+  }
 
   const filterButtons = [
     { key: 'all', label: 'All', count: countItems.length },
@@ -328,10 +337,8 @@ export function CountHistoryScreen() {
             contentContainerStyle={{ paddingBottom: 20 }}
           />
         ) : (
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <Box
+            className='bg-white'
             style={{
               borderRadius: 16,
               padding: 40,
@@ -373,7 +380,7 @@ export function CountHistoryScreen() {
                 Go to Scanner
               </ButtonText>
             </Button>
-          </LinearGradient>
+          </Box>
         )}
       </VStack>
     </LinearGradient>

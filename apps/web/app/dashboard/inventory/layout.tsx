@@ -1,12 +1,13 @@
 'use client'
 
+import { InventoryNotificationDot } from '@/components/alerts/InventoryNotificationDot'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import {
   AlertTriangle,
   ClipboardCheck,
-  Package,
+  ClipboardList,
   Plus,
   Settings,
   Target,
@@ -20,7 +21,7 @@ const tabs = [
     id: 'overview',
     label: 'Overview',
     href: '/dashboard/inventory',
-    icon: Package,
+    icon: ClipboardList,
     description: 'Current inventory levels and stock status',
   },
   {
@@ -129,14 +130,19 @@ export default function InventoryLayout({
                         : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
                     )}
                   >
-                    <Icon
-                      className={cn(
-                        'mr-2 size-4 transition-colors',
-                        isActive
-                          ? 'text-primary'
-                          : 'text-muted-foreground group-hover:text-foreground'
+                    <div className='relative mr-2 '>
+                      <Icon
+                        className={cn(
+                          'size-4 transition-colors',
+                          isActive
+                            ? 'text-primary'
+                            : 'text-muted-foreground group-hover:text-foreground'
+                        )}
+                      />
+                      {(tab.label === 'Overview' || tab.label === 'Alerts') && (
+                        <InventoryNotificationDot />
                       )}
-                    />
+                    </div>
                     {tab.label}
                   </Link>
                 )

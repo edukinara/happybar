@@ -91,19 +91,6 @@ export function InsightsScreen() {
           <Heading size='xl' className='text-white font-bold'>
             Insights
           </Heading>
-          <Pressable
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <Ionicons name='refresh' size={24} color='white' />
-          </Pressable>
         </HStack>
       </SafeAreaView>
 
@@ -118,10 +105,8 @@ export function InsightsScreen() {
       >
         <VStack style={{ gap: 20 }}>
           {/* Quick Stats */}
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <Box
+            className='bg-white'
             style={{
               borderRadius: 16,
               padding: 20,
@@ -191,13 +176,11 @@ export function InsightsScreen() {
                 </HStack>
               ))}
             </VStack>
-          </LinearGradient>
+          </Box>
 
           {/* AI-Powered Insights */}
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <Box
+            className='bg-white'
             style={{
               borderRadius: 16,
               padding: 20,
@@ -224,7 +207,7 @@ export function InsightsScreen() {
                 <Ionicons name='sparkles' size={16} color='white' />
               </LinearGradient>
               <Heading size='lg' className='text-gray-900 font-bold'>
-                AI Recommendations
+                Smart Recommendations
               </Heading>
             </HStack>
 
@@ -275,7 +258,7 @@ export function InsightsScreen() {
                 </Text>
               </LinearGradient>
             </VStack>
-          </LinearGradient>
+          </Box>
 
           {/* Analytics Cards */}
           <VStack style={{ gap: 16 }}>

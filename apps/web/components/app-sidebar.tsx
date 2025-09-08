@@ -6,9 +6,9 @@ import * as React from 'react'
 import {
   ArrowRight,
   BarChart3,
-  Box,
   Building2,
   ChefHat,
+  ClipboardList,
   Home,
   Package,
   Settings,
@@ -39,7 +39,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       name: 'Inventory',
       href: '/dashboard/inventory',
-      icon: Box,
+      icon: ClipboardList,
       badge: true,
       hasAccess: perms.canAccessInventory,
     },

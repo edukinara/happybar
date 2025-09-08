@@ -210,18 +210,23 @@ export default function CountSetupScreen() {
       // Check for existing active counts before creating
       const { checkForActiveBackendSessions } = useCountStore.getState()
       const activeSessions = await checkForActiveBackendSessions()
-      
+
       // Check if there's already an active count for this location
-      const existingCount = activeSessions.find(session => session.locationId === selectedLocationId)
-      
+      const existingCount = activeSessions.find(
+        (session) => session.locationId === selectedLocationId
+      )
+
       if (existingCount) {
         Alert.alert(
           'Active Count Found',
           `There's already an active count "${existingCount.name}" for this location. Would you like to resume it or create a new one?`,
           [
-            { text: 'Resume Existing', onPress: () => resumeExistingCount(existingCount.apiId!) },
+            {
+              text: 'Resume Existing',
+              onPress: () => resumeExistingCount(existingCount.apiId!),
+            },
             { text: 'Create New', onPress: () => createNewCount() },
-            { text: 'Cancel', style: 'cancel' }
+            { text: 'Cancel', style: 'cancel' },
           ]
         )
         return
@@ -263,12 +268,10 @@ export default function CountSetupScreen() {
     if (!selectedLocation) return
 
     // Combine selected predefined areas and custom areas
-    const allAreas = [...selectedAreas, ...customAreas].map(
-      (name, index) => ({
-        name,
-        order: index + 1,
-      })
-    )
+    const allAreas = [...selectedAreas, ...customAreas].map((name, index) => ({
+      name,
+      order: index + 1,
+    }))
 
     // Create count session with API integration
     const { createCountSessionWithAPI } = useCountStore.getState()
@@ -284,8 +287,6 @@ export default function CountSetupScreen() {
       syncStatus: 'synced', // Will be set to synced after API call succeeds
     })
 
-    console.log('Count session created with API:', sessionId)
-
     // Reset the navigation stack to replace setup with count screen
     navigation.reset({
       index: 0,
@@ -293,41 +294,6 @@ export default function CountSetupScreen() {
     })
   }
 
-  const getCountTypeInfo = () => {
-    switch (countType) {
-      case 'FULL':
-        return {
-          title: 'Full Count',
-          description: 'Complete inventory count of all items',
-          icon: 'clipboard',
-          color: colors.primary,
-        }
-      case 'CYCLE':
-        return {
-          title: 'Cycle Count',
-          description: 'Rotating count of different areas over time',
-          icon: 'refresh',
-          color: colors.primary,
-        }
-      case 'SPOT':
-        return {
-          title: 'Spot Count',
-          description: 'Quick count of specific items or areas',
-          icon: 'scan',
-          color: colors.accent,
-        }
-      default:
-        return {
-          title: 'Count',
-          description: 'Inventory count',
-          icon: 'clipboard',
-          color: colors.primary,
-        }
-    }
-  }
-
-  // const typeInfo = getCountTypeInfo() // Not used
-  // const selectedLocation = getSelectedLocation() // Not used here
   // Step rendering functions
   const renderStepContent = () => {
     switch (currentStep) {
@@ -709,10 +675,16 @@ export default function CountSetupScreen() {
                 <Text className='text-white/70 text-sm'>
                   Step{' '}
                   {isQuickCount
-                    ? Math.max(['name', 'location', 'areas'].indexOf(currentStep) + 1, 1)
-                    : Math.max(['name', 'location', 'type', 'areas'].indexOf(
-                        currentStep
-                      ) + 1, 1)}{' '}
+                    ? Math.max(
+                        ['name', 'location', 'areas'].indexOf(currentStep) + 1,
+                        1
+                      )
+                    : Math.max(
+                        ['name', 'location', 'type', 'areas'].indexOf(
+                          currentStep
+                        ) + 1,
+                        1
+                      )}{' '}
                   of {isQuickCount ? 3 : 4}
                 </Text>
               </VStack>
@@ -737,13 +709,13 @@ export default function CountSetupScreen() {
           <Box className='py-2 px-6 pb-6'>
             <HStack space='md'>
               {currentStep !== 'name' && (
-                  <Pressable
-                    onPress={goToPreviousStep}
-                    className='flex-1 py-4 px-6 bg-white/20 rounded-2xl justify-center items-center'
-                  >
-                    <Text className='text-white font-semibold'>Previous</Text>
-                  </Pressable>
-                )}
+                <Pressable
+                  onPress={goToPreviousStep}
+                  className='flex-1 py-4 px-6 bg-white/20 rounded-2xl justify-center items-center'
+                >
+                  <Text className='text-white font-semibold'>Previous</Text>
+                </Pressable>
+              )}
 
               <Pressable
                 onPress={

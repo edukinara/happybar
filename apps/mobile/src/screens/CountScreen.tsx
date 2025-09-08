@@ -42,7 +42,6 @@ export function CountScreen() {
   const {
     addCountItem,
     getRecentCountItems,
-    activeSessionId,
     getActiveSession,
     completeCountSession,
     saveCountItemToAPI,
@@ -104,7 +103,7 @@ export function CountScreen() {
             try {
               // Complete current area and get result (now async)
               const result = await completeCurrentArea(activeSession.id)
-              
+
               if (!result.hasMoreAreas) {
                 if (result.countCompleted) {
                   // Count was auto-completed - show success and navigate home
@@ -144,9 +143,6 @@ export function CountScreen() {
                     ]
                   )
                 }
-              } else {
-                // Show confirmation that area was completed and moved to next
-                console.log(`Area "${currentArea.name}" completed. Moving to "${result.nextArea?.name}"`)
               }
             } catch (error) {
               console.error('Failed to complete area:', error)
@@ -185,7 +181,7 @@ export function CountScreen() {
       0
     )
 
-    setQuantity(currentStock.toString())
+    setQuantity((+currentStock.toFixed(2)).toString())
     setShowCountModal(true)
   }
 
@@ -218,7 +214,9 @@ export function CountScreen() {
     // Check for existing count item in the same area for this product
     const sessionItems = getCountItemsBySession(freshActiveSession.id)
     const existingItem = sessionItems.find(
-      item => item.productId === selectedProduct.id && item.areaId === freshCurrentArea?.id
+      (item) =>
+        item.productId === selectedProduct.id &&
+        item.areaId === freshCurrentArea?.id
     )
 
     if (existingItem) {
@@ -229,21 +227,20 @@ export function CountScreen() {
         variance,
         timestamp: new Date().toISOString(),
       }
-      
+
       updateCountItem(existingItem.id, updatedItem)
-      
+
       // Update API in the background
       try {
         await saveCountItemToAPI(updatedItem)
-        console.log('Count item updated in API successfully')
       } catch (error) {
         console.error('Failed to update count item in API:', error)
       }
-      
-      Alert.alert(
-        'Count Updated',
-        `Updated ${selectedProduct.name} in ${freshCurrentArea?.name || 'current area'} to ${countedQuantity} ${selectedProduct.unit}`
-      )
+
+      // Alert.alert(
+      //   'Count Updated',
+      //   `Updated ${selectedProduct.name} in ${freshCurrentArea?.name || 'current area'} to ${countedQuantity} ${pluralize(countedQuantity, selectedProduct.container || 'unit')}`
+      // )
     } else {
       // Create count item object
       const countItem = {
@@ -273,16 +270,15 @@ export function CountScreen() {
           timestamp: new Date().toISOString(),
         }
         await saveCountItemToAPI(fullCountItem)
-        console.log('Count item saved to API successfully')
       } catch (error) {
         console.error('Failed to save count item to API:', error)
         // Item is already saved locally, so we can continue
       }
 
-      Alert.alert(
-        'Count Saved',
-        `${countedQuantity} ${selectedProduct.unit} of ${selectedProduct.name} in ${freshCurrentArea?.name || 'current area'}`
-      )
+      // Alert.alert(
+      //   'Count Saved',
+      //   `${countedQuantity} ${pluralize(countedQuantity, selectedProduct.container || 'unit')} of ${selectedProduct.name} in ${freshCurrentArea?.name || 'current area'}`
+      // )
     }
 
     // Reset modal state
@@ -300,7 +296,7 @@ export function CountScreen() {
   return (
     <LinearGradient
       colors={['#6366F1', '#8B5CF6', '#A855F7']}
-      className='flex-1'
+      style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
@@ -372,44 +368,44 @@ export function CountScreen() {
           </Box>
         )}
 
-        {/* Search Input */}
-        <Input
-          variant='outline'
-          size='lg'
-          className='bg-white/10 border-white/20 mb-4'
+        {/* Prominent Scan Button */}
+        <LinearGradient
+          colors={['#8B5CF6', '#6366F1']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ marginBottom: 8 }}
         >
-          <InputField
-            placeholder='Search products...'
-            placeholderTextColor='rgba(255,255,255,0.7)'
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            className='text-white'
-          />
-        </Input>
-
-        {/* Action Buttons */}
-        <HStack space='md'>
-          <Button
-            size='lg'
-            className='flex-1 bg-white/20 border border-white/30'
+          <Pressable
+            className='w-full rounded-2xl border-2 border-white/20 shadow-xl'
             onPress={navigateToScanner}
           >
-            <HStack space='sm' className='items-center'>
-              <Ionicons name='scan' size={20} color='white' />
-              <ButtonText className='text-white font-bold'>
-                Scan Barcode
-              </ButtonText>
+            <HStack
+              space='md'
+              className='items-center justify-center py-4 px-6'
+            >
+              <Box className='w-12 h-12 bg-white/20 rounded-full items-center justify-center'>
+                <Ionicons name='scan' size={24} color='white' />
+              </Box>
+              <VStack className='items-start flex-1'>
+                <Text className='text-white font-bold text-lg'>
+                  Scan Barcode
+                </Text>
+                <Text className='text-white/80 text-sm'>
+                  Point camera at product barcode
+                </Text>
+              </VStack>
+              <Ionicons name='chevron-forward' size={20} color='white' />
             </HStack>
-          </Button>
-        </HStack>
+          </Pressable>
+        </LinearGradient>
       </Box>
 
       {/* Content */}
       <Box className='flex-1 bg-white rounded-t-3xl'>
         {/* Recent Counts Section */}
         {recentScans.length > 0 && (
-          <Box className='p-6 border-b border-gray-100'>
-            <HStack className='justify-between items-center mb-4'>
+          <Box className='p-6 pb-3 border-b border-gray-100'>
+            <HStack className='justify-between items-center mb-2'>
               <Text className='text-lg font-bold text-gray-900'>
                 Recent Counts
               </Text>
@@ -427,36 +423,20 @@ export function CountScreen() {
                     key={item.id}
                     className='bg-gray-50 rounded-xl p-4 min-w-[160px]'
                   >
-                    <Text
-                      className='font-medium text-gray-900 text-sm'
-                      numberOfLines={1}
-                    >
-                      {item.productName}
-                    </Text>
+                    <HStack className='justify-between items-center'>
+                      <Text
+                        className='font-medium text-gray-900 text-sm'
+                        numberOfLines={1}
+                      >
+                        {item.productName}
+                      </Text>
+                      <Text className={`text-md font-bold text-blue-600`}>
+                        {item.countedQuantity}
+                      </Text>
+                    </HStack>
                     <Text className='text-xs text-gray-500 mt-1'>
                       {new Date(item.timestamp).toLocaleTimeString()}
                     </Text>
-                    <HStack className='justify-between items-center mt-2'>
-                      <Text className='text-sm font-bold text-gray-900'>
-                        {item.countedQuantity}{' '}
-                        {pluralize(
-                          item.countedQuantity,
-                          item.container || 'unit'
-                        )}
-                      </Text>
-                      <Text
-                        className={`text-xs font-medium ${
-                          item.variance === 0
-                            ? 'text-green-600'
-                            : item.variance > 0
-                              ? 'text-blue-600'
-                              : 'text-orange-600'
-                        }`}
-                      >
-                        {item.variance > 0 ? '+' : ''}
-                        {item.variance}
-                      </Text>
-                    </HStack>
                   </Box>
                 ))}
               </HStack>
@@ -478,8 +458,22 @@ export function CountScreen() {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
             >
-              <VStack className='p-6' space='sm'>
-                <Text className='text-lg font-bold text-gray-900 mb-2'>
+              <VStack className='px-6 py-3' space='sm'>
+                {/* Search Input */}
+                <Input
+                  variant='outline'
+                  size='lg'
+                  className='bg-white/10 border-white/20'
+                >
+                  <InputField
+                    placeholder='Search products...'
+                    // placeholderTextColor='rgba(255,255,255,0.7)'
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    className='border-[1px] border-black/10 rounded-lg'
+                  />
+                </Input>
+                <Text className='text-lg font-bold text-gray-900'>
                   Select Product to Count
                 </Text>
 
@@ -505,59 +499,104 @@ export function CountScreen() {
                       0
                     )
 
+                    // Check if this product has been counted in the current area
+                    const sessionItems = activeSession
+                      ? getCountItemsBySession(activeSession.id)
+                      : []
+                    const countedItem = sessionItems.find(
+                      (item) =>
+                        item.productId === product.id &&
+                        item.areaId === currentArea?.id
+                    )
+
                     return (
                       <Pressable
                         key={product.id}
-                        className='bg-white border border-gray-200 rounded-xl p-4 mb-3'
+                        className={`border rounded-xl p-4 mb-1 ${
+                          countedItem
+                            ? 'bg-purple-50 border-purple-200'
+                            : 'bg-white border-gray-200'
+                        }`}
                         onPress={() => handleProductSelect(product)}
                       >
                         <HStack className='justify-between items-center'>
                           <VStack className='flex-1 mr-4'>
+                            <HStack className='items-center' space='sm'>
+                              <Text
+                                className={`font-medium ${
+                                  countedItem
+                                    ? 'text-purple-900'
+                                    : 'text-gray-900'
+                                }`}
+                                numberOfLines={1}
+                              >
+                                {product.name}
+                              </Text>
+                              {countedItem && (
+                                <Box className='w-2 h-2 bg-purple-500 rounded-full' />
+                              )}
+                            </HStack>
                             <Text
-                              className='font-medium text-gray-900'
-                              numberOfLines={1}
+                              className={`text-sm ${
+                                countedItem
+                                  ? 'text-purple-600'
+                                  : 'text-gray-500'
+                              }`}
                             >
-                              {product.name}
-                            </Text>
-                            <Text className='text-sm text-gray-500'>
                               {product.sku && `SKU: ${product.sku} • `}
-                              Current: {currentStock}{' '}
+                              Current: {+currentStock.toFixed(2)}{' '}
                               {pluralize(
                                 currentStock,
                                 product.container || 'unit'
                               )}
                               {minStock > 0 && ` • Min: ${minStock}`}
+                              {countedItem && (
+                                <Text className='text-purple-700 font-medium'>
+                                  {` • Counted: ${countedItem.countedQuantity} ${pluralize(
+                                    countedItem.countedQuantity,
+                                    product.container || 'unit'
+                                  )}`}
+                                </Text>
+                              )}
                             </Text>
                           </VStack>
 
                           <VStack className='items-end'>
-                            <Box
-                              className={`px-3 py-1 rounded-full ${
-                                currentStock <= minStock
-                                  ? 'bg-red-100'
-                                  : currentStock <= minStock * 1.5
-                                    ? 'bg-yellow-100'
-                                    : 'bg-green-100'
-                              }`}
-                            >
-                              <Text
-                                className={`text-xs font-medium ${
+                            {countedItem ? (
+                              <Box className='px-3 py-1 rounded-full bg-purple-100'>
+                                <Text className='text-xs font-medium text-purple-700'>
+                                  Counted
+                                </Text>
+                              </Box>
+                            ) : (
+                              <Box
+                                className={`px-3 py-1 rounded-full ${
                                   currentStock <= minStock
-                                    ? 'text-red-700'
+                                    ? 'bg-red-100'
                                     : currentStock <= minStock * 1.5
-                                      ? 'text-yellow-700'
-                                      : 'text-green-700'
+                                      ? 'bg-yellow-100'
+                                      : 'bg-green-100'
                                 }`}
                               >
-                                {currentStock <= minStock
-                                  ? 'Low Stock'
-                                  : 'In Stock'}
-                              </Text>
-                            </Box>
+                                <Text
+                                  className={`text-xs font-medium ${
+                                    currentStock <= minStock
+                                      ? 'text-red-700'
+                                      : currentStock <= minStock * 1.5
+                                        ? 'text-yellow-700'
+                                        : 'text-green-700'
+                                  }`}
+                                >
+                                  {currentStock <= minStock
+                                    ? 'Low Stock'
+                                    : 'In Stock'}
+                                </Text>
+                              </Box>
+                            )}
                             <Ionicons
                               name='chevron-forward'
                               size={20}
-                              color='#9CA3AF'
+                              color={countedItem ? '#8B5CF6' : '#9CA3AF'}
                             />
                           </VStack>
                         </HStack>

@@ -3,6 +3,7 @@
 import { ChevronRight, type LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 
+import { InventoryNotificationDot } from '@/components/alerts/InventoryNotificationDot'
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,6 +17,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +36,7 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const { state } = useSidebar()
   return (
     <SidebarGroup>
       <SidebarMenu>
@@ -59,7 +62,13 @@ export function NavMain({
                   >
                     {item.items ? (
                       <div className={'flex items-center w-full'}>
-                        {item.icon && <item.icon />}
+                        <div className='relative'>
+                          {item.icon && <item.icon size={16} />}
+                          {state === 'collapsed' &&
+                            item.title === 'Inventory' && (
+                              <InventoryNotificationDot />
+                            )}
+                        </div>
                         <span>{item.title}</span>
                         {item.badge}
                         <ChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
@@ -69,7 +78,13 @@ export function NavMain({
                         href={item.url}
                         className='flex items-center w-full'
                       >
-                        {item.icon && <item.icon />}
+                        <div className='relative'>
+                          {item.icon && <item.icon size={16} />}
+                          {state === 'collapsed' &&
+                            item.title === 'Inventory' && (
+                              <InventoryNotificationDot />
+                            )}
+                        </div>
                         <span>{item.title}</span>
                         {item.badge && (
                           <div className='ml-auto'>{item.badge}</div>

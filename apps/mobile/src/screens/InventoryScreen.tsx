@@ -85,10 +85,8 @@ export function InventoryScreen() {
 
     return (
       <Pressable style={{ marginBottom: 12 }}>
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <Box
+          className='bg-white'
           style={{
             borderRadius: 16,
             padding: 16,
@@ -159,7 +157,7 @@ export function InventoryScreen() {
               />
             </Box>
           </HStack>
-        </LinearGradient>
+        </Box>
       </Pressable>
     )
   }
@@ -292,10 +290,8 @@ export function InventoryScreen() {
 
           {/* Inventory List */}
           {isLoading ? (
-            <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+            <Box
+              className='bg-white'
               style={{
                 borderRadius: 16,
                 padding: 40,
@@ -314,7 +310,7 @@ export function InventoryScreen() {
               >
                 Loading inventory...
               </Text>
-            </LinearGradient>
+            </Box>
           ) : (
             <VStack style={{ gap: 4 }}>
               {filteredItems.map((item) => (

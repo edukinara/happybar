@@ -1,10 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from '../screens/LoginScreen';
-import { WelcomeScreen } from '../screens/WelcomeScreen';
 
 export type AuthStackParamList = {
-  Welcome: undefined;
   Login: undefined;
 };
 
@@ -17,8 +15,8 @@ export function AuthNavigator() {
         headerShown: false,
         animation: 'slide_from_right',
       }}
+      initialRouteName="Login"
     >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
     </Stack.Navigator>
   );

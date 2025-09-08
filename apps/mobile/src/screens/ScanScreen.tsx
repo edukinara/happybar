@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { CameraView, useCameraPermissions, Camera } from 'expo-camera'
+import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Dimensions, Platform, BackHandler } from 'react-native'
+import { Alert, BackHandler, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
@@ -25,10 +25,9 @@ import { Pressable } from '@/components/ui/pressable'
 import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
-
-import pluralize from 'pluralize'
 import { useProductByUPC } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
+import { pluralize } from '../utils/pluralize'
 
 // Removed unused Dimensions import
 
@@ -54,17 +53,17 @@ export function ScanScreen() {
   const [scannedUPC, setScannedUPC] = useState<string | null>(null)
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
-  
+
   // Count store
-  const { 
-    addCountItem, 
-    getRecentCountItems, 
+  const {
+    addCountItem,
+    getRecentCountItems,
     activeSessionId,
     getActiveSession,
     completeCountSession,
     saveCountItemToAPI,
     updateCountItem,
-    getCountItemsBySession
+    getCountItemsBySession,
   } = useCountStore()
   const recentScans = getRecentCountItems(1)
   const activeSession = getActiveSession()
@@ -76,12 +75,15 @@ export function ScanScreen() {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        // Navigate to home screen instead of going back in stack
-        navigation.getParent()?.getParent()?.navigate('Home' as never)
+        // Navigate to home tab instead of going back in stack
+        navigation.getParent()?.navigate('Home' as never)
         return true // Prevent default back behavior
       }
 
-      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      )
       return () => subscription.remove()
     }, [navigation])
   )
@@ -215,7 +217,7 @@ export function ScanScreen() {
 
   const handleSaveCount = async () => {
     if (!scannedProduct) return
-    
+
     // Get FRESH session and area data at save time, not render time
     const freshActiveSession = getActiveSession()
     if (!freshActiveSession) return
@@ -223,16 +225,18 @@ export function ScanScreen() {
     const freshCurrentArea = freshActiveSession?.areas?.find(
       (area) => area.id === freshActiveSession.currentAreaId
     )
-    
+
     const countedQuantity = parseFloat(quantity)
     const variance = countedQuantity - scannedProduct.currentStock
-    
+
     // Check for existing count item in the same area for this product
     const sessionItems = getCountItemsBySession(freshActiveSession.id)
     const existingItem = sessionItems.find(
-      item => item.productId === scannedProduct.id && item.areaId === freshCurrentArea?.id
+      (item) =>
+        item.productId === scannedProduct.id &&
+        item.areaId === freshCurrentArea?.id
     )
-    
+
     if (existingItem) {
       // Update existing item instead of creating new one
       const updatedItem = {
@@ -241,20 +245,19 @@ export function ScanScreen() {
         variance,
         timestamp: new Date().toISOString(),
       }
-      
+
       updateCountItem(existingItem.id, updatedItem)
-      
+
       // Update API in the background
       try {
         await saveCountItemToAPI(updatedItem)
-        console.log('Count item updated in API successfully')
       } catch (error) {
         console.error('Failed to update count item in API:', error)
       }
-      
+
       Alert.alert(
         'Count Updated',
-        `Updated ${scannedProduct.name} in ${freshCurrentArea?.name || 'current area'} to ${countedQuantity} ${scannedProduct.unit}`
+        `Updated ${scannedProduct.name} in ${freshCurrentArea?.name || 'current area'} to ${countedQuantity} ${pluralize(countedQuantity, scannedProduct.container || 'unit')}`
       )
     } else {
       // Create new count item object with area ID
@@ -273,10 +276,10 @@ export function ScanScreen() {
         countSessionId: freshActiveSession.id,
         areaId: freshCurrentArea?.id, // Add current area ID
       }
-      
+
       // Save to count store locally first
       addCountItem(countItem)
-      
+
       // Save to API in the background
       try {
         const fullCountItem = {
@@ -285,15 +288,14 @@ export function ScanScreen() {
           timestamp: new Date().toISOString(),
         }
         await saveCountItemToAPI(fullCountItem)
-        console.log('Count item saved to API successfully')
       } catch (error) {
         console.error('Failed to save count item to API:', error)
         // Item is already saved locally, so we can continue
       }
-      
+
       Alert.alert(
         'Count Saved',
-        `${countedQuantity} ${scannedProduct.unit} of ${scannedProduct.name} in ${freshCurrentArea?.name || 'current area'}`
+        `${countedQuantity} ${pluralize(countedQuantity, scannedProduct.container || 'unit')} of ${scannedProduct.name} in ${freshCurrentArea?.name || 'current area'}`
       )
     }
 
@@ -386,16 +388,16 @@ export function ScanScreen() {
             'codabar',
           ],
         }}
-        onBarcodeScanned={isScanning && isCameraReady ? handleBarCodeScanned : undefined}
+        onBarcodeScanned={
+          isScanning && isCameraReady ? handleBarCodeScanned : undefined
+        }
         onCameraReady={() => {
-          console.log('Camera ready callback triggered')
           if (Platform.OS !== 'ios') {
             // For non-iOS platforms, set ready immediately
             setIsCameraReady(true)
           } else {
             // For iOS, add a small delay to ensure camera is fully initialized
             setTimeout(() => {
-              console.log('iOS camera ready after delay')
               setIsCameraReady(true)
             }, 200)
           }
@@ -406,7 +408,9 @@ export function ScanScreen() {
       {!isCameraReady && (
         <Box className='absolute inset-0 bg-black/70 justify-center items-center'>
           <Spinner size='large' color='white' />
-          <Text className='text-white text-lg mt-4'>Initializing camera...</Text>
+          <Text className='text-white text-lg mt-4'>
+            Initializing camera...
+          </Text>
         </Box>
       )}
 
@@ -417,11 +421,11 @@ export function ScanScreen() {
       >
         <HStack className='justify-between items-center px-5 py-4'>
           <HStack className='items-center' space='sm'>
-            <Pressable 
+            <Pressable
               className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
               onPress={() => {
                 // Navigate back to home screen (exit count tab)
-                navigation.getParent()?.getParent()?.navigate('Home' as never)
+                navigation.getParent()?.navigate('Home' as never)
               }}
             >
               <Ionicons name='arrow-back' size={20} color='white' />
@@ -452,25 +456,28 @@ export function ScanScreen() {
               </Text>
             )}
           </VStack>
-          <Pressable 
+          <Pressable
             className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
             onPress={async () => {
               if (activeSession) {
                 try {
                   await completeCountSession(activeSession.id)
                   // After completing, go back to home
-                  navigation.getParent()?.getParent()?.navigate('Home' as never)
+                  navigation.getParent()?.navigate('Home' as never)
                 } catch (error) {
                   console.error('Failed to complete count session:', error)
-                  Alert.alert('Error', 'Failed to complete count. Please try again.')
+                  Alert.alert(
+                    'Error',
+                    'Failed to complete count. Please try again.'
+                  )
                 }
               }
             }}
           >
-            <Ionicons 
-              name={activeSession ? 'checkmark' : 'help-circle-outline'} 
-              size={20} 
-              color='white' 
+            <Ionicons
+              name={activeSession ? 'checkmark' : 'help-circle-outline'}
+              size={20}
+              color='white'
             />
           </Pressable>
         </HStack>
@@ -512,14 +519,14 @@ export function ScanScreen() {
                 <Text className='text-white text-lg font-bold'>
                   Last Scanned
                 </Text>
-                <Pressable onPress={() => navigation.navigate('CountHistory' as never)}>
+                <Pressable
+                  onPress={() => navigation.navigate('CountHistory' as never)}
+                >
                   <Text className='text-purple-400 font-medium'>View All</Text>
                 </Pressable>
               </HStack>
 
-              <HStack
-                className='justify-between items-center py-3 px-4 bg-white/10 rounded-lg backdrop-blur-sm'
-              >
+              <HStack className='justify-between items-center py-3 px-4 bg-white/10 rounded-lg backdrop-blur-sm'>
                 <VStack className='flex-1'>
                   <Text className='text-white font-medium' numberOfLines={1}>
                     {recentScans[0].productName}
@@ -530,15 +537,23 @@ export function ScanScreen() {
                 </VStack>
                 <VStack className='items-end'>
                   <Text className='text-white font-bold'>
-                    {recentScans[0].countedQuantity} {recentScans[0].unit}
+                    {recentScans[0].countedQuantity}{' '}
+                    {pluralize(
+                      recentScans[0].countedQuantity,
+                      recentScans[0].container || 'unit'
+                    )}
                   </Text>
-                  <Text 
+                  <Text
                     className={`text-sm font-medium ${
-                      recentScans[0].variance === 0 ? 'text-green-400' : 
-                      recentScans[0].variance > 0 ? 'text-blue-400' : 'text-orange-400'
+                      recentScans[0].variance === 0
+                        ? 'text-green-400'
+                        : recentScans[0].variance > 0
+                          ? 'text-blue-400'
+                          : 'text-orange-400'
                     }`}
                   >
-                    {recentScans[0].variance > 0 ? '+' : ''}{recentScans[0].variance}
+                    {recentScans[0].variance > 0 ? '+' : ''}
+                    {recentScans[0].variance}
                   </Text>
                 </VStack>
               </HStack>
@@ -590,9 +605,10 @@ export function ScanScreen() {
                   <Text className='text-gray-600'>
                     {scannedProduct.sku && `SKU: ${scannedProduct.sku} • `}
                     Current: {scannedProduct.currentStock}{' '}
-                    {scannedProduct.currentStock > 1
-                      ? pluralize(scannedProduct.container || 'unit')
-                      : scannedProduct.container}
+                    {pluralize(
+                      scannedProduct.currentStock,
+                      scannedProduct.container || 'unit'
+                    )}
                     {scannedProduct.parLevel > 0 &&
                       ` • Par: ${scannedProduct.parLevel}`}
                   </Text>

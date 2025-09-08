@@ -183,10 +183,8 @@ export function SettingsScreen() {
       >
         <VStack style={{ gap: 20 }}>
           {/* Profile Card */}
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <Box
+            className='bg-white'
             style={{
               borderRadius: 16,
               padding: 20,
@@ -221,13 +219,11 @@ export function SettingsScreen() {
                 </Text>
               </VStack>
             </HStack>
-          </LinearGradient>
+          </Box>
 
           {/* Notifications */}
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <Box
+            className='bg-white'
             style={{
               borderRadius: 16,
               padding: 20,
@@ -313,15 +309,13 @@ export function SettingsScreen() {
                 </HStack>
               ))}
             </VStack>
-          </LinearGradient>
+          </Box>
 
           {/* Settings Groups */}
           {settingsGroups.map((group, groupIndex) => (
-            <LinearGradient
-              key={group.title}
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.9)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+            <Box
+              className='bg-white'
+              key={groupIndex}
               style={{
                 borderRadius: 16,
                 padding: 20,
@@ -363,7 +357,7 @@ export function SettingsScreen() {
                   renderSettingItem(item, index === group.items.length - 1)
                 )}
               </VStack>
-            </LinearGradient>
+            </Box>
           ))}
 
           {/* App Info */}

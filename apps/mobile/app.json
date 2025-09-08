@@ -13,6 +13,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#8B5CF6"
     },
+    "primaryColor": "#8B5CF6",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.happybar.inventory",
