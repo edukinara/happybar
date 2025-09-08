@@ -263,6 +263,202 @@ export const countApi = {
     }>(`/api/inventory-counts/${id}`, { status: 'APPROVED' })
   },
 
+  // Categories
+  async getCategories() {
+    const response = await apiClient.get<{
+      success: boolean
+      data: {
+        categories: Array<{
+          id: string
+          name: string
+          description?: string
+          createdAt: string
+          updatedAt: string
+        }>
+      }
+    }>('/api/products/categories')
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get categories')
+    }
+    return response.data
+  },
+
+  // Product catalog search
+  async searchCatalog(params?: { limit?: number; search?: string }) {
+    if (!params?.search || params.search.length < 3) {
+      return { success: true, data: [] }
+    }
+
+    const response = await apiClient.get<{
+      success: boolean
+      data: Array<{
+        id: string
+        name: string
+        upc: string | null
+        unit: string | null
+        unitSize: number | null
+        caseSize: number | null
+        costPerUnit: number | null
+        costPerCase: number | null
+        image: string | null
+        container: string | null
+        categoryId: string
+        category: {
+          id: string
+          name: string
+        }
+      }>
+    }>(
+      `/api/products/catalog?search=${params.search}&limit=${params.limit || 20}`
+    )
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to search product catalog')
+    }
+    return { success: true, data: response.data }
+  },
+
+  // Create product
+  async createProduct(data: {
+    name: string
+    sku?: string
+    upc?: string
+    categoryId: string
+    unit: string
+    container?: string
+    unitSize?: number
+    caseSize?: number
+    costPerUnit: number
+    costPerCase?: number
+    sellPrice?: number
+    alcoholContent?: number
+    image?: string
+    suppliers?: Array<{
+      supplierId: string
+      supplierSku?: string
+      orderingUnit: 'UNIT' | 'CASE'
+      costPerUnit: number
+      costPerCase?: number
+      minimumOrder: number
+      minimumOrderUnit?: 'UNIT' | 'CASE'
+      packSize?: number
+      leadTimeDays: number
+      isPreferred: boolean
+    }>
+  }) {
+    const response = await apiClient.post<{
+      success: boolean
+      data: {
+        id: string
+        name: string
+        sku?: string
+        upc?: string
+        categoryId: string
+        unit: string
+        container?: string
+        unitSize?: number
+        caseSize?: number
+        costPerUnit: number
+        costPerCase?: number
+        sellPrice?: number
+        alcoholContent?: number
+        image?: string
+        createdAt: string
+        updatedAt: string
+        suppliers?: Array<{
+          id: string
+          productId: string
+          supplierId: string
+          supplierSku?: string
+          orderingUnit: 'UNIT' | 'CASE'
+          costPerUnit: number
+          costPerCase?: number
+          minimumOrder: number
+          minimumOrderUnit?: 'UNIT' | 'CASE'
+          packSize?: number
+          leadTimeDays: number
+          isPreferred: boolean
+          supplier: {
+            id: string
+            name: string
+          }
+        }>
+      }
+    }>('/api/products', data)
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to create product')
+    }
+    return response.data
+  },
+
+  // Suppliers
+  async getSuppliers(params?: {
+    active?: boolean
+    search?: string
+  }) {
+    const queryParams = new URLSearchParams()
+    if (params?.active !== undefined) {
+      queryParams.append('active', params.active.toString())
+    }
+    if (params?.search) {
+      queryParams.append('search', params.search)
+    }
+
+    const response = await apiClient.get<{
+      success: boolean
+      data: Array<{
+        id: string
+        name: string
+        contactEmail?: string
+        contactPhone?: string
+        isActive: boolean
+        createdAt: string
+        updatedAt: string
+      }>
+    }>(`/api/suppliers?${queryParams}`)
+    
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get suppliers')
+    }
+    return response.data
+  },
+
+  // Add product to supplier
+  async addProductToSupplier(
+    supplierId: string,
+    data: {
+      productId: string
+      orderingUnit: 'UNIT' | 'CASE'
+      costPerUnit: number
+      costPerCase?: number
+      packSize?: number
+      minimumOrder: number
+      isPreferred: boolean
+    }
+  ) {
+    const response = await apiClient.post<{
+      success: boolean
+      data: {
+        id: string
+        supplierId: string
+        productId: string
+        orderingUnit: 'UNIT' | 'CASE'
+        costPerUnit: number
+        costPerCase?: number
+        packSize?: number
+        minimumOrder: number
+        isPreferred: boolean
+      }
+    }>(`/api/suppliers/${supplierId}/products`, data)
+    
+    if (!response.success || !response.data) {
+      throw new Error('Failed to add product to supplier')
+    }
+    return response.data
+  },
+
   // Add item to count
   async addCountItem(
     countId: string,

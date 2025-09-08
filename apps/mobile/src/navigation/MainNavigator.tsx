@@ -4,8 +4,8 @@ import React from 'react'
 import { Platform, View } from 'react-native'
 import { HomeScreen } from '../screens/HomeScreen'
 import { InsightsScreen } from '../screens/InsightsScreen'
-import { CountNavigator } from './CountNavigator'
 import { SettingsScreen } from '../screens/SettingsScreen'
+import { CountNavigator } from './CountNavigator'
 import { InventoryNavigator } from './InventoryNavigator'
 
 export type MainTabParamList = {
@@ -72,12 +72,7 @@ export function MainNavigator() {
         tabBarStyle: {
           backgroundColor: 'rgba(255,255,255,1)',
           backdropFilter: 'blur(20px)',
-          borderTopWidth: 0,
           elevation: 8,
-          // shadowColor: '#000',
-          // shadowOffset: { width: 0, height: -8 },
-          // shadowOpacity: 1,
-          // shadowRadius: 4,
           height: Platform.OS === 'ios' ? 90 : 70,
           paddingBottom: Platform.OS === 'ios' ? 32 : 14,
           paddingTop: 10,

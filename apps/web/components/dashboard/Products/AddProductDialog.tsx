@@ -155,32 +155,31 @@ export default function AddProductDialog({
         sku: formData.sku || undefined,
         upc: formData.upc || undefined,
         container: formData.container.toLowerCase() || undefined,
+        // Include suppliers in the product creation request
+        suppliers: productSuppliers.length > 0 ? productSuppliers.map((supplier, index) => ({
+          supplierId: supplier.supplierId,
+          orderingUnit: supplier.orderingUnit,
+          costPerUnit: supplier.costPerUnit,
+          costPerCase: supplier.costPerCase || undefined,
+          minimumOrder: supplier.minimumOrder,
+          packSize: formData.caseSize || undefined,
+          isPreferred: index === 0, // First supplier is preferred
+          leadTimeDays: 3, // Default lead time
+        })) : undefined,
       }
 
       const createdProduct = await inventoryApi.createProduct(data)
-
-      // Create product-supplier relationships
+      
+      console.log('Product created successfully with suppliers:', {
+        id: createdProduct.id,
+        name: createdProduct.name,
+        suppliersCount: createdProduct.suppliers?.length || 0
+      })
+      
       if (productSuppliers.length > 0) {
-        for (const supplier of productSuppliers) {
-          try {
-            await suppliersApi.addProductToSupplier(supplier.supplierId, {
-              productId: createdProduct.id,
-              orderingUnit: supplier.orderingUnit,
-              costPerUnit: supplier.costPerUnit,
-              costPerCase: supplier.costPerCase,
-              packSize: formData.caseSize || undefined,
-              minimumOrder: supplier.minimumOrder,
-              isPreferred:
-                productSuppliers[0]?.supplierId === supplier.supplierId,
-            })
-          } catch (error) {
-            console.warn(
-              `Failed to create supplier relationship for ${supplier.supplierName}:`,
-              error
-            )
-            toast.error(`Failed to assign product to ${supplier.supplierName}`)
-          }
-        }
+        toast.success(`Product and ${productSuppliers.length} supplier${productSuppliers.length === 1 ? '' : 's'} created successfully!`)
+      } else {
+        toast.success('Product created successfully!')
       }
 
       reset()

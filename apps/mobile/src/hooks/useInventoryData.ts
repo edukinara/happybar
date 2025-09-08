@@ -247,17 +247,82 @@ export const useInventoryCount = (id: string) => {
   })
 }
 
+// Categories hook
+export const useCategories = () => {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      return countApi.getCategories()
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories change less frequently
+  })
+}
+
+// Catalog search hook
+export const useCatalog = (params?: { limit?: number; search?: string }) => {
+  // Create stable query key by only including defined params
+  const stableParams = params
+    ? {
+        ...(params.limit !== undefined && { limit: params.limit }),
+        ...(params.search !== undefined && { search: params.search }),
+      }
+    : {}
+
+  return useQuery({
+    queryKey: ['catalog', stableParams],
+    queryFn: async () => {
+      const response = await countApi.searchCatalog(params)
+      return response.data
+    },
+    enabled: !!(params?.search && params.search.length >= 3),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+}
+
+// Suppliers hook
+export const useSuppliers = (params?: { active?: boolean; search?: string }) => {
+  return useQuery({
+    queryKey: ['suppliers', params],
+    queryFn: async () => {
+      return countApi.getSuppliers(params)
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - suppliers change less frequently
+  })
+}
+
 // Mutations
 export const useCreateProduct = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: Partial<Product>) => {
-      const response = await apiClient.post<{
-        success: boolean
-        data: Product
-      }>('/api/inventory/products', data)
-      return response.data
+    mutationFn: async (data: {
+      name: string
+      sku?: string
+      upc?: string
+      categoryId: string
+      unit: string
+      container?: string
+      unitSize?: number
+      caseSize?: number
+      costPerUnit: number
+      costPerCase?: number
+      sellPrice?: number
+      alcoholContent?: number
+      image?: string
+      suppliers?: Array<{
+        supplierId: string
+        supplierSku?: string
+        orderingUnit: 'UNIT' | 'CASE'
+        costPerUnit: number
+        costPerCase?: number
+        minimumOrder: number
+        minimumOrderUnit?: 'UNIT' | 'CASE'
+        packSize?: number
+        leadTimeDays: number
+        isPreferred: boolean
+      }>
+    }) => {
+      return countApi.createProduct(data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.products() })

@@ -4,6 +4,19 @@ import { z } from 'zod'
 import { authMiddleware, requirePermission } from '../middleware/auth-simple'
 
 // Validation schemas
+const productSupplierSchema = z.object({
+  supplierId: z.string(),
+  supplierSku: z.string().optional(),
+  orderingUnit: z.enum(['UNIT', 'CASE']).default('UNIT'),
+  costPerUnit: z.number().min(0),
+  costPerCase: z.number().min(0).optional(),
+  minimumOrder: z.number().positive().default(1),
+  minimumOrderUnit: z.enum(['UNIT', 'CASE']).optional(),
+  packSize: z.number().positive().optional(),
+  leadTimeDays: z.number().positive().default(3),
+  isPreferred: z.boolean().default(false),
+})
+
 const productSchema = z.object({
   name: z.string().min(1),
   sku: z.string().optional(),
@@ -53,9 +66,11 @@ const productSchema = z.object({
   alcoholContent: z.number().min(0).max(100).optional(),
   image: z.string().optional(),
   isActive: z.boolean().default(true),
+  // Optional array of suppliers to be associated with this product
+  suppliers: z.array(productSupplierSchema).optional(),
 })
 
-const updateProductSchema = productSchema.partial()
+const updateProductSchema = productSchema.omit({ suppliers: true }).partial()
 
 const posProductImportSchema = z.object({
   integrationId: z.string(),
@@ -274,15 +289,17 @@ export async function productRoutes(fastify: FastifyInstance) {
     },
     async (request: any, reply) => {
       const validatedData = productSchema.parse(request.body)
+      const organizationId = getOrganizationId(request)
+      const { suppliers, ...productData } = validatedData
 
       // Check if SKU or UPC already exists
-      if (validatedData.sku || validatedData.upc) {
+      if (productData.sku || productData.upc) {
         const existing = await fastify.prisma.product.findFirst({
           where: {
-            organizationId: getOrganizationId(request),
+            organizationId,
             OR: [
-              ...(validatedData.sku ? [{ sku: validatedData.sku }] : []),
-              ...(validatedData.upc ? [{ upc: validatedData.upc }] : []),
+              ...(productData.sku ? [{ sku: productData.sku }] : []),
+              ...(productData.upc ? [{ upc: productData.upc }] : []),
             ],
           },
         })
@@ -296,17 +313,98 @@ export async function productRoutes(fastify: FastifyInstance) {
         }
       }
 
-      const product = await fastify.prisma.product.create({
-        data: {
-          ...validatedData,
-          organizationId: getOrganizationId(request),
-        },
-        include: {
-          category: true,
-        },
+      // If suppliers are provided, validate they exist in the organization
+      if (suppliers && suppliers.length > 0) {
+        const supplierIds = suppliers.map(s => s.supplierId)
+        const existingSuppliers = await fastify.prisma.supplier.findMany({
+          where: {
+            id: { in: supplierIds },
+            organizationId,
+          },
+          select: { id: true },
+        })
+
+        const foundSupplierIds = existingSuppliers.map(s => s.id)
+        const missingSuppliers = supplierIds.filter(id => !foundSupplierIds.includes(id))
+        
+        if (missingSuppliers.length > 0) {
+          throw new AppError(
+            `Suppliers not found: ${missingSuppliers.join(', ')}`,
+            ErrorCode.VALIDATION_ERROR,
+            400
+          )
+        }
+
+        // Ensure only one supplier is marked as preferred
+        const preferredCount = suppliers.filter(s => s.isPreferred).length
+        if (preferredCount > 1) {
+          throw new AppError(
+            'Only one supplier can be marked as preferred',
+            ErrorCode.VALIDATION_ERROR,
+            400
+          )
+        }
+
+        // If no supplier is marked as preferred but suppliers exist, mark the first one
+        if (preferredCount === 0 && suppliers.length > 0) {
+          suppliers[0].isPreferred = true
+        }
+      }
+
+      // Use a transaction to create both product and supplier relationships atomically
+      const result = await fastify.prisma.$transaction(async (prisma) => {
+        // Create the product
+        const product = await prisma.product.create({
+          data: {
+            ...productData,
+            organizationId,
+          },
+          include: {
+            category: true,
+          },
+        })
+
+        // Create supplier relationships if provided
+        if (suppliers && suppliers.length > 0) {
+          const supplierRelationships = await Promise.all(
+            suppliers.map(supplierData => 
+              prisma.productSupplier.create({
+                data: {
+                  productId: product.id,
+                  supplierId: supplierData.supplierId,
+                  supplierSku: supplierData.supplierSku,
+                  orderingUnit: supplierData.orderingUnit,
+                  costPerUnit: supplierData.costPerUnit,
+                  costPerCase: supplierData.costPerCase,
+                  minimumOrder: supplierData.minimumOrder,
+                  minimumOrderUnit: supplierData.minimumOrderUnit,
+                  packSize: supplierData.packSize || productData.caseSize,
+                  leadTimeDays: supplierData.leadTimeDays,
+                  isPreferred: supplierData.isPreferred,
+                },
+                include: {
+                  supplier: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              })
+            )
+          )
+
+          // Return product with supplier relationships
+          return {
+            ...product,
+            suppliers: supplierRelationships,
+          }
+        }
+
+        return product
       })
 
-      return { success: true, data: { product } }
+      return { success: true, data: result }
     }
   )
 

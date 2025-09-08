@@ -90,7 +90,7 @@ export function HomeScreen() {
             onPress: async () => {
               try {
                 await approveCountMutation.mutateAsync(count.id)
-                
+
                 // Refresh all data after successful approval
                 await Promise.all([
                   refetchAnalytics(),
@@ -98,7 +98,7 @@ export function HomeScreen() {
                   refetchCompletedCounts(),
                   syncNow(),
                 ])
-                
+
                 Alert.alert(
                   'Success',
                   `Count "${count.name}" has been approved and applied to inventory.`
@@ -115,7 +115,13 @@ export function HomeScreen() {
         ]
       )
     },
-    [approveCountMutation, refetchAnalytics, refetchLowStock, refetchCompletedCounts, syncNow]
+    [
+      approveCountMutation,
+      refetchAnalytics,
+      refetchLowStock,
+      refetchCompletedCounts,
+      syncNow,
+    ]
   )
 
   const renderHeader = () => (
@@ -283,17 +289,13 @@ export function HomeScreen() {
   }
 
   const renderQuickActions = () => {
-    const hasActiveFullOrCycleCount =
-      activeSession &&
-      (activeSession.type === 'FULL' || activeSession.type === 'CYCLE')
-
     return (
       <VStack className='mb-8' space='lg'>
         <Text className='text-white text-xl font-bold'>Quick Actions</Text>
         <VStack space='md'>
+          {/* Only show Quick Count if no full/cycle count is in progress */}
           <HStack space='md'>
-            {/* Only show Quick Count if no full/cycle count is in progress */}
-            {!hasActiveFullOrCycleCount && (
+            {activeSession ? null : (
               <Pressable
                 className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
                 onPress={() => {
@@ -329,60 +331,17 @@ export function HomeScreen() {
                 </VStack>
               </Pressable>
             )}
-
-            <Pressable
-              className={`${hasActiveFullOrCycleCount ? 'flex-1' : 'flex-1'} p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg`}
-            >
+            <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
               <VStack className='items-center' space='sm'>
-                <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
-                  <Ionicons name='add-circle' size={24} color='#059669' />
+                <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
+                  <Ionicons name='cart' size={24} color='#2563EB' />
                 </Box>
                 <Text className='text-sm font-semibold text-gray-900'>
-                  Add Product
+                  Create Order
                 </Text>
               </VStack>
             </Pressable>
-
-            {/* Add second button in first row if Quick Count is hidden */}
-            {hasActiveFullOrCycleCount && (
-              <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
-                <VStack className='items-center' space='sm'>
-                  <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
-                    <Ionicons name='cart' size={24} color='#2563EB' />
-                  </Box>
-                  <Text className='text-sm font-semibold text-gray-900'>
-                    Create Order
-                  </Text>
-                </VStack>
-              </Pressable>
-            )}
           </HStack>
-
-          {/* Second row - only show if Quick Count is visible */}
-          {!hasActiveFullOrCycleCount && (
-            <HStack space='md'>
-              <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
-                <VStack className='items-center' space='sm'>
-                  <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
-                    <Ionicons name='cart' size={24} color='#2563EB' />
-                  </Box>
-                  <Text className='text-sm font-semibold text-gray-900'>
-                    Create Order
-                  </Text>
-                </VStack>
-              </Pressable>
-              <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
-                <VStack className='items-center' space='sm'>
-                  <Box className='size-12 bg-gray-100 rounded-full justify-center items-center'>
-                    <Ionicons name='settings' size={24} color='#6B7280' />
-                  </Box>
-                  <Text className='text-sm font-semibold text-gray-900'>
-                    Settings
-                  </Text>
-                </VStack>
-              </Pressable>
-            </HStack>
-          )}
         </VStack>
       </VStack>
     )

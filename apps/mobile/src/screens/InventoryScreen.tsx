@@ -4,6 +4,7 @@ import { HStack } from '@/components/ui/hstack'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import pluralize from 'pluralize'
 import React, { useState } from 'react'
@@ -30,6 +31,7 @@ const colors = {
 }
 
 export function InventoryScreen() {
+  const navigation = useNavigation()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'low' | 'out'>('all')
 
@@ -195,6 +197,7 @@ export function InventoryScreen() {
             )}
           </VStack>
           <Pressable
+            onPress={() => navigation.navigate('AddProduct' as never)}
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.2)',
               width: 44,
