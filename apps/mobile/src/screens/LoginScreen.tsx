@@ -60,10 +60,6 @@ export function LoginScreen() {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    alert('Google login coming soon!')
-  }
-
   return (
     <LinearGradient
       colors={['#6366F1', '#8B5CF6', '#A855F7']}
@@ -194,7 +190,7 @@ export function LoginScreen() {
                     </ButtonText>
                   </Button>
 
-                  <HStack className='items-center'>
+                  {/* <HStack className='items-center'>
                     <Box className='flex-1 h-0.5 bg-white/30' />
                     <Text className='text-white/70 text-sm mx-3'>or</Text>
                     <Box className='flex-1 h-0.5 bg-white/30' />
@@ -213,7 +209,7 @@ export function LoginScreen() {
                         Continue with Google
                       </ButtonText>
                     </HStack>
-                  </Button>
+                  </Button> */}
                 </VStack>
               </VStack>
             </Card>

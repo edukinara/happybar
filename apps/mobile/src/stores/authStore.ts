@@ -6,6 +6,7 @@ interface User {
   id: string
   email: string
   name?: string
+  image?: string | null
   organizationId: string
   organizationName?: string
   role:
@@ -58,13 +59,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           userData = {
             id: sessionData.data.user.id,
             email: sessionData.data.user.email,
+            image: sessionData.data.user.image,
             name:
               sessionData.data.user.name ||
               sessionData.data.user.email.split('@')[0],
             organizationId:
               (sessionData.data.session as any).activeOrganizationId || '',
             organizationName: '', // Will need to fetch from API if needed
-            role: 'staff', // Default role, actual role will come from member data
+            role: (sessionData.data.user as any).role || 'staff', // Default role, actual role will come from member data
           }
 
           // Store user data for offline access
@@ -101,6 +103,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const userData: User = {
           id: result.data.user.id,
           email: result.data.user.email,
+          image: result.data.user.image,
           name: result.data.user.name || result.data.user.email.split('@')[0],
           organizationId: '', // Will be populated from session or API
           organizationName: '', // Will need to fetch from API if needed

@@ -83,7 +83,7 @@ interface CountStore {
   
   // Area management
   setCurrentArea: (sessionId: string, areaId: string) => void
-  completeCurrentArea: (sessionId: string) => Promise<{ hasMoreAreas: boolean; nextArea: CountArea | null }>
+  completeCurrentArea: (sessionId: string) => Promise<{ hasMoreAreas: boolean; nextArea: CountArea | null; countCompleted?: boolean }>
   getNextArea: (sessionId: string) => CountArea | null
   getAreaProgress: (sessionId: string) => { completed: number; total: number }
   
@@ -523,6 +523,12 @@ export const useCountStore = create<CountStore>()((set, get) => ({
           const currentArea = convertedAreas.find(area => area.status === 'in_progress') ||
                              convertedAreas.find(area => area.status === 'pending')
           
+          // Validate count status before creating local session
+          if (apiCount.status === 'COMPLETED' || apiCount.status === 'APPROVED') {
+            console.log(`Count ${apiCount.id} is already ${apiCount.status}, cannot resume for editing`)
+            throw new Error(`Count is already ${apiCount.status.toLowerCase()} and cannot be resumed for editing`)
+          }
+
           // Create local session from API data
           const sessionId = `backend-${apiCount.id}`
           const newSession: CountSession = {
@@ -530,7 +536,7 @@ export const useCountStore = create<CountStore>()((set, get) => ({
             apiId: apiCount.id,
             name: apiCount.name,
             type: apiCount.type,
-            status: apiCount.status === 'APPROVED' ? 'COMPLETED' as const : apiCount.status as 'IN_PROGRESS',
+            status: apiCount.status as 'IN_PROGRESS', // Should only be IN_PROGRESS at this point
             locationId: apiCount.locationId,
             locationName: apiCount.location.name,
             storageAreas: convertedAreas.map(area => area.name),
@@ -691,12 +697,43 @@ export const useCountStore = create<CountStore>()((set, get) => ({
           return { hasMoreAreas: false, nextArea: null }
         }
 
+        // Validate count is still in progress before completing area
+        if (session.status !== 'IN_PROGRESS') {
+          console.warn(`Cannot complete area - count status is ${session.status}`)
+          throw new Error(`Count is ${session.status} and cannot be modified`)
+        }
+
         const currentAreaItems = get().countItems.filter(
           item => item.countSessionId === sessionId && item.areaId === session.currentAreaId
         )
 
         try {
-          // First sync area status to backend (like web app does)
+          // Batch save all count items for this area (like web app does)
+          // Note: Mobile app already saves items in real-time, but this ensures consistency
+          console.log(`Batch saving ${currentAreaItems.length} items for area completion`)
+          
+          if (currentAreaItems.length > 0) {
+            const savePromises = currentAreaItems.map(item => 
+              countApi.addCountItem(session.apiId!, {
+                areaId: item.areaId!,
+                productId: item.productId,
+                fullUnits: Math.floor(item.countedQuantity),
+                partialUnit: item.countedQuantity % 1,
+                notes: `Mobile app - Area: ${session.areas?.find(a => a.id === item.areaId)?.name || 'Unknown'} (batch save)`
+              }).catch(error => {
+                // Log but don't fail - item might already be saved from real-time sync
+                console.log(`Item ${item.productName} may already be saved:`, error.message)
+                return null
+              })
+            )
+            
+            await Promise.all(savePromises)
+            console.log(`Completed batch save for ${currentAreaItems.length} items`)
+          } else {
+            console.log(`No items to batch save for area completion`)
+          }
+
+          // Then sync area status to backend (like web app does)
           await countApi.updateAreaStatus(session.apiId, session.currentAreaId, 'COMPLETED')
 
           // Then update local state
@@ -726,7 +763,17 @@ export const useCountStore = create<CountStore>()((set, get) => ({
             get().setCurrentArea(sessionId, nextArea.id)
             return { hasMoreAreas: true, nextArea }
           } else {
-            return { hasMoreAreas: false, nextArea: null }
+            // All areas complete - auto-complete the count (like web app does)
+            console.log('All areas completed, auto-completing count:', session.apiId)
+            await countApi.updateCount(session.apiId, { status: 'COMPLETED' })
+            
+            // Update local state to COMPLETED
+            get().updateCountSession(sessionId, { 
+              status: 'COMPLETED',
+              completedAt: new Date().toISOString()
+            })
+            
+            return { hasMoreAreas: false, nextArea: null, countCompleted: true }
           }
         } catch (error) {
           console.error('Failed to complete area on backend:', error)

@@ -106,28 +106,44 @@ export function CountScreen() {
               const result = await completeCurrentArea(activeSession.id)
               
               if (!result.hasMoreAreas) {
-                // All areas complete, finish count
-                Alert.alert(
-                  'Count Complete',
-                  'All areas have been counted. The count session will be marked as complete.',
-                  [
-                    {
-                      text: 'Finish Count',
-                      onPress: async () => {
-                        try {
-                          await completeCountSession(activeSession.id)
+                if (result.countCompleted) {
+                  // Count was auto-completed - show success and navigate home
+                  Alert.alert(
+                    'Count Complete!',
+                    'All areas have been counted and the count has been completed. It is now ready for approval.',
+                    [
+                      {
+                        text: 'Done',
+                        onPress: () => {
                           navigation.getParent()?.navigate('Home' as never)
-                        } catch (error) {
-                          console.error('Failed to complete count:', error)
-                          Alert.alert(
-                            'Error',
-                            'Failed to complete count. Please try again.'
-                          )
-                        }
+                        },
                       },
-                    },
-                  ]
-                )
+                    ]
+                  )
+                } else {
+                  // Fallback: manual completion (shouldn't happen with new auto-complete)
+                  Alert.alert(
+                    'Count Complete',
+                    'All areas have been counted. The count session will be marked as complete.',
+                    [
+                      {
+                        text: 'Finish Count',
+                        onPress: async () => {
+                          try {
+                            await completeCountSession(activeSession.id)
+                            navigation.getParent()?.navigate('Home' as never)
+                          } catch (error) {
+                            console.error('Failed to complete count:', error)
+                            Alert.alert(
+                              'Error',
+                              'Failed to complete count. Please try again.'
+                            )
+                          }
+                        },
+                      },
+                    ]
+                  )
+                }
               } else {
                 // Show confirmation that area was completed and moved to next
                 console.log(`Area "${currentArea.name}" completed. Moving to "${result.nextArea?.name}"`)

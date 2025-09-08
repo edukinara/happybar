@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import { Box } from '@/components/ui/box'
 import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
@@ -6,7 +7,7 @@ import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useState } from 'react'
-import { Alert, Pressable, ScrollView, Switch } from 'react-native'
+import { Pressable, ScrollView, Switch } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuthStore } from '../stores/authStore'
 
@@ -23,23 +24,24 @@ const colors = {
 }
 
 export function SettingsScreen() {
-  const logout = useAuthStore((state) => state.logout)
+  const { logout, user } = useAuthStore()
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [lowStockAlerts, setLowStockAlerts] = useState(true)
   const [countReminders, setCountReminders] = useState(false)
 
   const handleLogout = () => {
-    Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: logout,
-      },
-    ])
+    // Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
+    //   {
+    //     text: 'Cancel',
+    //     style: 'cancel',
+    //   },
+    //   {
+    //     text: 'Logout',
+    //     style: 'destructive',
+    //     onPress: logout,
+    //   },
+    // ])
+    void logout()
   }
 
   const settingsGroups = [
@@ -198,33 +200,24 @@ export function SettingsScreen() {
             }}
           >
             <HStack style={{ alignItems: 'center', gap: 16 }}>
-              <LinearGradient
-                colors={[colors.primary, colors.accent]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Text className='text-white font-bold text-xl'>JD</Text>
-              </LinearGradient>
+              <Avatar size='md'>
+                <AvatarFallbackText>{user?.name}</AvatarFallbackText>
+                <AvatarImage
+                  source={{
+                    uri: user?.image || '',
+                  }}
+                />
+              </Avatar>
 
               <VStack className='flex-1'>
                 <Heading size='lg' className='text-gray-900 font-bold'>
-                  John Doe
+                  {user?.name}
                 </Heading>
-                <Text className='text-gray-600' style={{ marginTop: 2 }}>
-                  Manager • Happy Bar
-                </Text>
                 <Text
                   className='text-gray-500 text-sm'
                   style={{ marginTop: 4 }}
                 >
-                  john@happybar.com
+                  {user?.email}
                 </Text>
               </VStack>
             </HStack>
@@ -388,14 +381,14 @@ export function SettingsScreen() {
               <Text className='text-white/80 text-sm font-medium'>
                 Happy Bar Mobile
               </Text>
-              <Text className='text-white/60 text-xs'>
+              {/* <Text className='text-white/60 text-xs'>
                 Version 1.0.0 • Build 1
-              </Text>
+              </Text> */}
               <Text
                 className='text-white/60 text-xs text-center'
                 style={{ marginTop: 4 }}
               >
-                © 2024 Happy Bar. All rights reserved.
+                © 2025 Happy Bar. All rights reserved.
               </Text>
             </VStack>
           </LinearGradient>
