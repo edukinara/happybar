@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons'
 import React, { useState } from 'react'
 import { ActivityIndicator, ScrollView } from 'react-native'
 
@@ -12,6 +11,7 @@ import { VStack } from '@/components/ui/vstack'
 
 import { useDebounce } from '../hooks/useDebounce'
 import { useCatalog } from '../hooks/useInventoryData'
+import { ProductImage, ProductImageVariants } from './ProductImage'
 
 // CatalogProduct type for mobile
 export interface CatalogProduct {
@@ -73,54 +73,54 @@ export function CatalogSearch({
   const hasValidSearch = searchTerm.length >= 3
 
   return (
-    <VStack space="sm" className={className}>
-      <VStack space="sm">
-        <Text className="text-gray-700 font-medium">
+    <VStack space='sm' className={className}>
+      <VStack space='sm'>
+        <Text className='text-gray-700 font-medium'>
           Search Catalog (Optional)
         </Text>
-        <Input variant="outline" size="md">
+        <Input variant='outline' size='md'>
           <InputField
             placeholder={placeholder}
             value={searchTerm}
             onChangeText={setSearchTerm}
             onFocus={handleSearchFocus}
             onBlur={handleSearchBlur}
-            autoCapitalize="none"
+            autoCapitalize='none'
             autoCorrect={false}
           />
         </Input>
-        <Text className="text-gray-500 text-xs">
+        <Text className='text-gray-500 text-xs'>
           Search to auto-fill product details from catalog
         </Text>
       </VStack>
 
       {/* Search Results */}
       {showResults && hasValidSearch && (
-        <Card className="border border-gray-200 rounded-lg">
-          <ScrollView 
+        <Card className='border border-gray-200 rounded-lg'>
+          <ScrollView
             style={{ maxHeight: 256 }}
             showsVerticalScrollIndicator={true}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps='handled'
             nestedScrollEnabled={true}
             bounces={false}
           >
-            <VStack space="xs" className="p-3">
+            <VStack space='xs' className='p-3'>
               {!hasValidSearch ? (
-                <Box className="p-4">
-                  <Text className="text-gray-500 text-center">
+                <Box className='p-4'>
+                  <Text className='text-gray-500 text-center'>
                     Type at least 3 characters to search
                   </Text>
                 </Box>
               ) : isLoading ? (
-                <Box className="p-4 items-center">
-                  <ActivityIndicator color="#8B5CF6" />
-                  <Text className="text-gray-500 text-center mt-2">
+                <Box className='p-4 items-center'>
+                  <ActivityIndicator color='#8B5CF6' />
+                  <Text className='text-gray-500 text-center mt-2'>
                     Searching catalog...
                   </Text>
                 </Box>
               ) : catalogProducts.length === 0 ? (
-                <Box className="p-4">
-                  <Text className="text-gray-500 text-center">
+                <Box className='p-4'>
+                  <Text className='text-gray-500 text-center'>
                     No products found in catalog
                   </Text>
                 </Box>
@@ -128,69 +128,79 @@ export function CatalogSearch({
                 catalogProducts.map((product) => (
                   <Pressable
                     key={product.id}
-                    className="p-3 rounded-lg border border-gray-100 bg-white"
+                    className='p-3 rounded-lg border border-gray-100 bg-white'
                     onPress={() => handleSelect(product)}
                   >
-                    <VStack space="sm">
-                      {/* Product Name and Category */}
-                      <HStack className="justify-between items-start">
-                        <VStack className="flex-1 mr-2">
-                          <HStack className="items-center" space="sm">
-                            <Ionicons name="cube-outline" size={16} color="#6B7280" />
-                            <Text className="font-semibold text-gray-900 flex-1" numberOfLines={2}>
+                    <HStack space='sm'>
+                      {/* Product Image */}
+                      <ProductImage
+                        uri={product.image}
+                        {...ProductImageVariants.small}
+                      />
+
+                      {/* Product Content */}
+                      <VStack space='sm' className='flex-1'>
+                        {/* Product Name and Category */}
+                        <HStack className='justify-between items-start'>
+                          <VStack className='flex-1 mr-2'>
+                            <Text
+                              className='font-semibold text-gray-900 flex-1'
+                              numberOfLines={2}
+                            >
                               {product.name}
                             </Text>
-                          </HStack>
-                        </VStack>
-                        {product.category && (
-                          <Box className="bg-gray-100 px-2 py-1 rounded-full">
-                            <Text className="text-xs text-gray-600">
-                              {product.category.name}
-                            </Text>
-                          </Box>
-                        )}
-                      </HStack>
+                          </VStack>
+                          {product.category && (
+                            <Box className='bg-gray-100 px-2 py-1 rounded-full'>
+                              <Text className='text-xs text-gray-600'>
+                                {product.category.name}
+                              </Text>
+                            </Box>
+                          )}
+                        </HStack>
 
-                      {/* Product Details */}
-                      <HStack space="md" className="flex-wrap">
-                        {product.upc && (
-                          <Text className="text-xs text-gray-500">
-                            UPC: {product.upc}
-                          </Text>
-                        )}
-                        {product.unitSize && product.unit && (
-                          <Text className="text-xs text-gray-500">
-                            {product.unitSize}{product.unit}
-                          </Text>
-                        )}
-                        {product.container && (
-                          <Text className="text-xs text-gray-500">
-                            {product.container}
-                          </Text>
-                        )}
-                        {product.caseSize && (
-                          <Text className="text-xs text-gray-500">
-                            Case: {product.caseSize}
-                          </Text>
-                        )}
-                      </HStack>
-
-                      {/* Pricing */}
-                      {(product.costPerUnit || product.costPerCase) && (
-                        <HStack space="md">
-                          {product.costPerUnit && (
-                            <Text className="text-xs text-green-600 font-medium">
-                              Unit: ${product.costPerUnit.toFixed(2)}
+                        {/* Product Details */}
+                        <HStack space='md' className='flex-wrap'>
+                          {product.upc && (
+                            <Text className='text-xs text-gray-500'>
+                              UPC: {product.upc}
                             </Text>
                           )}
-                          {product.costPerCase && (
-                            <Text className="text-xs text-green-600 font-medium">
-                              Case: ${product.costPerCase.toFixed(2)}
+                          {product.unitSize && product.unit && (
+                            <Text className='text-xs text-gray-500'>
+                              {product.unitSize}
+                              {product.unit}
+                            </Text>
+                          )}
+                          {product.container && (
+                            <Text className='text-xs text-gray-500'>
+                              {product.container}
+                            </Text>
+                          )}
+                          {product.caseSize && (
+                            <Text className='text-xs text-gray-500'>
+                              Case: {product.caseSize}
                             </Text>
                           )}
                         </HStack>
-                      )}
-                    </VStack>
+
+                        {/* Pricing */}
+                        {(product.costPerUnit || product.costPerCase) && (
+                          <HStack space='md'>
+                            {product.costPerUnit && (
+                              <Text className='text-xs text-green-600 font-medium'>
+                                Unit: ${product.costPerUnit.toFixed(2)}
+                              </Text>
+                            )}
+                            {product.costPerCase && (
+                              <Text className='text-xs text-green-600 font-medium'>
+                                Case: ${product.costPerCase.toFixed(2)}
+                              </Text>
+                            )}
+                          </HStack>
+                        )}
+                      </VStack>
+                    </HStack>
                   </Pressable>
                 ))
               )}

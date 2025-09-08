@@ -16,6 +16,7 @@ import {
   TextInput,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { ProductImage, ProductImageVariants } from '../components/ProductImage'
 import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
 
 // Design system colors - matching count screens
@@ -104,6 +105,14 @@ export function InventoryScreen() {
           <HStack
             style={{ alignItems: 'center', justifyContent: 'space-between' }}
           >
+            {/* Product Image */}
+            <Box style={{ marginRight: 12 }}>
+              <ProductImage
+                uri={item.product?.image}
+                {...ProductImageVariants.listItemLarge}
+              />
+            </Box>
+
             {/* Product Info */}
             <VStack className='flex-1' style={{ marginRight: 16 }}>
               <Heading size='sm' className='text-gray-900 font-semibold'>

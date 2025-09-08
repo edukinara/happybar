@@ -6,6 +6,7 @@ export interface CountItem {
   inventoryItemId: string
   productId: string
   productName: string
+  productImage?: string | null
   sku: string | null
   barcode: string
   unit: string
@@ -593,6 +594,7 @@ export const useCountStore = create<CountStore>()((set, get) => ({
                 inventoryItemId: item.inventoryItemId || '',
                 productId: item.productId,
                 productName: item.product?.name || 'Unknown Product',
+                productImage: item.product?.image || null,
                 sku: item.product?.sku || null,
                 barcode: item.barcode || '',
                 unit: item.product?.unit || 'unit',

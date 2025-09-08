@@ -23,6 +23,7 @@ import React, { useCallback, useState } from 'react'
 import { Alert, BackHandler, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { ProductImage, ProductImageVariants } from '../components/ProductImage'
 import { useProducts, type InventoryProduct } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -247,6 +248,7 @@ export function CountScreen() {
         inventoryItemId: inventoryItem.id,
         productId: selectedProduct.id,
         productName: selectedProduct.name,
+        productImage: selectedProduct.image,
         sku: selectedProduct.sku,
         barcode: selectedProduct.sku || selectedProduct.id, // Use SKU as barcode fallback
         unit: selectedProduct.unit,
@@ -520,6 +522,14 @@ export function CountScreen() {
                         onPress={() => handleProductSelect(product)}
                       >
                         <HStack className='justify-between items-center'>
+                          {/* Product Image */}
+                          <Box style={{ marginRight: 12 }}>
+                            <ProductImage
+                              uri={product.image}
+                              {...ProductImageVariants.listItem}
+                            />
+                          </Box>
+
                           <VStack className='flex-1 mr-4'>
                             <HStack className='items-center' space='sm'>
                               <Text

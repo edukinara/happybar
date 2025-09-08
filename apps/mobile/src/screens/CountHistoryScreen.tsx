@@ -11,6 +11,7 @@ import React, { useState } from 'react'
 import { Alert, FlatList, Pressable, RefreshControl } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { ProductImage, ProductImageVariants } from '../components/ProductImage'
 import { CountItem, useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
 
@@ -156,6 +157,14 @@ export function CountHistoryScreen() {
           onLongPress={() => handleDeleteItem(item)}
         >
           <HStack className='items-center justify-between'>
+            {/* Product Image */}
+            <Box style={{ marginRight: 12 }}>
+              <ProductImage
+                uri={item.productImage}
+                {...ProductImageVariants.small}
+              />
+            </Box>
+
             {/* Product Info */}
             <VStack className='flex-1' style={{ marginRight: 16 }}>
               <Text className='text-gray-900 font-semibold text-base mb-1'>

@@ -25,6 +25,7 @@ import { Pressable } from '@/components/ui/pressable'
 import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
+import { ProductImage, ProductImageVariants } from '../components/ProductImage'
 import { useProductByUPC } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -265,6 +266,7 @@ export function ScanScreen() {
         inventoryItemId: scannedProduct.inventoryItemId,
         productId: scannedProduct.id,
         productName: scannedProduct.name,
+        productImage: scannedProduct.image,
         sku: scannedProduct.sku,
         barcode: scannedProduct.barcode,
         unit: scannedProduct.unit,
@@ -598,21 +600,29 @@ export function ScanScreen() {
           <ModalBody>
             {scannedProduct && (
               <VStack space='lg'>
-                <VStack space='sm'>
-                  <Text className='text-xl font-bold text-gray-900'>
-                    {scannedProduct.name}
-                  </Text>
-                  <Text className='text-gray-600'>
-                    {scannedProduct.sku && `SKU: ${scannedProduct.sku} • `}
-                    Current: {scannedProduct.currentStock}{' '}
-                    {pluralize(
-                      scannedProduct.currentStock,
-                      scannedProduct.container || 'unit'
-                    )}
-                    {scannedProduct.parLevel > 0 &&
-                      ` • Par: ${scannedProduct.parLevel}`}
-                  </Text>
-                </VStack>
+                {/* Product Image and Info */}
+                <HStack space='md' className='items-center'>
+                  <ProductImage
+                    uri={scannedProduct.image}
+                    {...ProductImageVariants.modal}
+                  />
+
+                  <VStack space='sm' className='flex-1'>
+                    <Text className='text-xl font-bold text-gray-900'>
+                      {scannedProduct.name}
+                    </Text>
+                    <Text className='text-gray-600'>
+                      {scannedProduct.sku && `SKU: ${scannedProduct.sku} • `}
+                      Current: {scannedProduct.currentStock}{' '}
+                      {pluralize(
+                        scannedProduct.currentStock,
+                        scannedProduct.container || 'unit'
+                      )}
+                      {scannedProduct.parLevel > 0 &&
+                        ` • Par: ${scannedProduct.parLevel}`}
+                    </Text>
+                  </VStack>
+                </HStack>
 
                 <VStack space='sm'>
                   <Text className='text-gray-700 font-medium'>
