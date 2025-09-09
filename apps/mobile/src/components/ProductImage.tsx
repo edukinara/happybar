@@ -1,7 +1,8 @@
 import { Box } from '@/components/ui/box'
 import { Ionicons } from '@expo/vector-icons'
+import { Image } from 'expo-image'
 import React, { useState } from 'react'
-import { ActivityIndicator, Image } from 'react-native'
+import { ActivityIndicator } from 'react-native'
 
 interface ProductImageProps {
   uri?: string | null
@@ -9,6 +10,7 @@ interface ProductImageProps {
   borderRadius?: number
   fallbackIconSize?: number
   showLoadingIndicator?: boolean
+  priority?: 'low' | 'normal' | 'high'
 }
 
 export function ProductImage({
@@ -17,6 +19,7 @@ export function ProductImage({
   borderRadius = 8,
   fallbackIconSize,
   showLoadingIndicator = false,
+  priority = 'normal',
 }: ProductImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -24,8 +27,8 @@ export function ProductImage({
   // Calculate fallback icon size based on container size if not provided
   const iconSize = fallbackIconSize || Math.max(16, Math.floor(size * 0.4))
 
-  // Show fallback if no URI, error occurred, or still loading (when indicator disabled)
-  const showFallback = !uri || hasError || (isLoading && !showLoadingIndicator)
+  // Show fallback only if no URI or error occurred
+  const showFallback = !uri || hasError
 
   if (showFallback) {
     return (
@@ -58,7 +61,9 @@ export function ProductImage({
           borderRadius,
           backgroundColor: '#F3F4F6',
         }}
-        resizeMode="contain"
+        contentFit="contain"
+        priority={priority}
+        cachePolicy="memory-disk"
         onLoad={() => {
           setIsLoading(false)
           setHasError(false)
@@ -71,6 +76,8 @@ export function ProductImage({
           setIsLoading(true)
           setHasError(false)
         }}
+        recyclingKey={uri}
+        allowDownscaling={true}
       />
 
       {/* Loading overlay */}
@@ -102,10 +109,32 @@ export const ProductImageVariants = {
   large: { size: 60, borderRadius: 10, fallbackIconSize: 28 },
   
   // List item variants (optimized for scrolling performance)
-  listItem: { size: 45, borderRadius: 8, fallbackIconSize: 20 },
-  listItemLarge: { size: 50, borderRadius: 8, fallbackIconSize: 22 },
+  listItem: {
+    size: 45,
+    borderRadius: 8,
+    fallbackIconSize: 20,
+    priority: 'low' as const,
+  },
+  listItemLarge: {
+    size: 50,
+    borderRadius: 8,
+    fallbackIconSize: 22,
+    priority: 'low' as const,
+  },
   
   // Detail view variants (higher priority for user focus)
-  detail: { size: 80, borderRadius: 12, fallbackIconSize: 32, showLoadingIndicator: true },
-  modal: { size: 60, borderRadius: 10, fallbackIconSize: 28, showLoadingIndicator: true },
+  detail: {
+    size: 80,
+    borderRadius: 12,
+    fallbackIconSize: 32,
+    priority: 'high' as const,
+    showLoadingIndicator: true,
+  },
+  modal: {
+    size: 60,
+    borderRadius: 10,
+    fallbackIconSize: 28,
+    priority: 'high' as const,
+    showLoadingIndicator: true,
+  },
 }

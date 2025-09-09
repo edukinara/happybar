@@ -19,6 +19,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { useCatalog } from '@/lib/queries/products'
 import type { CatalogProduct } from '@happy-bar/types'
 import { ChevronsUpDown, Package, Search } from 'lucide-react'
+import Image from 'next/image'
 import { useState } from 'react'
 
 interface CatalogSearchProps {
@@ -94,44 +95,63 @@ export default function CatalogSearch({
                     onSelect={() => handleSelect(product)}
                     className='flex flex-col items-start gap-1 py-3'
                   >
-                    <div className='flex items-center justify-between w-full'>
-                      <div className='flex items-center gap-2'>
+                    <div className='flex flex-row items-center w-full gap-2'>
+                      {product.image ? (
+                        <div className='relative size-12 overflow-hidden'>
+                          <Image
+                            src={product.image}
+                            alt={product.name || 'Product image'}
+                            fill
+                            className='object-contain'
+                            sizes='128px'
+                            onError={() => {}}
+                          />
+                        </div>
+                      ) : (
                         <Package className='h-4 w-4 text-muted-foreground' />
-                        <span className='font-medium'>{product.name}</span>
-                      </div>
-                      {product.category && (
-                        <Badge variant='outline' className='text-xs'>
-                          {product.category.name}
-                        </Badge>
                       )}
-                    </div>
-                    <div className='flex items-center gap-4 text-xs text-muted-foreground ml-6'>
-                      {product.upc && <span>UPC: {product.upc}</span>}
-                      {product.unitSize && product.unit && (
-                        <span>
-                          {product.unitSize}
-                          {product.unit}
-                        </span>
-                      )}
-                      {product.container && <span>{product.container}</span>}
-                      {product.caseSize && (
-                        <span>Case: {product.caseSize}</span>
-                      )}
-                    </div>
-                    {(product.costPerUnit || product.costPerCase) && (
-                      <div className='flex items-center gap-3 text-xs ml-6'>
-                        {product.costPerUnit && (
-                          <span className='text-green-600'>
-                            Unit: ${product.costPerUnit.toFixed(2)}
-                          </span>
+                      <div className='w-full'>
+                        <div className='flex items-center justify-between w-full'>
+                          <div className='flex items-center'>
+                            <span className='font-medium'>{product.name}</span>
+                          </div>
+                          {product.category && (
+                            <Badge variant='outline' className='text-xs'>
+                              {product.category.name}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className='flex items-center gap-4 text-xs text-muted-foreground'>
+                          {product.upc && <span>UPC: {product.upc}</span>}
+                          {product.unitSize && product.unit && (
+                            <span>
+                              {product.unitSize}
+                              {product.unit}
+                            </span>
+                          )}
+                          {product.container && (
+                            <span>{product.container}</span>
+                          )}
+                          {product.caseSize && (
+                            <span>Case: {product.caseSize}</span>
+                          )}
+                        </div>
+                        {(product.costPerUnit || product.costPerCase) && (
+                          <div className='flex items-center gap-3 text-xs'>
+                            {product.costPerUnit && (
+                              <span className='text-green-600'>
+                                Unit: ${product.costPerUnit.toFixed(2)}
+                              </span>
+                            )}
+                            {product.costPerCase && (
+                              <span className='text-green-600'>
+                                Case: ${product.costPerCase.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
                         )}
-                        {product.costPerCase && (
-                          <span className='text-green-600'>
-                            Case: ${product.costPerCase.toFixed(2)}
-                          </span>
-                        )}
                       </div>
-                    )}
+                    </div>
                   </CommandItem>
                 ))}
               </CommandGroup>
