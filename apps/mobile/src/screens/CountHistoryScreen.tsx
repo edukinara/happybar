@@ -12,21 +12,9 @@ import { Alert, FlatList, Pressable, RefreshControl } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import { Colors } from '../constants/theme'
 import { CountItem, useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
-
-// Design system colors
-const colors = {
-  primary: '#6366F1',
-  accent: '#8B5CF6',
-  success: '#10B981',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  primaryLight: '#EEF2FF',
-  successLight: '#ECFDF5',
-  warningLight: '#FFFBEB',
-  errorLight: '#FEF2F2',
-}
 
 type FilterType = 'all' | 'today' | 'variance' | 'session'
 
@@ -107,15 +95,15 @@ export function CountHistoryScreen() {
   }
 
   const getVarianceColor = (variance: number) => {
-    if (variance === 0) return colors.success
-    if (Math.abs(variance) <= 2) return colors.warning
-    return colors.error
+    if (variance === 0) return Colors.success
+    if (Math.abs(variance) <= 2) return Colors.warning
+    return Colors.error
   }
 
   const getVarianceBackground = (variance: number) => {
-    if (variance === 0) return colors.successLight
-    if (Math.abs(variance) <= 2) return colors.warningLight
-    return colors.errorLight
+    if (variance === 0) return Colors.successLight
+    if (Math.abs(variance) <= 2) return Colors.warningLight
+    return Colors.errorLight
   }
 
   const formatTimestamp = (timestamp: string) => {
@@ -257,7 +245,7 @@ export function CountHistoryScreen() {
 
   return (
     <LinearGradient
-      colors={[colors.primary, colors.accent, '#A855F7']}
+      colors={[Colors.primary, Colors.primary, '#A855F7']}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -323,7 +311,7 @@ export function CountHistoryScreen() {
                 <Text
                   className='font-semibold text-center text-sm'
                   style={{
-                    color: filter === item.key ? colors.primary : 'white',
+                    color: filter === item.key ? Colors.primary : 'white',
                   }}
                 >
                   {item.label} ({item.count})
@@ -357,7 +345,7 @@ export function CountHistoryScreen() {
           >
             <Box
               style={{
-                backgroundColor: colors.primaryLight,
+                backgroundColor: Colors.primaryLight,
                 width: 64,
                 height: 64,
                 borderRadius: 32,
@@ -369,7 +357,7 @@ export function CountHistoryScreen() {
               <Ionicons
                 name='clipboard-outline'
                 size={28}
-                color={colors.primary}
+                color={Colors.primary}
               />
             </Box>
             <Text className='text-gray-900 font-semibold text-lg text-center'>

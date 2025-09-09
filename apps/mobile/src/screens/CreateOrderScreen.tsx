@@ -1,12 +1,11 @@
 import { Box } from '@/components/ui/box'
-import { Button } from '@/components/ui/button'
 import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import React, { useCallback, useState } from 'react'
+import { useNavigation } from '@react-navigation/native'
+import React, { useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -17,21 +16,9 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import { Colors } from '../constants/theme'
 import { useProducts, useSuppliers } from '../hooks/useInventoryData'
 import { api } from '../lib/api'
-
-// Design system colors - matching other screens
-const colors = {
-  primary: '#6366F1', // Primary indigo
-  accent: '#8B5CF6', // Accent purple
-  success: '#10B981', // Success green
-  warning: '#F59E0B', // Warning amber
-  error: '#EF4444', // Error red
-  primaryLight: '#EEF2FF',
-  accentLight: '#F3E8FF',
-  successLight: '#ECFDF5',
-  warningLight: '#FFFBEB',
-}
 
 type Product = {
   id: string
@@ -79,7 +66,7 @@ export function CreateOrderScreen() {
   const { data: suppliers = [], isLoading: suppliersLoading } = useSuppliers()
 
   // Convert products to simplified format
-  const simplifiedProducts: Product[] = products.map(p => ({
+  const simplifiedProducts: Product[] = products.map((p) => ({
     id: p.id,
     name: p.name,
     sku: p.sku,
@@ -92,11 +79,14 @@ export function CreateOrderScreen() {
   const addOrderItem = (product: Product, supplier: Supplier) => {
     // Check if this product+supplier combo already exists
     const existingItem = orderItems.find(
-      item => item.productId === product.id && item.supplierId === supplier.id
+      (item) => item.productId === product.id && item.supplierId === supplier.id
     )
-    
+
     if (existingItem) {
-      Alert.alert('Item Already Added', 'This product from this supplier is already in the order.')
+      Alert.alert(
+        'Item Already Added',
+        'This product from this supplier is already in the order.'
+      )
       return
     }
 
@@ -116,7 +106,11 @@ export function CreateOrderScreen() {
     setSelectedProduct(null)
   }
 
-  const updateOrderItem = (index: number, field: keyof OrderItem, value: any) => {
+  const updateOrderItem = (
+    index: number,
+    field: keyof OrderItem,
+    value: any
+  ) => {
     const updatedItems = [...orderItems]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     setOrderItems(updatedItems)
@@ -127,7 +121,10 @@ export function CreateOrderScreen() {
   }
 
   const calculateTotal = () => {
-    return orderItems.reduce((sum, item) => sum + (item.quantityOrdered * item.unitCost), 0)
+    return orderItems.reduce(
+      (sum, item) => sum + item.quantityOrdered * item.unitCost,
+      0
+    )
   }
 
   const createOrder = async () => {
@@ -140,31 +137,33 @@ export function CreateOrderScreen() {
       setIsCreating(true)
 
       // Group items by supplier
-      const ordersBySupplier: {[supplierId: string]: {
-        supplierId: string
-        supplier: Supplier
-        items: Array<{
-          productId: string
-          quantityOrdered: number
-          unitCost: number
-          orderingUnit: 'UNIT' | 'CASE'
-        }>
-      }} = {}
+      const ordersBySupplier: {
+        [supplierId: string]: {
+          supplierId: string
+          supplier: Supplier
+          items: Array<{
+            productId: string
+            quantityOrdered: number
+            unitCost: number
+            orderingUnit: 'UNIT' | 'CASE'
+          }>
+        }
+      } = {}
 
-      orderItems.forEach(item => {
+      orderItems.forEach((item) => {
         if (!ordersBySupplier[item.supplierId]) {
           ordersBySupplier[item.supplierId] = {
             supplierId: item.supplierId,
             supplier: item.supplier,
-            items: []
+            items: [],
           }
         }
-        
+
         ordersBySupplier[item.supplierId].items.push({
           productId: item.productId,
           quantityOrdered: item.quantityOrdered,
           unitCost: item.unitCost,
-          orderingUnit: item.orderingUnit
+          orderingUnit: item.orderingUnit,
         })
       })
 
@@ -177,7 +176,7 @@ export function CreateOrderScreen() {
           supplierId: orderData.supplierId,
           expectedDate: expectedDate || undefined,
           notes: notes || undefined,
-          items: orderData.items
+          items: orderData.items,
         })
         createdCount++
       }
@@ -188,8 +187,8 @@ export function CreateOrderScreen() {
         [
           {
             text: 'OK',
-            onPress: () => navigation.goBack()
-          }
+            onPress: () => navigation.goBack(),
+          },
         ]
       )
     } catch (error) {
@@ -204,8 +203,10 @@ export function CreateOrderScreen() {
     return (
       <SafeAreaView className='flex-1 bg-white'>
         <VStack className='flex-1 justify-center items-center' space='md'>
-          <ActivityIndicator size='large' color={colors.primary} />
-          <Text className='text-gray-600'>Loading products and suppliers...</Text>
+          <ActivityIndicator size='large' color={Colors.primary} />
+          <Text className='text-gray-600'>
+            Loading products and suppliers...
+          </Text>
         </VStack>
       </SafeAreaView>
     )
@@ -216,10 +217,7 @@ export function CreateOrderScreen() {
       <VStack className='flex-1'>
         {/* Header */}
         <HStack className='items-center justify-between p-6 pb-4'>
-          <Pressable
-            onPress={() => navigation.goBack()}
-            className='p-2 -ml-2'
-          >
+          <Pressable onPress={() => navigation.goBack()} className='p-2 -ml-2'>
             <Ionicons name='arrow-back' size={24} color='#374151' />
           </Pressable>
           <Heading className='text-xl font-semibold text-gray-900'>
@@ -231,7 +229,9 @@ export function CreateOrderScreen() {
         {/* Order Details */}
         <VStack className='px-6 pb-4' space='md'>
           <VStack space='sm'>
-            <Text className='font-medium text-gray-700'>Expected Delivery (Optional)</Text>
+            <Text className='font-medium text-gray-700'>
+              Expected Delivery (Optional)
+            </Text>
             <TextInput
               className='p-3 border border-gray-300 rounded-lg bg-white'
               placeholder='YYYY-MM-DD'
@@ -266,11 +266,21 @@ export function CreateOrderScreen() {
         </Box>
 
         {/* Order Items */}
-        <ScrollView className='flex-1 px-6' showsVerticalScrollIndicator={false}>
+        <ScrollView
+          className='flex-1 px-6'
+          showsVerticalScrollIndicator={false}
+        >
           {orderItems.length === 0 ? (
-            <VStack className='flex-1 justify-center items-center py-12' space='lg'>
+            <VStack
+              className='flex-1 justify-center items-center py-12'
+              space='lg'
+            >
               <Box className='size-16 bg-gray-100 rounded-full justify-center items-center'>
-                <Ionicons name='basket-outline' size={32} color={colors.primary} />
+                <Ionicons
+                  name='basket-outline'
+                  size={32}
+                  color={Colors.primary}
+                />
               </Box>
               <VStack className='items-center' space='sm'>
                 <Heading className='text-lg font-semibold text-gray-900'>
@@ -296,7 +306,7 @@ export function CreateOrderScreen() {
                         {...ProductImageVariants.small}
                       />
                     </Box>
-                    
+
                     <VStack className='flex-1' space='xs'>
                       <Text className='font-semibold text-gray-900'>
                         {item.product.name}
@@ -314,33 +324,66 @@ export function CreateOrderScreen() {
                       onPress={() => removeOrderItem(index)}
                       className='p-2'
                     >
-                      <Ionicons name='trash-outline' size={20} color={colors.error} />
+                      <Ionicons
+                        name='trash-outline'
+                        size={20}
+                        color={Colors.error}
+                      />
                     </Pressable>
                   </HStack>
 
                   {/* Quantity and Cost Controls */}
-                  <HStack className='items-center justify-between mt-4' space='md'>
+                  <HStack
+                    className='items-center justify-between mt-4'
+                    space='md'
+                  >
                     <VStack space='xs'>
-                      <Text className='text-xs text-gray-500 font-medium'>Quantity</Text>
+                      <Text className='text-xs text-gray-500 font-medium'>
+                        Quantity
+                      </Text>
                       <HStack className='items-center border border-gray-300 rounded-lg'>
                         <Pressable
-                          onPress={() => updateOrderItem(index, 'quantityOrdered', Math.max(1, item.quantityOrdered - 1))}
+                          onPress={() =>
+                            updateOrderItem(
+                              index,
+                              'quantityOrdered',
+                              Math.max(1, item.quantityOrdered - 1)
+                            )
+                          }
                           className='p-3'
                         >
-                          <Ionicons name='remove' size={16} color={colors.primary} />
+                          <Ionicons
+                            name='remove'
+                            size={16}
+                            color={Colors.primary}
+                          />
                         </Pressable>
-                        <Text className='px-4 font-medium'>{item.quantityOrdered}</Text>
+                        <Text className='px-4 font-medium'>
+                          {item.quantityOrdered}
+                        </Text>
                         <Pressable
-                          onPress={() => updateOrderItem(index, 'quantityOrdered', item.quantityOrdered + 1)}
+                          onPress={() =>
+                            updateOrderItem(
+                              index,
+                              'quantityOrdered',
+                              item.quantityOrdered + 1
+                            )
+                          }
                           className='p-3'
                         >
-                          <Ionicons name='add' size={16} color={colors.primary} />
+                          <Ionicons
+                            name='add'
+                            size={16}
+                            color={Colors.primary}
+                          />
                         </Pressable>
                       </HStack>
                     </VStack>
 
                     <VStack space='xs'>
-                      <Text className='text-xs text-gray-500 font-medium'>Unit Cost</Text>
+                      <Text className='text-xs text-gray-500 font-medium'>
+                        Unit Cost
+                      </Text>
                       <TextInput
                         className='w-20 p-2 border border-gray-300 rounded-lg text-center'
                         value={item.unitCost.toString()}
@@ -354,7 +397,9 @@ export function CreateOrderScreen() {
                     </VStack>
 
                     <VStack space='xs' className='items-end'>
-                      <Text className='text-xs text-gray-500 font-medium'>Total</Text>
+                      <Text className='text-xs text-gray-500 font-medium'>
+                        Total
+                      </Text>
                       <Text className='font-semibold text-gray-900'>
                         ${(item.quantityOrdered * item.unitCost).toFixed(2)}
                       </Text>
@@ -378,7 +423,7 @@ export function CreateOrderScreen() {
                   Total: ${calculateTotal().toFixed(2)}
                 </Text>
               </HStack>
-              
+
               <Pressable
                 onPress={createOrder}
                 disabled={isCreating}
@@ -389,7 +434,9 @@ export function CreateOrderScreen() {
                 {isCreating ? (
                   <HStack className='items-center' space='sm'>
                     <ActivityIndicator size='small' color='white' />
-                    <Text className='text-white font-semibold'>Creating Order...</Text>
+                    <Text className='text-white font-semibold'>
+                      Creating Order...
+                    </Text>
                   </HStack>
                 ) : (
                   <Text className='text-white font-semibold'>
@@ -420,7 +467,10 @@ export function CreateOrderScreen() {
               <Box className='w-16' />
             </HStack>
 
-            <ScrollView className='flex-1 p-6' showsVerticalScrollIndicator={false}>
+            <ScrollView
+              className='flex-1 p-6'
+              showsVerticalScrollIndicator={false}
+            >
               <VStack space='sm'>
                 {simplifiedProducts.map((product) => (
                   <Pressable
@@ -438,19 +488,23 @@ export function CreateOrderScreen() {
                         {...ProductImageVariants.small}
                       />
                     </Box>
-                    
+
                     <VStack className='flex-1' space='xs'>
                       <Text className='font-medium text-gray-900'>
                         {product.name}
                       </Text>
                       <Text className='text-sm text-gray-600'>
-                        {product.sku && `SKU: ${product.sku} • `}
-                        ${product.costPerUnit.toFixed(2)}/{product.unit}
+                        {product.sku && `SKU: ${product.sku} • `}$
+                        {product.costPerUnit.toFixed(2)}/{product.unit}
                         {product.category && ` • ${product.category.name}`}
                       </Text>
                     </VStack>
 
-                    <Ionicons name='chevron-forward' size={20} color='#9CA3AF' />
+                    <Ionicons
+                      name='chevron-forward'
+                      size={20}
+                      color='#9CA3AF'
+                    />
                   </Pressable>
                 ))}
               </VStack>
@@ -477,7 +531,10 @@ export function CreateOrderScreen() {
               <Box className='w-16' />
             </HStack>
 
-            <ScrollView className='flex-1 p-6' showsVerticalScrollIndicator={false}>
+            <ScrollView
+              className='flex-1 p-6'
+              showsVerticalScrollIndicator={false}
+            >
               <VStack space='sm'>
                 {suppliers.map((supplier) => (
                   <Pressable
@@ -493,16 +550,16 @@ export function CreateOrderScreen() {
                       <Text className='font-medium text-gray-900'>
                         {supplier.name}
                       </Text>
-                      {supplier.contactPerson && (
+                      {supplier.contactEmail && (
                         <Text className='text-sm text-gray-600'>
-                          Contact: {supplier.contactPerson}
+                          Contact: {supplier.contactEmail}
                         </Text>
                       )}
-                      {supplier.email && (
+                      {/* {supplier.email && (
                         <Text className='text-sm text-gray-600'>
                           {supplier.email}
                         </Text>
-                      )}
+                      )} */}
                     </VStack>
                   </Pressable>
                 ))}

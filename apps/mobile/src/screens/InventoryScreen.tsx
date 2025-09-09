@@ -18,18 +18,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
 import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
+import { Colors } from '../constants/theme'
 
-// Design system colors - matching count screens
-const colors = {
-  primary: '#6366F1', // Primary indigo
-  accent: '#8B5CF6', // Accent purple
-  success: '#10B981', // Success green
-  warning: '#F59E0B', // Warning amber
-  error: '#EF4444', // Error red
-  primaryLight: '#EEF2FF',
-  accentLight: '#F3E8FF',
-  successLight: '#ECFDF5',
-}
 
 export function InventoryScreen() {
   const navigation = useNavigation()
@@ -73,14 +63,14 @@ export function InventoryScreen() {
 
   const getStockStatus = (item: any) => {
     if (item.currentQuantity <= 0) {
-      return { icon: 'alert-circle', color: colors.error, text: 'Out of Stock' }
+      return { icon: 'alert-circle', color: Colors.error, text: 'Out of Stock' }
     }
     if (
       lowStockItems?.some((lowItem) => lowItem.productId === item.productId)
     ) {
-      return { icon: 'warning', color: colors.warning, text: 'Low Stock' }
+      return { icon: 'warning', color: Colors.warning, text: 'Low Stock' }
     }
-    return { icon: 'checkmark-circle', color: colors.success, text: 'In Stock' }
+    return { icon: 'checkmark-circle', color: Colors.success, text: 'In Stock' }
   }
 
   const renderInventoryItem = ({ item }: { item: any }) => {
@@ -184,7 +174,7 @@ export function InventoryScreen() {
 
   return (
     <LinearGradient
-      colors={[colors.primary, colors.accent, '#A855F7']}
+      colors={[Colors.primary, Colors.primary, '#A855F7']}
       style={{ flex: 1, paddingBottom: 16 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -234,8 +224,8 @@ export function InventoryScreen() {
           <RefreshControl
             refreshing={isFetching}
             onRefresh={refetch}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
             progressBackgroundColor='white'
           />
         }
@@ -290,7 +280,7 @@ export function InventoryScreen() {
                     className='font-semibold text-sm'
                     style={{
                       color:
-                        filterType === button.key ? colors.primary : 'white',
+                        filterType === button.key ? Colors.primary : 'white',
                     }}
                   >
                     {button.label}
@@ -315,7 +305,7 @@ export function InventoryScreen() {
                 elevation: 5,
               }}
             >
-              <ActivityIndicator size='large' color={colors.primary} />
+              <ActivityIndicator size='large' color={Colors.primary} />
               <Text
                 className='text-gray-600 font-medium'
                 style={{ marginTop: 12 }}
@@ -349,7 +339,7 @@ export function InventoryScreen() {
                 >
                   <Box
                     style={{
-                      backgroundColor: colors.primaryLight,
+                      backgroundColor: Colors.primaryLight,
                       width: 64,
                       height: 64,
                       borderRadius: 32,
@@ -361,7 +351,7 @@ export function InventoryScreen() {
                     <Ionicons
                       name='cube-outline'
                       size={28}
-                      color={colors.primary}
+                      color={Colors.primary}
                     />
                   </Box>
                   <Text className='text-gray-900 font-semibold text-center'>

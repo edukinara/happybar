@@ -13,6 +13,10 @@ export const Colors = {
   warning: '#F59E0B',
   error: '#EF4444',
   info: '#3B82F6',
+  successLight: '#10B98155',
+  warningLight: '#F59E0B55',
+  errorLight: '#EF444455',
+  infoLight: '#3B82F655',
 
   // Neutrals
   white: '#FFFFFF',

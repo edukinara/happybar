@@ -1,57 +1,50 @@
+import { Ionicons } from '@expo/vector-icons'
+import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
+import React from 'react'
+import { Pressable, ScrollView } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 import { Box } from '@/components/ui/box'
+import { Card } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
-import { Ionicons } from '@expo/vector-icons'
-import { LinearGradient } from 'expo-linear-gradient'
-import React from 'react'
-import { Pressable, ScrollView } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Design system colors - matching count screens
-const colors = {
-  primary: '#6366F1', // Primary indigo
-  accent: '#8B5CF6', // Accent purple
-  success: '#10B981', // Success green
-  warning: '#F59E0B', // Warning amber
-  error: '#EF4444', // Error red
-  primaryLight: '#EEF2FF',
-  accentLight: '#F3E8FF',
-  successLight: '#ECFDF5',
-}
+import { Colors } from '../constants/theme'
 
 export function InsightsScreen() {
+  const insets = useSafeAreaInsets()
   const insightCards = [
     {
       title: 'Sales Analytics',
       description: 'Track your best performing products',
       icon: 'analytics',
-      color: colors.primary,
-      bgColor: colors.primaryLight,
+      color: '#6366F1',
+      bgColor: '#EEF2FF',
       metrics: '↗ 12% this month',
     },
     {
       title: 'Inventory Trends',
       description: 'Monitor stock levels and patterns',
       icon: 'trending-up',
-      color: colors.success,
-      bgColor: colors.successLight,
+      color: Colors.success,
+      bgColor: '#ECFDF5',
       metrics: '5 items need reorder',
     },
     {
       title: 'Cost Analysis',
       description: 'Optimize your purchasing decisions',
       icon: 'calculator',
-      color: colors.accent,
-      bgColor: colors.accentLight,
+      color: Colors.primary,
+      bgColor: '#F3E8FF',
       metrics: '8% cost savings',
     },
     {
       title: 'Waste Tracking',
       description: 'Reduce waste and improve efficiency',
       icon: 'leaf',
-      color: colors.warning,
+      color: Colors.warning,
       bgColor: '#FEF3C7',
       metrics: '2.1% waste rate',
     },
@@ -62,67 +55,53 @@ export function InsightsScreen() {
       label: 'Total Products',
       value: '248',
       icon: 'cube',
-      color: colors.primary,
+      color: Colors.primary,
     },
     {
       label: 'Low Stock Items',
       value: '12',
       icon: 'warning',
-      color: colors.warning,
+      color: Colors.warning,
     },
     {
       label: 'This Month Sales',
       value: '$14.2k',
       icon: 'trending-up',
-      color: colors.success,
+      color: Colors.success,
     },
   ]
 
   return (
     <LinearGradient
-      colors={[colors.primary, colors.accent, '#A855F7']}
-      style={{ flex: 1, paddingBottom: 24 }}
+      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
+      <StatusBar style='light' />
+
       {/* Header */}
-      <SafeAreaView edges={['top']}>
-        <HStack className='items-center justify-between p-4'>
-          <Heading size='xl' className='text-white font-bold'>
-            Insights
-          </Heading>
+      <Box
+        className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        style={{ paddingTop: insets.top + 4 }}
+      >
+        <HStack className='justify-between items-center'>
+          <Text className='text-white text-xl font-bold'>Insights</Text>
         </HStack>
-      </SafeAreaView>
+      </Box>
 
       <ScrollView
         className='flex-1'
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 10,
-          paddingBottom: 100,
-        }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        <VStack style={{ gap: 20 }}>
+        <VStack className='px-4 py-4' space='md'>
           {/* Quick Stats */}
-          <Box
-            className='bg-white'
-            style={{
-              borderRadius: 16,
-              padding: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 5,
-              borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }}
-          >
+          <Card className='p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'>
             <HStack style={{ alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Box
                 style={{
-                  backgroundColor: colors.primaryLight,
+                  backgroundColor: Colors.primaryLight,
                   width: 32,
                   height: 32,
                   borderRadius: 8,
@@ -130,7 +109,7 @@ export function InsightsScreen() {
                   alignItems: 'center',
                 }}
               >
-                <Ionicons name='speedometer' size={16} color={colors.primary} />
+                <Ionicons name='speedometer' size={16} color={Colors.primary} />
               </Box>
               <Heading size='lg' className='text-gray-900 font-bold'>
                 Quick Stats
@@ -176,7 +155,7 @@ export function InsightsScreen() {
                 </HStack>
               ))}
             </VStack>
-          </Box>
+          </Card>
 
           {/* AI-Powered Insights */}
           <Box
@@ -195,7 +174,7 @@ export function InsightsScreen() {
           >
             <HStack style={{ alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <LinearGradient
-                colors={[colors.accent, colors.accent + 'DD']}
+                colors={[Colors.primary, Colors.primary + 'DD']}
                 style={{
                   width: 32,
                   height: 32,
@@ -224,7 +203,7 @@ export function InsightsScreen() {
                 <HStack
                   style={{ alignItems: 'center', gap: 12, marginBottom: 8 }}
                 >
-                  <Ionicons name='bulb' size={18} color={colors.success} />
+                  <Ionicons name='bulb' size={18} color={Colors.success} />
                   <Text className='font-semibold text-gray-900'>
                     Optimize Ordering
                   </Text>
@@ -247,7 +226,7 @@ export function InsightsScreen() {
                 <HStack
                   style={{ alignItems: 'center', gap: 12, marginBottom: 8 }}
                 >
-                  <Ionicons name='warning' size={18} color={colors.warning} />
+                  <Ionicons name='warning' size={18} color={Colors.warning} />
                   <Text className='font-semibold text-gray-900'>
                     Restock Alert
                   </Text>
