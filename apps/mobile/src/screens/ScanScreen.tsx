@@ -26,6 +26,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import { Colors } from '../constants/theme'
 import { useProductByUPC } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -315,7 +316,7 @@ export function ScanScreen() {
   if (!permission) {
     return (
       <LinearGradient
-        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -333,7 +334,7 @@ export function ScanScreen() {
   if (!permission.granted) {
     return (
       <LinearGradient
-        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}

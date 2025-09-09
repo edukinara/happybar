@@ -5,17 +5,29 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.1.62:3001",
+        "EXPO_PUBLIC_DEV_MODE": "true"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.happybar.app",
+        "EXPO_PUBLIC_DEV_MODE": "false"
       }
     },
     "production": {
       "android": {
-        "buildType": "aab"
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.happybar.app",
+        "EXPO_PUBLIC_DEV_MODE": "false"
       }
     }
   },

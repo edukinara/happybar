@@ -20,6 +20,7 @@ import { VStack } from '@/components/ui/vstack'
 
 import { ProductContainer, ProductUnit } from '@happy-bar/types'
 import { CatalogProduct, CatalogSearch } from '../components/CatalogSearch'
+import { Colors } from '../constants/theme'
 import {
   useCategories,
   useCreateProduct,
@@ -236,32 +237,37 @@ export function AddProductScreen() {
         alcoholContent: formData.alcoholContent || undefined,
         image: formData.image.trim() || undefined,
         // Include suppliers in the product creation request
-        suppliers: productSuppliers.length > 0 ? productSuppliers.map((supplier, index) => ({
-          supplierId: supplier.supplierId,
-          orderingUnit: supplier.orderingUnit,
-          costPerUnit: supplier.costPerUnit,
-          costPerCase: supplier.costPerCase || undefined,
-          minimumOrder: supplier.minimumOrder,
-          packSize: formData.caseSize || undefined,
-          isPreferred: index === 0, // First supplier is preferred
-          leadTimeDays: 3, // Default lead time
-        })) : undefined,
+        suppliers:
+          productSuppliers.length > 0
+            ? productSuppliers.map((supplier, index) => ({
+                supplierId: supplier.supplierId,
+                orderingUnit: supplier.orderingUnit,
+                costPerUnit: supplier.costPerUnit,
+                costPerCase: supplier.costPerCase || undefined,
+                minimumOrder: supplier.minimumOrder,
+                packSize: formData.caseSize || undefined,
+                isPreferred: index === 0, // First supplier is preferred
+                leadTimeDays: 3, // Default lead time
+              }))
+            : undefined,
       }
 
       // Create product with suppliers in a single API call
-      const createdProduct = await createProductMutation.mutateAsync(productData)
-      
+      const createdProduct =
+        await createProductMutation.mutateAsync(productData)
+
       console.log('Product created successfully:', {
         id: createdProduct.id,
         name: createdProduct.name,
-        suppliersCount: createdProduct.suppliers?.length || 0
+        suppliersCount: createdProduct.suppliers?.length || 0,
       })
 
       // Show success message
-      const message = productSuppliers.length > 0 
-        ? `Product and ${productSuppliers.length} supplier${productSuppliers.length === 1 ? '' : 's'} created successfully!`
-        : 'Product created successfully!'
-        
+      const message =
+        productSuppliers.length > 0
+          ? `Product and ${productSuppliers.length} supplier${productSuppliers.length === 1 ? '' : 's'} created successfully!`
+          : 'Product created successfully!'
+
       Alert.alert('Success', message, [
         {
           text: 'OK',
@@ -295,7 +301,7 @@ export function AddProductScreen() {
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

@@ -16,6 +16,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 // import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context' // useSafeAreaInsets not used
+import { Colors } from '../constants/theme'
 import { useLocations } from '../hooks/useInventoryData'
 import type { RootStackParamList } from '../navigation/RootNavigator'
 import { useCountStore } from '../stores/countStore'
@@ -650,7 +651,7 @@ export default function CountSetupScreen() {
         keyboardVerticalOffset={0}
       >
         <LinearGradient
-          colors={['#6366F1', '#8B5CF6', '#A855F7']}
+          colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
           style={{ flex: 1 }}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}

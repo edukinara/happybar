@@ -136,7 +136,7 @@ export function SettingsScreen() {
 
   return (
     <LinearGradient
-      colors={[Colors.primary, Colors.primary, '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1, paddingBottom: 24 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

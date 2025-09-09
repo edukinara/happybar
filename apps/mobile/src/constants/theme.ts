@@ -3,10 +3,15 @@ import { ColorValue } from 'react-native'
 export const Colors = {
   primary: '#8B5CF6',
   primaryDark: '#7C3AED',
-  primaryLight: '#A78BFA',
+  primaryLight: '#A78BFADD',
   secondary: '#F59E0B',
   secondaryDark: '#D97706',
-  secondaryLight: '#FCD34D',
+  secondaryLight: '#FCD34DDD',
+
+  // Page Gradient
+  gradStart: '#6366F1',
+  gradMid: '#8B5CF6',
+  gradEnd: '#A855F7',
 
   // Semantic colors
   success: '#10B981',

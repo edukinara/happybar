@@ -1,6 +1,7 @@
 import { Box } from '@/components/ui/box'
 import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
+import { Input, InputField } from '@/components/ui/input'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
@@ -13,13 +14,11 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  TextInput,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
 import { Colors } from '../constants/theme'
-
+import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
 
 export function InventoryScreen() {
   const navigation = useNavigation()
@@ -78,20 +77,7 @@ export function InventoryScreen() {
 
     return (
       <Pressable style={{ marginBottom: 12 }}>
-        <Box
-          className='bg-white'
-          style={{
-            borderRadius: 16,
-            padding: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-            elevation: 3,
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.3)',
-          }}
-        >
+        <Box className='bg-white elevation-sm p-4 rounded-xl border-[1px] border-white/50'>
           <HStack
             style={{ alignItems: 'center', justifyContent: 'space-between' }}
           >
@@ -174,7 +160,7 @@ export function InventoryScreen() {
 
   return (
     <LinearGradient
-      colors={[Colors.primary, Colors.primary, '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1, paddingBottom: 16 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -232,27 +218,18 @@ export function InventoryScreen() {
       >
         <VStack style={{ gap: 16 }}>
           {/* Search Bar */}
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder='Search products...'
-            style={{
-              flex: 1,
-              backgroundColor: 'rgb(255, 255, 255)',
-              borderRadius: 12,
-              padding: 14,
-              fontSize: 16,
-              color: '#374151',
-              borderWidth: 1,
-              borderColor: 'rgba(99, 102, 241, 0.2)',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 5,
-            }}
-            placeholderTextColor='#9CA3AF'
-          />
+          <Input
+            className='border-white/30 rounded-xl h-12 bg-white elevation-md'
+            size='lg'
+          >
+            <InputField
+              placeholder='Search orders...'
+              placeholderTextColor='rgba(0,0,0,0.4)'
+              className='text-black/90'
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </Input>
 
           {/* Filter Buttons */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -266,14 +243,11 @@ export function InventoryScreen() {
                       filterType === button.key
                         ? 'rgba(255, 255, 255, 0.95)'
                         : 'rgba(255, 255, 255, 0.2)',
-                    paddingVertical: 12,
+                    paddingVertical: 10,
                     paddingHorizontal: 16,
                     borderRadius: 12,
                     borderWidth: 1,
-                    borderColor:
-                      filterType === button.key
-                        ? 'rgba(255, 255, 255, 0.3)'
-                        : 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
                   }}
                 >
                   <Text
@@ -292,22 +266,10 @@ export function InventoryScreen() {
 
           {/* Inventory List */}
           {isLoading ? (
-            <Box
-              className='bg-white'
-              style={{
-                borderRadius: 16,
-                padding: 40,
-                alignItems: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.05,
-                shadowRadius: 12,
-                elevation: 5,
-              }}
-            >
+            <Box className='items-center justify-center'>
               <ActivityIndicator size='large' color={Colors.primary} />
               <Text
-                className='text-gray-600 font-medium'
+                className='text-white/60 font-medium'
                 style={{ marginTop: 12 }}
               >
                 Loading inventory...
@@ -319,24 +281,7 @@ export function InventoryScreen() {
                 <Box key={item.id}>{renderInventoryItem({ item })}</Box>
               ))}
               {filteredItems.length === 0 && (
-                <LinearGradient
-                  colors={[
-                    'rgba(255, 255, 255, 0.95)',
-                    'rgba(255, 255, 255, 0.9)',
-                  ]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    borderRadius: 16,
-                    padding: 40,
-                    alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.05,
-                    shadowRadius: 12,
-                    elevation: 5,
-                  }}
-                >
+                <Box className='bg-white elevation-sm p-4 rounded-xl border-[1px] border-white/50'>
                   <Box
                     style={{
                       backgroundColor: Colors.primaryLight,
@@ -365,7 +310,7 @@ export function InventoryScreen() {
                       ? 'Try adjusting your search'
                       : 'Add products to get started'}
                   </Text>
-                </LinearGradient>
+                </Box>
               )}
             </VStack>
           )}

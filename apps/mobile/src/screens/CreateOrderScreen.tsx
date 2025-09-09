@@ -5,6 +5,8 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
 import React, { useState } from 'react'
 import {
   ActivityIndicator,
@@ -14,7 +16,7 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
 import { Colors } from '../constants/theme'
 import { useProducts, useSuppliers } from '../hooks/useInventoryData'
@@ -60,6 +62,7 @@ export function CreateOrderScreen() {
   const [notes, setNotes] = useState('')
   const [expectedDate, setExpectedDate] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const insets = useSafeAreaInsets()
 
   // Data hooks
   const { data: products = [], isLoading: productsLoading } = useProducts()
@@ -201,253 +204,263 @@ export function CreateOrderScreen() {
 
   if (productsLoading || suppliersLoading) {
     return (
-      <SafeAreaView className='flex-1 bg-white'>
-        <VStack className='flex-1 justify-center items-center' space='md'>
-          <ActivityIndicator size='large' color={Colors.primary} />
-          <Text className='text-gray-600'>
+      <LinearGradient
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
+        style={{ flex: 1 }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <StatusBar style='light' />
+        <Box className='flex-1 justify-center items-center'>
+          <ActivityIndicator size='large' color='white' />
+          <Text className='text-white text-lg mt-4'>
             Loading products and suppliers...
           </Text>
-        </VStack>
-      </SafeAreaView>
+        </Box>
+      </LinearGradient>
     )
   }
 
   return (
-    <SafeAreaView className='flex-1 bg-white'>
-      <VStack className='flex-1'>
-        {/* Header */}
-        <HStack className='items-center justify-between p-6 pb-4'>
-          <Pressable onPress={() => navigation.goBack()} className='p-2 -ml-2'>
-            <Ionicons name='arrow-back' size={24} color='#374151' />
-          </Pressable>
-          <Heading className='text-xl font-semibold text-gray-900'>
-            Create Order
-          </Heading>
-          <Box className='w-8' />
-        </HStack>
+    <LinearGradient
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
+      style={{ flex: 1 }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <StatusBar style='light' />
 
-        {/* Order Details */}
-        <VStack className='px-6 pb-4' space='md'>
-          <VStack space='sm'>
-            <Text className='font-medium text-gray-700'>
-              Expected Delivery (Optional)
+      {/* Header */}
+      <Box
+        className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        style={{ paddingTop: insets.top + 4 }}
+      >
+        <HStack className='justify-between items-center'>
+          <HStack space='md' className='items-center'>
+            <Pressable className='mr-4' onPress={() => navigation.goBack()}>
+              <Ionicons name='arrow-back' size={24} color='white' />
+            </Pressable>
+            <Text className='text-white text-xl font-bold'>
+              Order Suggestions
             </Text>
-            <TextInput
-              className='p-3 border border-gray-300 rounded-lg bg-white'
-              placeholder='YYYY-MM-DD'
-              value={expectedDate}
-              onChangeText={setExpectedDate}
-            />
-          </VStack>
+          </HStack>
+        </HStack>
+      </Box>
 
-          <VStack space='sm'>
-            <Text className='font-medium text-gray-700'>Notes (Optional)</Text>
-            <TextInput
-              className='p-3 border border-gray-300 rounded-lg bg-white'
-              placeholder='Add notes for this order...'
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={3}
-              textAlignVertical='top'
-            />
-          </VStack>
+      {/* Order Details */}
+      <VStack className='px-6 py-4' space='md'>
+        <VStack space='sm'>
+          <Text className='font-medium text-white/90'>
+            Expected Delivery (Optional)
+          </Text>
+          <TextInput
+            className='p-3 border border-gray-300 rounded-lg bg-white'
+            placeholder='YYYY-MM-DD'
+            value={expectedDate}
+            onChangeText={setExpectedDate}
+          />
         </VStack>
 
-        {/* Add Item Button */}
-        <Box className='px-6 pb-4'>
-          <Pressable
-            onPress={() => setShowProductPicker(true)}
-            className='p-4 bg-indigo-500 rounded-lg flex-row items-center justify-center'
-          >
-            <Ionicons name='add' size={20} color='white' />
-            <Text className='text-white font-medium ml-2'>Add Product</Text>
-          </Pressable>
-        </Box>
-
-        {/* Order Items */}
-        <ScrollView
-          className='flex-1 px-6'
-          showsVerticalScrollIndicator={false}
-        >
-          {orderItems.length === 0 ? (
-            <VStack
-              className='flex-1 justify-center items-center py-12'
-              space='lg'
-            >
-              <Box className='size-16 bg-gray-100 rounded-full justify-center items-center'>
-                <Ionicons
-                  name='basket-outline'
-                  size={32}
-                  color={Colors.primary}
-                />
-              </Box>
-              <VStack className='items-center' space='sm'>
-                <Heading className='text-lg font-semibold text-gray-900'>
-                  No Items Added
-                </Heading>
-                <Text className='text-gray-600 text-center'>
-                  Add products to create your order
-                </Text>
-              </VStack>
-            </VStack>
-          ) : (
-            <VStack space='md'>
-              {orderItems.map((item, index) => (
-                <Box
-                  key={`${item.productId}-${item.supplierId}-${index}`}
-                  className='bg-white border border-gray-200 rounded-xl p-4'
-                >
-                  {/* Product & Supplier Info */}
-                  <HStack className='items-start' space='sm'>
-                    <Box>
-                      <ProductImage
-                        uri={item.product.image}
-                        {...ProductImageVariants.small}
-                      />
-                    </Box>
-
-                    <VStack className='flex-1' space='xs'>
-                      <Text className='font-semibold text-gray-900'>
-                        {item.product.name}
-                      </Text>
-                      <Text className='text-sm text-gray-600'>
-                        {item.product.sku && `SKU: ${item.product.sku} • `}
-                        {item.product.category?.name}
-                      </Text>
-                      <Text className='text-sm text-indigo-600'>
-                        Supplier: {item.supplier.name}
-                      </Text>
-                    </VStack>
-
-                    <Pressable
-                      onPress={() => removeOrderItem(index)}
-                      className='p-2'
-                    >
-                      <Ionicons
-                        name='trash-outline'
-                        size={20}
-                        color={Colors.error}
-                      />
-                    </Pressable>
-                  </HStack>
-
-                  {/* Quantity and Cost Controls */}
-                  <HStack
-                    className='items-center justify-between mt-4'
-                    space='md'
-                  >
-                    <VStack space='xs'>
-                      <Text className='text-xs text-gray-500 font-medium'>
-                        Quantity
-                      </Text>
-                      <HStack className='items-center border border-gray-300 rounded-lg'>
-                        <Pressable
-                          onPress={() =>
-                            updateOrderItem(
-                              index,
-                              'quantityOrdered',
-                              Math.max(1, item.quantityOrdered - 1)
-                            )
-                          }
-                          className='p-3'
-                        >
-                          <Ionicons
-                            name='remove'
-                            size={16}
-                            color={Colors.primary}
-                          />
-                        </Pressable>
-                        <Text className='px-4 font-medium'>
-                          {item.quantityOrdered}
-                        </Text>
-                        <Pressable
-                          onPress={() =>
-                            updateOrderItem(
-                              index,
-                              'quantityOrdered',
-                              item.quantityOrdered + 1
-                            )
-                          }
-                          className='p-3'
-                        >
-                          <Ionicons
-                            name='add'
-                            size={16}
-                            color={Colors.primary}
-                          />
-                        </Pressable>
-                      </HStack>
-                    </VStack>
-
-                    <VStack space='xs'>
-                      <Text className='text-xs text-gray-500 font-medium'>
-                        Unit Cost
-                      </Text>
-                      <TextInput
-                        className='w-20 p-2 border border-gray-300 rounded-lg text-center'
-                        value={item.unitCost.toString()}
-                        onChangeText={(text) => {
-                          const cost = parseFloat(text) || 0
-                          updateOrderItem(index, 'unitCost', cost)
-                        }}
-                        keyboardType='numeric'
-                        returnKeyType='done'
-                      />
-                    </VStack>
-
-                    <VStack space='xs' className='items-end'>
-                      <Text className='text-xs text-gray-500 font-medium'>
-                        Total
-                      </Text>
-                      <Text className='font-semibold text-gray-900'>
-                        ${(item.quantityOrdered * item.unitCost).toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </HStack>
-                </Box>
-              ))}
-            </VStack>
-          )}
-        </ScrollView>
-
-        {/* Bottom Actions */}
-        {orderItems.length > 0 && (
-          <Box className='p-6 pt-4 border-t border-gray-200 bg-white'>
-            <VStack space='sm'>
-              <HStack className='items-center justify-between'>
-                <Text className='text-gray-600'>
-                  {orderItems.length} item{orderItems.length === 1 ? '' : 's'}
-                </Text>
-                <Text className='font-semibold text-gray-900 text-lg'>
-                  Total: ${calculateTotal().toFixed(2)}
-                </Text>
-              </HStack>
-
-              <Pressable
-                onPress={createOrder}
-                disabled={isCreating}
-                className={`py-4 rounded-xl items-center ${
-                  isCreating ? 'bg-gray-300' : 'bg-indigo-500'
-                }`}
-              >
-                {isCreating ? (
-                  <HStack className='items-center' space='sm'>
-                    <ActivityIndicator size='small' color='white' />
-                    <Text className='text-white font-semibold'>
-                      Creating Order...
-                    </Text>
-                  </HStack>
-                ) : (
-                  <Text className='text-white font-semibold'>
-                    Create Order{orderItems.length > 1 ? 's' : ''}
-                  </Text>
-                )}
-              </Pressable>
-            </VStack>
-          </Box>
-        )}
+        <VStack space='sm'>
+          <Text className='font-medium text-white/90'>Notes (Optional)</Text>
+          <TextInput
+            className='p-3 border border-gray-300 rounded-lg bg-white'
+            placeholder='Add notes for this order...'
+            value={notes}
+            onChangeText={setNotes}
+            multiline
+            numberOfLines={3}
+            textAlignVertical='top'
+          />
+        </VStack>
       </VStack>
+
+      {/* Add Item Button */}
+      <Box className='px-6 pb-4'>
+        <Pressable
+          onPress={() => setShowProductPicker(true)}
+          className='p-4 bg-indigo-500 rounded-lg flex-row items-center justify-center'
+        >
+          <Ionicons name='add' size={20} color='white' />
+          <Text className='text-white font-medium ml-2'>Add Product</Text>
+        </Pressable>
+      </Box>
+
+      {/* Order Items */}
+      <ScrollView className='flex-1 px-6' showsVerticalScrollIndicator={false}>
+        {orderItems.length === 0 ? (
+          <VStack
+            className='flex-1 justify-center items-center py-12'
+            space='lg'
+          >
+            <Box className='size-16 bg-gray-100 rounded-full justify-center items-center'>
+              <Ionicons
+                name='basket-outline'
+                size={32}
+                color={Colors.primary}
+              />
+            </Box>
+            <VStack className='items-center' space='sm'>
+              <Heading className='text-lg font-semibold text-white'>
+                No Items Added
+              </Heading>
+              <Text className='text-white/60 text-center'>
+                Add products to create your order
+              </Text>
+            </VStack>
+          </VStack>
+        ) : (
+          <VStack space='md'>
+            {orderItems.map((item, index) => (
+              <Box
+                key={`${item.productId}-${item.supplierId}-${index}`}
+                className='bg-white border border-gray-200 rounded-xl p-4'
+              >
+                {/* Product & Supplier Info */}
+                <HStack className='items-start' space='sm'>
+                  <Box>
+                    <ProductImage
+                      uri={item.product.image}
+                      {...ProductImageVariants.small}
+                    />
+                  </Box>
+
+                  <VStack className='flex-1' space='xs'>
+                    <Text className='font-semibold text-gray-900'>
+                      {item.product.name}
+                    </Text>
+                    <Text className='text-sm text-gray-600'>
+                      {item.product.sku && `SKU: ${item.product.sku} • `}
+                      {item.product.category?.name}
+                    </Text>
+                    <Text className='text-sm text-indigo-600'>
+                      Supplier: {item.supplier.name}
+                    </Text>
+                  </VStack>
+
+                  <Pressable
+                    onPress={() => removeOrderItem(index)}
+                    className='p-2'
+                  >
+                    <Ionicons
+                      name='trash-outline'
+                      size={20}
+                      color={Colors.error}
+                    />
+                  </Pressable>
+                </HStack>
+
+                {/* Quantity and Cost Controls */}
+                <HStack
+                  className='items-center justify-between mt-4'
+                  space='md'
+                >
+                  <VStack space='xs'>
+                    <Text className='text-xs text-gray-500 font-medium'>
+                      Quantity
+                    </Text>
+                    <HStack className='items-center border border-gray-300 rounded-lg'>
+                      <Pressable
+                        onPress={() =>
+                          updateOrderItem(
+                            index,
+                            'quantityOrdered',
+                            Math.max(1, item.quantityOrdered - 1)
+                          )
+                        }
+                        className='p-3'
+                      >
+                        <Ionicons
+                          name='remove'
+                          size={16}
+                          color={Colors.primary}
+                        />
+                      </Pressable>
+                      <Text className='px-4 font-medium'>
+                        {item.quantityOrdered}
+                      </Text>
+                      <Pressable
+                        onPress={() =>
+                          updateOrderItem(
+                            index,
+                            'quantityOrdered',
+                            item.quantityOrdered + 1
+                          )
+                        }
+                        className='p-3'
+                      >
+                        <Ionicons name='add' size={16} color={Colors.primary} />
+                      </Pressable>
+                    </HStack>
+                  </VStack>
+
+                  <VStack space='xs'>
+                    <Text className='text-xs text-gray-500 font-medium'>
+                      Unit Cost
+                    </Text>
+                    <TextInput
+                      className='w-20 p-2 border border-gray-300 rounded-lg text-center'
+                      value={item.unitCost.toString()}
+                      onChangeText={(text) => {
+                        const cost = parseFloat(text) || 0
+                        updateOrderItem(index, 'unitCost', cost)
+                      }}
+                      keyboardType='numeric'
+                      returnKeyType='done'
+                    />
+                  </VStack>
+
+                  <VStack space='xs' className='items-end'>
+                    <Text className='text-xs text-gray-500 font-medium'>
+                      Total
+                    </Text>
+                    <Text className='font-semibold text-gray-900'>
+                      ${(item.quantityOrdered * item.unitCost).toFixed(2)}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
+            ))}
+          </VStack>
+        )}
+      </ScrollView>
+
+      {/* Bottom Actions */}
+      {orderItems.length > 0 && (
+        <Box className='p-6 pt-4 border-t border-gray-200 bg-white'>
+          <VStack space='sm'>
+            <HStack className='items-center justify-between'>
+              <Text className='text-gray-600'>
+                {orderItems.length} item{orderItems.length === 1 ? '' : 's'}
+              </Text>
+              <Text className='font-semibold text-gray-900 text-lg'>
+                Total: ${calculateTotal().toFixed(2)}
+              </Text>
+            </HStack>
+
+            <Pressable
+              onPress={createOrder}
+              disabled={isCreating}
+              className={`py-4 rounded-xl items-center ${
+                isCreating ? 'bg-gray-300' : 'bg-indigo-500'
+              }`}
+            >
+              {isCreating ? (
+                <HStack className='items-center' space='sm'>
+                  <ActivityIndicator size='small' color='white' />
+                  <Text className='text-white font-semibold'>
+                    Creating Order...
+                  </Text>
+                </HStack>
+              ) : (
+                <Text className='text-white font-semibold'>
+                  Create Order{orderItems.length > 1 ? 's' : ''}
+                </Text>
+              )}
+            </Pressable>
+          </VStack>
+        </Box>
+      )}
 
       {/* Product Picker Modal */}
       <Modal
@@ -568,6 +581,6 @@ export function CreateOrderScreen() {
           </VStack>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </LinearGradient>
   )
 }

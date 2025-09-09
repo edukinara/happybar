@@ -13,6 +13,7 @@ import { Pressable } from '@/components/ui/pressable'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
+import { Colors } from '../constants/theme'
 import { api } from '../lib/api'
 
 export interface Order {
@@ -143,39 +144,49 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
   const renderOrderCard = (order: Order) => (
     <Card
       key={order.id}
-      className='p-4 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/40 mb-4'
+      className='bg-white elevation-sm p-4 rounded-xl border-[1px] border-white/50'
     >
       <Pressable
         onPress={() =>
           navigation.navigate('OrderDetail', { orderId: order.id })
         }
       >
-        <VStack space='sm'>
-          <HStack className='justify-between items-center'>
-            <Text className='text-lg font-bold text-gray-900'>
-              {order.orderNumber}
-            </Text>
-            <Box
-              className={`px-2 py-1 rounded-full ${ORDER_STATUS_COLORS[order.status]}`}
-            >
-              <Text className='text-xs font-medium text-white'>
-                {ORDER_STATUS_LABELS[order.status]}
+        <HStack space='md' className='items-center justify-center w-full'>
+          <VStack className='items-start flex-1 w-full'>
+            <HStack className='justify-between items-center w-full'>
+              <Text className='text-lg font-bold text-gray-900'>
+                {order.orderNumber}
               </Text>
-            </Box>
-          </HStack>
+              <Box
+                className={`px-2 py-0 rounded-md ${ORDER_STATUS_COLORS[order.status]}`}
+              >
+                <Text className='text-xs py-0.5 font-medium text-white'>
+                  {ORDER_STATUS_LABELS[order.status]}
+                </Text>
+              </Box>
+            </HStack>
+            <Text className='text-md text-gray-600'>{order.supplier.name}</Text>
 
-          <Text className='text-md text-gray-600'>{order.supplier.name}</Text>
-
-          <HStack className='justify-between items-center'>
-            <Text className='text-sm text-gray-600'>
-              Items: {order.items.length} • Total: $
-              {order.totalAmount.toFixed(2)}
-            </Text>
-            <Text className='text-sm text-gray-500'>
-              {new Date(order.orderDate).toLocaleDateString()}
-            </Text>
-          </HStack>
-
+            <HStack className='justify-between items-center gap-1'>
+              <Text className='text-sm text-gray-600'>
+                Items: {order.items.length}
+              </Text>
+              <Text className='text-sm text-gray-600'>•</Text>
+              <Text className='text-sm text-gray-600'>
+                Total: $
+                {order.totalAmount.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })}
+              </Text>
+              <Text className='text-sm text-gray-600'>•</Text>
+              <Text className='text-sm text-gray-500'>
+                {new Date(order.orderDate).toLocaleDateString()}
+              </Text>
+            </HStack>
+          </VStack>
+          <Ionicons name='chevron-forward' size={20} color='rgba(0,0,0,0.5)' />
+        </HStack>
+        <VStack space='sm'>
           {order.status === 'DRAFT' && (
             <Pressable
               className='flex-row items-center justify-center bg-blue-600 py-2 rounded-lg mt-2'
@@ -213,7 +224,7 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -236,19 +247,19 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
       </Box>
 
       {/* Search Container */}
-      <Box className='px-4 py-2 bg-white/10'>
-        <HStack className='items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/30'>
-          <Ionicons name='search' size={20} color='#9CA3AF' />
-          <Input className='flex-1 ml-2 border-white/30'>
-            <InputField
-              placeholder='Search orders...'
-              placeholderTextColor='#9CA3AF'
-              className='text-white'
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-            />
-          </Input>
-        </HStack>
+      <Box className='p-4'>
+        <Input
+          className='border-white/30 rounded-xl h-12 bg-white elevation-md'
+          size='lg'
+        >
+          <InputField
+            placeholder='Search orders...'
+            placeholderTextColor='rgba(0,0,0,0.4)'
+            className='text-black/90'
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+          />
+        </Input>
       </Box>
 
       {/* Filter Buttons */}
@@ -258,7 +269,7 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: 16,
-            gap: 4,
+            gap: 6,
             alignItems: 'center',
           }}
         >
@@ -274,19 +285,24 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
           ).map((status) => (
             <Pressable
               key={status}
-              className={`px-4 py-2 rounded-lg border ${
-                statusFilter === status
-                  ? 'bg-white/30 border-white/50'
-                  : 'bg-white/10 border-white/20'
-              } min-w-[60px] items-center`}
               onPress={() => setStatusFilter(status)}
+              style={{
+                backgroundColor:
+                  statusFilter === status
+                    ? 'rgba(255, 255, 255, 0.95)'
+                    : 'rgba(255, 255, 255, 0.2)',
+                paddingVertical: 10,
+                paddingHorizontal: 16,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+              }}
             >
               <Text
-                className={`text-sm font-medium ${
-                  statusFilter === status
-                    ? 'text-white font-bold'
-                    : 'text-white/80'
-                }`}
+                className='font-semibold text-sm'
+                style={{
+                  color: statusFilter === status ? Colors.primary : 'white',
+                }}
               >
                 {status === 'ALL' ? 'All' : ORDER_STATUS_FILTER_LABELS[status]}
               </Text>

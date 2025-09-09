@@ -24,6 +24,7 @@ import { Alert, BackHandler, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import { Colors } from '../constants/theme'
 import { useProducts, type InventoryProduct } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -297,7 +298,7 @@ export function CountScreen() {
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

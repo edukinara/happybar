@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import React, { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
@@ -20,6 +20,7 @@ import { Pressable } from '@/components/ui/pressable'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import { Colors } from '../constants/theme'
 import { api } from '../lib/api'
 import { pluralize } from '../utils/pluralize'
 
@@ -171,7 +172,10 @@ export function OrderSuggestionsScreen() {
   }
 
   // Get final ordering unit (edited or suggested)
-  const getFinalOrderingUnit = (productId: string, suggestedUnit: 'UNIT' | 'CASE') => {
+  const getFinalOrderingUnit = (
+    productId: string,
+    suggestedUnit: 'UNIT' | 'CASE'
+  ) => {
     return editingOrderingUnits[productId] ?? suggestedUnit
   }
 
@@ -182,8 +186,8 @@ export function OrderSuggestionsScreen() {
 
   // Update ordering unit with cost recalculation (like web app)
   const updateOrderingUnit = (
-    productId: string, 
-    newUnit: 'UNIT' | 'CASE', 
+    productId: string,
+    newUnit: 'UNIT' | 'CASE',
     item: OrderSuggestion['items'][0]
   ) => {
     const quantityNeeded = item.minimumQuantity - item.currentQuantity
@@ -192,22 +196,31 @@ export function OrderSuggestionsScreen() {
       // When switching to case ordering, calculate cases needed
       const casesNeeded = Math.ceil(quantityNeeded / item.packSize)
       const finalCasesNeeded = Math.max(casesNeeded, 1)
-      
-      setEditingOrderingUnits(prev => ({ ...prev, [productId]: 'CASE' }))
-      setEditingQuantities(prev => ({ ...prev, [productId]: finalCasesNeeded }))
-      setEditingUnitCosts(prev => ({ ...prev, [productId]: item.product.costPerCase! }))
+
+      setEditingOrderingUnits((prev) => ({ ...prev, [productId]: 'CASE' }))
+      setEditingQuantities((prev) => ({
+        ...prev,
+        [productId]: finalCasesNeeded,
+      }))
+      setEditingUnitCosts((prev) => ({
+        ...prev,
+        [productId]: item.product.costPerCase!,
+      }))
     } else if (newUnit === 'UNIT' && item.product.costPerUnit) {
       // When switching to unit ordering, use unit quantities
       let finalQuantity = Math.ceil(Math.max(quantityNeeded, 1))
-      
+
       // If there's a pack size, round up to full packs for unit ordering
       if (item.packSize && item.packSize > 1) {
         finalQuantity = Math.ceil(finalQuantity / item.packSize) * item.packSize
       }
-      
-      setEditingOrderingUnits(prev => ({ ...prev, [productId]: 'UNIT' }))
-      setEditingQuantities(prev => ({ ...prev, [productId]: finalQuantity }))
-      setEditingUnitCosts(prev => ({ ...prev, [productId]: item.product.costPerUnit }))
+
+      setEditingOrderingUnits((prev) => ({ ...prev, [productId]: 'UNIT' }))
+      setEditingQuantities((prev) => ({ ...prev, [productId]: finalQuantity }))
+      setEditingUnitCosts((prev) => ({
+        ...prev,
+        [productId]: item.product.costPerUnit,
+      }))
     }
   }
 
@@ -221,10 +234,7 @@ export function OrderSuggestionsScreen() {
             item.product.id,
             item.suggestedQuantity
           )
-          const finalUnitCost = getFinalUnitCost(
-            item.product.id,
-            item.unitCost
-          )
+          const finalUnitCost = getFinalUnitCost(item.product.id, item.unitCost)
           total += finalQuantity * finalUnitCost
         }
       })
@@ -326,7 +336,7 @@ export function OrderSuggestionsScreen() {
   if (isLoading) {
     return (
       <LinearGradient
-        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -334,7 +344,9 @@ export function OrderSuggestionsScreen() {
         <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
           <ActivityIndicator size='large' color='white' />
-          <Text className='text-white text-lg mt-4'>Loading order suggestions...</Text>
+          <Text className='text-white text-lg mt-4'>
+            Loading order suggestions...
+          </Text>
         </Box>
       </LinearGradient>
     )
@@ -344,13 +356,13 @@ export function OrderSuggestionsScreen() {
   if (suggestions.length === 0) {
     return (
       <LinearGradient
-        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         <StatusBar style='light' />
-        
+
         {/* Header */}
         <Box
           className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
@@ -361,7 +373,9 @@ export function OrderSuggestionsScreen() {
               <Pressable className='mr-4' onPress={() => navigation.goBack()}>
                 <Ionicons name='arrow-back' size={24} color='white' />
               </Pressable>
-              <Text className='text-white text-xl font-bold'>Order Suggestions</Text>
+              <Text className='text-white text-xl font-bold'>
+                Order Suggestions
+              </Text>
             </HStack>
           </HStack>
         </Box>
@@ -369,18 +383,15 @@ export function OrderSuggestionsScreen() {
         {/* Empty state */}
         <VStack className='flex-1 justify-center items-center px-4' space='lg'>
           <Box className='w-16 h-16 bg-white/20 rounded-full justify-center items-center'>
-            <Ionicons
-              name='checkmark-circle'
-              size={32}
-              color='white'
-            />
+            <Ionicons name='checkmark-circle' size={32} color='white' />
           </Box>
           <VStack className='items-center' space='sm'>
             <Text className='text-white text-xl font-bold'>
               No Suggestions Available
             </Text>
             <Text className='text-white/80 text-center text-lg'>
-              All your inventory items are above their minimum levels. Great job!
+              All your inventory items are above their minimum levels. Great
+              job!
             </Text>
           </VStack>
           <Pressable
@@ -396,13 +407,13 @@ export function OrderSuggestionsScreen() {
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
       <StatusBar style='light' />
-      
+
       {/* Header */}
       <Box
         className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
@@ -413,7 +424,9 @@ export function OrderSuggestionsScreen() {
             <Pressable className='mr-4' onPress={() => navigation.goBack()}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
-            <Text className='text-white text-xl font-bold'>Order Suggestions</Text>
+            <Text className='text-white text-xl font-bold'>
+              Order Suggestions
+            </Text>
           </HStack>
           <Pressable
             onPress={() => (navigation as any).navigate('CreateOrder')}
@@ -464,9 +477,7 @@ export function OrderSuggestionsScreen() {
                 <HStack className='items-center flex-1' space='sm'>
                   <Switch
                     value={selectedSuppliers.has(suggestion.supplier.id)}
-                    onValueChange={() =>
-                      toggleSupplier(suggestion.supplier.id)
-                    }
+                    onValueChange={() => toggleSupplier(suggestion.supplier.id)}
                     trackColor={{
                       false: '#D1D5DB',
                       true: '#EEF2FF',
@@ -483,8 +494,8 @@ export function OrderSuggestionsScreen() {
                     </Text>
                     <Text className='text-sm text-gray-600'>
                       {suggestion.items.length} item
-                      {suggestion.items.length === 1 ? '' : 's'} •{' '}
-                      ${suggestion.totalEstimatedCost.toFixed(2)}
+                      {suggestion.items.length === 1 ? '' : 's'} • $
+                      {suggestion.totalEstimatedCost.toFixed(2)}
                     </Text>
                   </VStack>
                 </HStack>
@@ -567,35 +578,64 @@ export function OrderSuggestionsScreen() {
                           {item.packSize && (
                             <HStack className='items-center' space='xs'>
                               <Pressable
-                                onPress={() => updateOrderingUnit(item.product.id, 'UNIT', item)}
+                                onPress={() =>
+                                  updateOrderingUnit(
+                                    item.product.id,
+                                    'UNIT',
+                                    item
+                                  )
+                                }
                                 className={`px-2 py-1 rounded-lg ${
-                                  getFinalOrderingUnit(item.product.id, item.orderingUnit) === 'UNIT'
-                                    ? 'bg-blue-100 border border-blue-300' 
+                                  getFinalOrderingUnit(
+                                    item.product.id,
+                                    item.orderingUnit
+                                  ) === 'UNIT'
+                                    ? 'bg-blue-100 border border-blue-300'
                                     : 'bg-gray-100 border border-gray-300'
                                 }`}
                               >
-                                <Text className={`text-xs ${
-                                  getFinalOrderingUnit(item.product.id, item.orderingUnit) === 'UNIT'
-                                    ? 'text-blue-700 font-bold' 
-                                    : 'text-gray-600'
-                                }`}>
+                                <Text
+                                  className={`text-xs ${
+                                    getFinalOrderingUnit(
+                                      item.product.id,
+                                      item.orderingUnit
+                                    ) === 'UNIT'
+                                      ? 'text-blue-700 font-bold'
+                                      : 'text-gray-600'
+                                  }`}
+                                >
                                   Unit
                                 </Text>
                               </Pressable>
                               <Pressable
-                                onPress={() => updateOrderingUnit(item.product.id, 'CASE', item)}
+                                onPress={() =>
+                                  updateOrderingUnit(
+                                    item.product.id,
+                                    'CASE',
+                                    item
+                                  )
+                                }
                                 className={`px-2 py-1 rounded-lg ${
-                                  getFinalOrderingUnit(item.product.id, item.orderingUnit) === 'CASE'
-                                    ? 'bg-blue-100 border border-blue-300' 
+                                  getFinalOrderingUnit(
+                                    item.product.id,
+                                    item.orderingUnit
+                                  ) === 'CASE'
+                                    ? 'bg-blue-100 border border-blue-300'
                                     : 'bg-gray-100 border border-gray-300'
                                 }`}
                               >
-                                <Text className={`text-xs ${
-                                  getFinalOrderingUnit(item.product.id, item.orderingUnit) === 'CASE'
-                                    ? 'text-blue-700 font-bold' 
-                                    : 'text-gray-600'
-                                }`}>
-                                  Case{item.packSize ? ` (${item.packSize})` : ''}
+                                <Text
+                                  className={`text-xs ${
+                                    getFinalOrderingUnit(
+                                      item.product.id,
+                                      item.orderingUnit
+                                    ) === 'CASE'
+                                      ? 'text-blue-700 font-bold'
+                                      : 'text-gray-600'
+                                  }`}
+                                >
+                                  Case
+                                  {item.packSize ? ` (${item.packSize})` : ''}
                                 </Text>
                               </Pressable>
                             </HStack>
@@ -604,13 +644,11 @@ export function OrderSuggestionsScreen() {
                       ) : (
                         <Text className='text-sm font-bold text-gray-900'>
                           {item.suggestedQuantity}{' '}
-                          {pluralize(
-                            item.suggestedQuantity,
-                            item.orderingUnit
-                          )}
+                          {pluralize(item.suggestedQuantity, item.orderingUnit)}
                           {item.orderingUnit === 'CASE' && item.packSize && (
                             <Text className='text-xs text-gray-600'>
-                              {' '}({item.packSize * item.suggestedQuantity} units)
+                              {' '}
+                              ({item.packSize * item.suggestedQuantity} units)
                             </Text>
                           )}
                         </Text>

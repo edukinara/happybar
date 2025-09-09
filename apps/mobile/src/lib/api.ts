@@ -1,6 +1,7 @@
 import { authClient, Session } from './auth'
+import { API_CONFIG, getApiUrl } from '../constants/config'
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001'
+const API_URL = API_CONFIG.BASE_URL
 
 class ApiClient {
   private baseURL: string

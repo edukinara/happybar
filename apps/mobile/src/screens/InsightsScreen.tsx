@@ -73,7 +73,7 @@ export function InsightsScreen() {
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

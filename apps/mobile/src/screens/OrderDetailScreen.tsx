@@ -13,6 +13,7 @@ import { Pressable } from '@/components/ui/pressable'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
+import { Colors } from '../constants/theme'
 import { api } from '../lib/api'
 import { pluralize } from '../utils/pluralize'
 import type { Order } from './OrdersScreen'
@@ -172,7 +173,7 @@ export default function OrderDetailScreen({
   if (loading) {
     return (
       <LinearGradient
-        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -187,7 +188,7 @@ export default function OrderDetailScreen({
   if (!order) {
     return (
       <LinearGradient
-        colors={['#6366F1', '#8B5CF6', '#A855F7']}
+        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -201,7 +202,7 @@ export default function OrderDetailScreen({
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

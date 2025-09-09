@@ -13,6 +13,7 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
 import { HappyBarLogo } from '../components/brand/HappyBarLogo'
+import { Colors } from '../constants/theme'
 import { useInventoryAnalytics } from '../hooks/useAnalyticsData'
 import { useCountSync } from '../hooks/useCountSync'
 import {
@@ -331,7 +332,7 @@ export function HomeScreen() {
                 </VStack>
               </Pressable>
             )}
-            <Pressable 
+            <Pressable
               onPress={() => {
                 Alert.alert(
                   'Create Order',
@@ -339,16 +340,18 @@ export function HomeScreen() {
                   [
                     {
                       text: 'Cancel',
-                      style: 'cancel'
+                      style: 'cancel',
                     },
                     {
                       text: 'Smart Suggestions',
-                      onPress: () => (navigation as any).navigate('OrderSuggestions')
+                      onPress: () =>
+                        (navigation as any).navigate('OrderSuggestions'),
                     },
                     {
                       text: 'Manual Entry',
-                      onPress: () => (navigation as any).navigate('CreateOrder')
-                    }
+                      onPress: () =>
+                        (navigation as any).navigate('CreateOrder'),
+                    },
                   ]
                 )
               }}
@@ -363,7 +366,7 @@ export function HomeScreen() {
                 </Text>
               </VStack>
             </Pressable>
-            <Pressable 
+            <Pressable
               onPress={() => (navigation as any).navigate('Orders')}
               className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
             >
@@ -518,7 +521,7 @@ export function HomeScreen() {
 
   return (
     <LinearGradient
-      colors={['#6366F1', '#8B5CF6', '#A855F7']}
+      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
       style={{ flex: 1 }}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
