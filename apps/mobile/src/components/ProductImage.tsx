@@ -34,18 +34,17 @@ export function ProductImage({
     return (
       <Box
         style={{
-          width: size,
+          width: (size / 3) * 2,
           height: size,
           borderRadius,
-          backgroundColor: '#F3F4F6',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
         {isLoading && showLoadingIndicator && uri && !hasError ? (
-          <ActivityIndicator size="small" color="#8B5CF6" />
+          <ActivityIndicator size='small' color='#8B5CF6' />
         ) : (
-          <Ionicons name="cube-outline" size={iconSize} color="#9CA3AF" />
+          <Ionicons name='cube-outline' size={iconSize} color='#9CA3AF' />
         )}
       </Box>
     )
@@ -56,14 +55,13 @@ export function ProductImage({
       <Image
         source={{ uri }}
         style={{
-          width: size,
+          width: (size / 3) * 2,
           height: size,
           borderRadius,
-          backgroundColor: '#F3F4F6',
         }}
-        contentFit="contain"
+        contentFit='contain'
         priority={priority}
-        cachePolicy="memory-disk"
+        cachePolicy='memory-disk'
         onLoad={() => {
           setIsLoading(false)
           setHasError(false)
@@ -95,7 +93,7 @@ export function ProductImage({
             alignItems: 'center',
           }}
         >
-          <ActivityIndicator size="small" color="#8B5CF6" />
+          <ActivityIndicator size='small' color='#8B5CF6' />
         </Box>
       )}
     </Box>
@@ -107,7 +105,7 @@ export const ProductImageVariants = {
   small: { size: 40, borderRadius: 6, fallbackIconSize: 18 },
   medium: { size: 50, borderRadius: 8, fallbackIconSize: 22 },
   large: { size: 60, borderRadius: 10, fallbackIconSize: 28 },
-  
+
   // List item variants (optimized for scrolling performance)
   listItem: {
     size: 45,
@@ -121,7 +119,7 @@ export const ProductImageVariants = {
     fallbackIconSize: 22,
     priority: 'low' as const,
   },
-  
+
   // Detail view variants (higher priority for user focus)
   detail: {
     size: 80,

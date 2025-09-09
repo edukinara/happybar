@@ -527,4 +527,229 @@ export const countApi = {
   async createDefaultAreas(countId: string) {
     return apiClient.post(`/api/inventory-counts/${countId}/areas/default`, {})
   },
+
+  // ==================== ORDER MANAGEMENT ====================
+
+  // Get all orders with optional filtering
+  async getOrders(params?: {
+    status?: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+    supplierId?: string
+    limit?: number
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params?.status) searchParams.set('status', params.status)
+    if (params?.supplierId) searchParams.set('supplierId', params.supplierId)
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    
+    const queryString = searchParams.toString()
+    return apiClient.get<{
+      success: boolean
+      data: Array<{
+        id: string
+        supplierId: string
+        orderNumber: string
+        status: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+        orderDate: string
+        totalAmount: number
+        expectedDate?: string
+        notes?: string
+        createdAt: string
+        updatedAt: string
+        supplier: {
+          id: string
+          name: string
+          contactEmail?: string
+          contactPhone?: string
+        }
+        items: Array<{
+          id: string
+          productId: string
+          quantityOrdered: number
+          quantityReceived: number
+          unitCost: number
+          totalCost: number
+          orderingUnit: 'UNIT' | 'CASE'
+          product: {
+            id: string
+            name: string
+            sku?: string
+            caseSize: number
+            category: {
+              id: string
+              name: string
+            }
+          }
+        }>
+      }>
+      pagination: {
+        total: number
+        limit: number
+        offset: number
+      }
+    }>(`/api/orders${queryString ? '?' + queryString : ''}`)
+  },
+
+  // Get single order by ID
+  async getOrder(id: string) {
+    return apiClient.get<{
+      success: boolean
+      data: {
+        id: string
+        supplierId: string
+        orderNumber: string
+        status: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+        orderDate: string
+        receivedDate?: string
+        totalAmount: number
+        expectedDate?: string
+        notes?: string
+        createdAt: string
+        updatedAt: string
+        supplier: {
+          id: string
+          name: string
+          contactEmail?: string
+          contactPhone?: string
+        }
+        items: Array<{
+          id: string
+          productId: string
+          quantityOrdered: number
+          quantityReceived: number
+          unitCost: number
+          totalCost: number
+          orderingUnit: 'UNIT' | 'CASE'
+          product: {
+            id: string
+            name: string
+            sku?: string
+            caseSize: number
+            category: {
+              id: string
+              name: string
+            }
+          }
+        }>
+      }
+    }>(`/api/orders/${id}`)
+  },
+
+  // Get order suggestions (smart reorder recommendations)
+  async getOrderSuggestions() {
+    const response = await apiClient.get<{
+      success: boolean
+      data: Array<{
+        supplier: {
+          id: string
+          name: string
+          contactPerson?: string
+          email?: string
+          phone?: string
+        }
+        items: Array<{
+          product: {
+            id: string
+            name: string
+            brand?: string
+            image?: string
+            costPerUnit: number
+            costPerCase?: number | null
+            category: {
+              id: string
+              name: string
+            }
+          }
+          currentQuantity: number
+          minimumQuantity: number
+          suggestedQuantity: number
+          unitCost: number
+          estimatedCost: number
+          orderingUnit: 'UNIT' | 'CASE'
+          packSize?: number | null
+          location: {
+            id: string
+            name: string
+          }
+        }>
+        totalEstimatedCost: number
+      }>
+    }>(`/api/orders/suggestions/reorder`)
+    return response.data || []
+  },
+
+  // Create new order
+  async createOrder(data: {
+    supplierId: string
+    expectedDate?: string
+    notes?: string
+    items: Array<{
+      productId: string
+      quantityOrdered: number
+      unitCost: number
+      orderingUnit: 'UNIT' | 'CASE'
+    }>
+  }) {
+    return apiClient.post(`/api/orders`, data)
+  },
+
+  // Update order (status, items, etc.)
+  async updateOrder(id: string, data: {
+    status?: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+    expectedDate?: string
+    notes?: string
+    items?: Array<{
+      id?: string
+      productId: string
+      quantityOrdered: number
+      quantityReceived?: number
+      unitCost: number
+      orderingUnit: 'UNIT' | 'CASE'
+    }>
+  }) {
+    return apiClient.put(`/api/orders/${id}`, data)
+  },
+
+  // Delete order (draft orders only)
+  async deleteOrder(id: string) {
+    return apiClient.delete(`/api/orders/${id}`)
+  },
+
+  // Create orders from suggestions (one by one like web app)
+  async createOrdersFromSuggestions(selectedSuggestions: Array<{
+    supplierId: string
+    items: Array<{
+      productId: string
+      quantityOrdered: number
+      unitCost: number
+      orderingUnit: 'UNIT' | 'CASE'
+    }>
+    notes?: string
+  }>) {
+    // Create orders one by one like the web app does
+    const results = []
+    for (const orderData of selectedSuggestions) {
+      const result = await apiClient.post<{
+        success: boolean
+        data: any
+      }>(`/api/orders`, {
+        supplierId: orderData.supplierId,
+        notes: orderData.notes || 'Generated from reorder suggestions',
+        items: orderData.items
+      })
+      results.push(result)
+    }
+    return results
+  },
+}
+
+// Export the api object for order-related functions
+export const api = {
+  ...countApi,
+  getOrderSuggestions: countApi.getOrderSuggestions,
+  createOrder: countApi.createOrder,
+  createOrdersFromSuggestions: countApi.createOrdersFromSuggestions,
+  getOrders: countApi.getOrders,
+  getOrder: countApi.getOrder,
+  updateOrder: countApi.updateOrder,
+  deleteOrder: countApi.deleteOrder,
 }

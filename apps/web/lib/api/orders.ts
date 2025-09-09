@@ -91,6 +91,7 @@ export interface OrderSuggestion {
     product: {
       id: string
       name: string
+      image?: string
       sku?: string
       category: { name: string }
       costPerUnit?: number

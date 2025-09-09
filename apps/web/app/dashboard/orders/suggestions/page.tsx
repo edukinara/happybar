@@ -41,6 +41,7 @@ import {
   Send,
   ShoppingCart,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import pluralize from 'pluralize'
@@ -68,7 +69,7 @@ export default function OrderSuggestionsPage() {
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     Record<string, SelectedSuggestion>
   >({})
-  
+
   // Use the proper mutation hook for cache invalidation
   const createOrderMutation = useCreateOrder()
 
@@ -287,18 +288,18 @@ export default function OrderSuggestionsPage() {
       return
     }
 
-    const orders: CreateOrderRequest[] = Object.values(
-      selectedSuggestions
-    ).map((selection) => ({
-      supplierId: selection.supplierId,
-      notes: 'Generated from reorder suggestions',
-      items: selection.items.map((item) => ({
-        productId: item.productId,
-        quantityOrdered: item.quantity,
-        unitCost: item.unitCost,
-        orderingUnit: item.orderingUnit,
-      })),
-    }))
+    const orders: CreateOrderRequest[] = Object.values(selectedSuggestions).map(
+      (selection) => ({
+        supplierId: selection.supplierId,
+        notes: 'Generated from reorder suggestions',
+        items: selection.items.map((item) => ({
+          productId: item.productId,
+          quantityOrdered: item.quantity,
+          unitCost: item.unitCost,
+          orderingUnit: item.orderingUnit,
+        })),
+      })
+    )
 
     let createdCount = 0
     const totalOrders = orders.length
@@ -315,7 +316,7 @@ export default function OrderSuggestionsPage() {
             onError: (error) => {
               console.error('Failed to create order:', error)
               reject(error)
-            }
+            },
           })
         })
       } catch (error) {
@@ -420,9 +421,14 @@ export default function OrderSuggestionsPage() {
                   </p>
                 </div>
               </div>
-              <Button onClick={createSelectedOrders} disabled={createOrderMutation.isPending}>
+              <Button
+                onClick={createSelectedOrders}
+                disabled={createOrderMutation.isPending}
+              >
                 <Send className='size-4 mr-2' />
-                {createOrderMutation.isPending ? 'Creating...' : 'Create Orders'}
+                {createOrderMutation.isPending
+                  ? 'Creating...'
+                  : 'Create Orders'}
               </Button>
             </div>
           </CardContent>
@@ -501,6 +507,7 @@ export default function OrderSuggestionsPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className='w-12'></TableHead>
+                        <TableHead />
                         <TableHead>Product</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Current</TableHead>
@@ -546,6 +553,28 @@ export default function OrderSuggestionsPage() {
                                   )
                                 }
                               />
+                            </TableCell>
+                            <TableCell className='w-[24px] p-2'>
+                              {item.product.image ? (
+                                <div className='relative size-8 overflow-hidden'>
+                                  <Image
+                                    src={item.product.image}
+                                    alt={item.product.name}
+                                    fill
+                                    className='object-contain'
+                                    sizes='40px'
+                                    onError={(_e) => {
+                                      console.warn(
+                                        `Failed to load image: ${item.product.image}`
+                                      )
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className='size-8 flex items-center justify-center'>
+                                  <Package className='w-4 h-4 text-muted-foreground' />
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>
                               <div>

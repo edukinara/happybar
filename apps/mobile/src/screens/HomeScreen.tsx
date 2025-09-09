@@ -331,13 +331,48 @@ export function HomeScreen() {
                 </VStack>
               </Pressable>
             )}
-            <Pressable className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'>
+            <Pressable 
+              onPress={() => {
+                Alert.alert(
+                  'Create Order',
+                  'How would you like to create your order?',
+                  [
+                    {
+                      text: 'Cancel',
+                      style: 'cancel'
+                    },
+                    {
+                      text: 'Smart Suggestions',
+                      onPress: () => (navigation as any).navigate('OrderSuggestions')
+                    },
+                    {
+                      text: 'Manual Entry',
+                      onPress: () => (navigation as any).navigate('CreateOrder')
+                    }
+                  ]
+                )
+              }}
+              className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
+            >
               <VStack className='items-center' space='sm'>
                 <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
                   <Ionicons name='cart' size={24} color='#2563EB' />
                 </Box>
                 <Text className='text-sm font-semibold text-gray-900'>
                   Create Order
+                </Text>
+              </VStack>
+            </Pressable>
+            <Pressable 
+              onPress={() => (navigation as any).navigate('Orders')}
+              className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
+            >
+              <VStack className='items-center' space='sm'>
+                <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
+                  <Ionicons name='receipt' size={24} color='#059669' />
+                </Box>
+                <Text className='text-sm font-semibold text-gray-900'>
+                  View Orders
                 </Text>
               </VStack>
             </Pressable>

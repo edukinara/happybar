@@ -44,43 +44,44 @@ export function SettingsScreen() {
     void logout()
   }
 
+  // TODO: Implement these settings screens when needed
   const settingsGroups = [
-    {
-      title: 'Account',
-      icon: 'person-circle',
-      items: [
-        { title: 'Profile', icon: 'person', action: () => {} },
-        { title: 'Organization', icon: 'business', action: () => {} },
-        { title: 'Subscription', icon: 'card', action: () => {} },
-      ],
-    },
-    {
-      title: 'Inventory',
-      icon: 'cube',
-      items: [
-        { title: 'Locations', icon: 'location', action: () => {} },
-        { title: 'Categories', icon: 'folder', action: () => {} },
-        { title: 'Units & Containers', icon: 'resize', action: () => {} },
-      ],
-    },
-    {
-      title: 'Data & Sync',
-      icon: 'cloud',
-      items: [
-        { title: 'Backup & Restore', icon: 'cloud-upload', action: () => {} },
-        { title: 'Import Products', icon: 'download', action: () => {} },
-        { title: 'Export Data', icon: 'share', action: () => {} },
-      ],
-    },
-    {
-      title: 'Support',
-      icon: 'help-circle',
-      items: [
-        { title: 'Help Center', icon: 'help', action: () => {} },
-        { title: 'Contact Support', icon: 'mail', action: () => {} },
-        { title: 'Send Feedback', icon: 'chatbubble', action: () => {} },
-      ],
-    },
+    // {
+    //   title: 'Account',
+    //   icon: 'person-circle',
+    //   items: [
+    //     { title: 'Profile', icon: 'person', action: () => {} },
+    //     { title: 'Organization', icon: 'business', action: () => {} },
+    //     { title: 'Subscription', icon: 'card', action: () => {} },
+    //   ],
+    // },
+    // {
+    //   title: 'Inventory',
+    //   icon: 'cube',
+    //   items: [
+    //     { title: 'Locations', icon: 'location', action: () => {} },
+    //     { title: 'Categories', icon: 'folder', action: () => {} },
+    //     { title: 'Units & Containers', icon: 'resize', action: () => {} },
+    //   ],
+    // },
+    // {
+    //   title: 'Data & Sync',
+    //   icon: 'cloud',
+    //   items: [
+    //     { title: 'Backup & Restore', icon: 'cloud-upload', action: () => {} },
+    //     { title: 'Import Products', icon: 'download', action: () => {} },
+    //     { title: 'Export Data', icon: 'share', action: () => {} },
+    //   ],
+    // },
+    // {
+    //   title: 'Support',
+    //   icon: 'help-circle',
+    //   items: [
+    //     { title: 'Help Center', icon: 'help', action: () => {} },
+    //     { title: 'Contact Support', icon: 'mail', action: () => {} },
+    //     { title: 'Send Feedback', icon: 'chatbubble', action: () => {} },
+    //   ],
+    // },
   ]
 
   const renderSettingItem = (item: any, isLast: boolean = false) => (
