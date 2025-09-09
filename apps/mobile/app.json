@@ -29,12 +29,23 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.happybar.inventory",
-      "permissions": ["CAMERA", "VIBRATE"]
+      "permissions": [
+        "CAMERA",
+        "VIBRATE"
+      ]
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-dev-client", "expo-secure-store"]
+    "plugins": [
+      "expo-dev-client",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "16f1cfab-1635-4217-9559-1cc75908bf12"
+      }
+    }
   }
 }
