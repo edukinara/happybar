@@ -207,6 +207,12 @@ export default function OrderDetailPage() {
     switch (order.status) {
       case 'DRAFT':
         actions.push({
+          label: 'Edit Order',
+          icon: Edit3,
+          action: () => router.push(`/dashboard/orders/${order.id}/edit`),
+          variant: 'outline' as const,
+        })
+        actions.push({
           label: 'Send Order',
           icon: Send,
           action: () => updateOrderStatus('SENT'),

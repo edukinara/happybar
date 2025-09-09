@@ -30,6 +30,7 @@ import {
   AlertCircle,
   Clock,
   DollarSign,
+  Edit,
   Eye,
   Filter,
   Package,
@@ -362,16 +363,24 @@ export default function OrdersPage() {
                           </Button>
 
                           {order.status === 'DRAFT' && (
-                            <Button
-                              size='sm'
-                              onClick={() =>
-                                handleStatusChange(order.id, 'SENT')
-                              }
-                              className='btn-brand-primary'
-                            >
-                              <Send className='size-4 mr-1' />
-                              Send
-                            </Button>
+                            <>
+                              <Button size='sm' variant='outline' asChild>
+                                <Link href={`/dashboard/orders/${order.id}/edit`}>
+                                  <Edit className='size-4 mr-1' />
+                                  Edit
+                                </Link>
+                              </Button>
+                              <Button
+                                size='sm'
+                                onClick={() =>
+                                  handleStatusChange(order.id, 'SENT')
+                                }
+                                className='btn-brand-primary'
+                              >
+                                <Send className='size-4 mr-1' />
+                                Send
+                              </Button>
+                            </>
                           )}
                         </div>
                       </TableCell>
