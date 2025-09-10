@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import React from 'react'
 import { CountHistoryScreen } from '../screens/CountHistoryScreen'
 import { CreateOrderScreen } from '../screens/CreateOrderScreen'
+import { EditOrderScreen } from '../screens/EditOrderScreen'
 import { OrderSuggestionsScreen } from '../screens/OrderSuggestionsScreen'
 import OrdersScreen from '../screens/OrdersScreen'
 import OrderDetailScreen from '../screens/OrderDetailScreen'
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   CountHistory: undefined
   Orders: undefined
   OrderDetail: { orderId: string }
+  EditOrder: { orderId: string }
   OrderSuggestions: undefined
   CreateOrder: undefined
 }
@@ -76,6 +78,15 @@ export function RootNavigator() {
               title: 'Order Details',
               headerShown: false,
               presentation: 'card',
+            }}
+          />
+          <Stack.Screen
+            name='EditOrder'
+            component={EditOrderScreen}
+            options={{
+              title: 'Edit Order',
+              headerShown: false,
+              presentation: 'modal',
             }}
           />
           <Stack.Screen

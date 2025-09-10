@@ -6,14 +6,20 @@ import { Alert, RefreshControl, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
 import { Pressable } from '@/components/ui/pressable'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
 import { HappyBarLogo } from '../components/brand/HappyBarLogo'
-import { Colors } from '../constants/theme'
+import { PageGradient } from '../components/PageGradient'
+import { 
+  ThemedCard, 
+  ThemedButton, 
+  ThemedText, 
+  ThemedHeading,
+  ThemedBadge 
+} from '../components/themed'
+import { usePageGradient } from '../constants/gradients'
 import { useInventoryAnalytics } from '../hooks/useAnalyticsData'
 import { useCountSync } from '../hooks/useCountSync'
 import {
@@ -29,6 +35,7 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const [refreshing, setRefreshing] = useState(false)
+  const gradientColors = usePageGradient()
 
   // Fetch real data
   const {
@@ -132,12 +139,12 @@ export function HomeScreen() {
           <HappyBarLogo size={28} color='white' />
         </Box>
         <VStack className='flex-1' space='xs'>
-          <Text className='text-white text-xl font-bold'>
+          <ThemedText variant='h4' color='onGradient' weight='bold'>
             Welcome back, {user?.name || 'Bar Manager'}!
-          </Text>
-          <Text className='text-white/80 text-sm'>
+          </ThemedText>
+          <ThemedText variant='caption' color='onGradientMuted'>
             Here's your inventory overview
-          </Text>
+          </ThemedText>
         </VStack>
       </HStack>
       <Pressable className='size-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 justify-center items-center'>
@@ -148,76 +155,78 @@ export function HomeScreen() {
 
   const renderStats = () => (
     <VStack className='mb-8' space='lg'>
-      <Text className='text-white text-xl font-bold'>Analytics</Text>
+      <ThemedHeading variant='h3' color='onGradient'>Analytics</ThemedHeading>
       <VStack space='md'>
         <HStack space='md'>
-          <Card className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50'>
+          <ThemedCard variant='primary' size='md' className='flex-1'>
             <HStack className='justify-between items-center mb-3'>
               <Box className='w-8 h-8 bg-green-100 rounded-full justify-center items-center'>
                 <Ionicons name='trending-up' size={16} color='#059669' />
               </Box>
-              <Text className='text-xs font-bold text-green-600'>+12%</Text>
+              <ThemedText variant='overline' color='success' weight='bold'>+12%</ThemedText>
             </HStack>
             <VStack space='xs'>
-              <Text className='text-2xl font-bold text-gray-900'>
+              <ThemedText variant='h2' color='primary' weight='bold'>
                 {analytics?.totalValue
                   ? `$${(analytics.totalValue / 1000).toFixed(1)}K`
                   : '$0'}
-              </Text>
-              <Text className='text-sm text-gray-600'>Total Value</Text>
+              </ThemedText>
+              <ThemedText variant='caption' color='secondary'>
+                Total Value
+              </ThemedText>
             </VStack>
-          </Card>
+          </ThemedCard>
 
-          <Card className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50'>
+          <ThemedCard variant='primary' size='md' className='flex-1'>
             <HStack className='justify-between items-center mb-3'>
               <Box className='w-8 h-8 bg-purple-100 rounded-full justify-center items-center'>
                 <Ionicons name='cube-outline' size={16} color='#7C3AED' />
               </Box>
-              <Text className='text-xs font-bold text-purple-600'>+3</Text>
+              <ThemedText variant='overline' color='purple' weight='bold'>+3</ThemedText>
             </HStack>
             <VStack space='xs'>
-              <Text className='text-2xl font-bold text-gray-900'>
+              <ThemedText variant='h2' color='primary' weight='bold'>
                 {analytics?.totalProducts?.toString() || '0'}
-              </Text>
-              <Text className='text-sm text-gray-600'>Products</Text>
+              </ThemedText>
+              <ThemedText variant='caption' color='secondary'>Products</ThemedText>
             </VStack>
-          </Card>
+          </ThemedCard>
         </HStack>
 
         <HStack space='md'>
-          <Card className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50'>
+          <ThemedCard variant='primary' size='md' className='flex-1'>
             <HStack className='justify-between items-center mb-3'>
               <Box className='w-8 h-8 bg-amber-100 rounded-full justify-center items-center'>
                 <Ionicons name='speedometer' size={16} color='#D97706' />
               </Box>
-              <Text className='text-xs font-bold text-amber-600'>-5%</Text>
+              <ThemedText variant='overline' color='warning' weight='bold'>-5%</ThemedText>
             </HStack>
             <VStack space='xs'>
-              <Text className='text-2xl font-bold text-gray-900'>
+              <ThemedText variant='h2' color='primary' weight='bold'>
                 {analytics?.turnoverRate
                   ? `${analytics.turnoverRate.toFixed(1)}x`
                   : '0x'}
-              </Text>
-              <Text className='text-sm text-gray-600'>Turnover</Text>
+              </ThemedText>
+              <ThemedText variant='caption' color='secondary'>Turnover</ThemedText>
             </VStack>
-          </Card>
+          </ThemedCard>
 
-          <Card className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50'>
+          <ThemedCard variant='primary' size='md' className='flex-1'>
             <HStack className='justify-between items-center mb-3'>
               <Box className='w-8 h-8 bg-blue-100 rounded-full justify-center items-center'>
                 <Ionicons name='analytics' size={16} color='#2563EB' />
               </Box>
-              <Text className='text-xs font-bold text-blue-600'>-0.5%</Text>
+              <ThemedText variant='overline' className='text-blue-600 dark:text-blue-400' weight='bold'>-0.5%</ThemedText>
             </HStack>
             <VStack space='xs'>
-              <Text className='text-2xl font-bold text-gray-900'>
+              <ThemedText variant='h2' color='primary' weight='bold'>
                 {analytics?.wastePercentage
                   ? `${analytics.wastePercentage.toFixed(1)}%`
                   : '0%'}
-              </Text>
-              <Text className='text-sm text-gray-600'>Waste</Text>
+              </ThemedText>
+              <ThemedText variant='caption' color='secondary'>Waste</ThemedText>
             </VStack>
-          </Card>
+          </ThemedCard>
         </HStack>
       </VStack>
     </VStack>
@@ -227,7 +236,7 @@ export function HomeScreen() {
     return (
       <VStack className='mb-8' space='lg'>
         <LinearGradient
-          colors={['#8B5CF6', '#6366F1']}
+          colors={gradientColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -264,22 +273,22 @@ export function HomeScreen() {
                 />
               </Box>
               <VStack className='items-center' space='xs'>
-                <Text className='text-white text-xl font-bold'>
+                <ThemedText variant='h4' color='onGradient' weight='bold' align='center'>
                   {activeSession ? 'Resume Count' : 'Start New Count'}
-                </Text>
+                </ThemedText>
                 {activeSession ? (
                   <VStack className='items-center' space='xs'>
-                    <Text className='text-white/80 text-sm text-center'>
+                    <ThemedText variant='body' color='onGradientSubtle' align='center'>
                       {activeSession.name}
-                    </Text>
-                    <Text className='text-white/60 text-xs'>
+                    </ThemedText>
+                    <ThemedText variant='caption' color='onGradientMuted'>
                       {activeSession.type} • {activeSession.locationName}
-                    </Text>
+                    </ThemedText>
                   </VStack>
                 ) : (
-                  <Text className='text-white/80 text-sm text-center'>
+                  <ThemedText variant='body' color='onGradientSubtle' align='center'>
                     Create a new inventory count
-                  </Text>
+                  </ThemedText>
                 )}
               </VStack>
             </VStack>
@@ -292,13 +301,13 @@ export function HomeScreen() {
   const renderQuickActions = () => {
     return (
       <VStack className='mb-8' space='lg'>
-        <Text className='text-white text-xl font-bold'>Quick Actions</Text>
+        <ThemedHeading variant='h3' color='onGradient'>Quick Actions</ThemedHeading>
         <VStack space='md'>
           {/* Only show Quick Count if no full/cycle count is in progress */}
           <HStack space='md'>
             {activeSession ? null : (
               <Pressable
-                className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
+                className='flex-1'
                 onPress={() => {
                   if (activeSession) {
                     // Resume active count by going to the count screen
@@ -317,22 +326,25 @@ export function HomeScreen() {
                   }
                 }}
               >
-                <VStack className='items-center' space='sm'>
-                  <Box className='size-12 bg-purple-100 rounded-full justify-center items-center'>
-                    <Ionicons name='scan' size={24} color='#7C3AED' />
-                  </Box>
-                  <Text className='text-sm font-semibold text-gray-900'>
-                    Quick Count
-                  </Text>
-                  {totalCounts > 0 && (
-                    <Text className='text-xs text-purple-600 font-medium'>
-                      {totalCounts} counted
-                    </Text>
-                  )}
-                </VStack>
+                <ThemedCard variant='primary' size='md' className='items-center'>
+                  <VStack className='items-center' space='sm'>
+                    <Box className='size-12 bg-purple-100 rounded-full justify-center items-center'>
+                      <Ionicons name='scan' size={24} color='#7C3AED' />
+                    </Box>
+                    <ThemedText variant='caption' color='primary' weight='semibold' align='center'>
+                      Quick Count
+                    </ThemedText>
+                    {totalCounts > 0 && (
+                      <ThemedText variant='overline' color='purple' weight='medium'>
+                        {totalCounts} counted
+                      </ThemedText>
+                    )}
+                  </VStack>
+                </ThemedCard>
               </Pressable>
             )}
             <Pressable
+              className='flex-1'
               onPress={() => {
                 Alert.alert(
                   'Create Order',
@@ -355,29 +367,32 @@ export function HomeScreen() {
                   ]
                 )
               }}
-              className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
             >
-              <VStack className='items-center' space='sm'>
-                <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
-                  <Ionicons name='cart' size={24} color='#2563EB' />
-                </Box>
-                <Text className='text-sm font-semibold text-gray-900'>
-                  Create Order
-                </Text>
-              </VStack>
+              <ThemedCard variant='primary' size='md' className='items-center'>
+                <VStack className='items-center' space='sm'>
+                  <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
+                    <Ionicons name='cart' size={24} color='#2563EB' />
+                  </Box>
+                  <ThemedText variant='caption' color='primary' weight='semibold' align='center'>
+                    Create Order
+                  </ThemedText>
+                </VStack>
+              </ThemedCard>
             </Pressable>
             <Pressable
+              className='flex-1'
               onPress={() => (navigation as any).navigate('Orders')}
-              className='flex-1 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 items-center shadow-lg'
             >
-              <VStack className='items-center' space='sm'>
-                <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
-                  <Ionicons name='receipt' size={24} color='#059669' />
-                </Box>
-                <Text className='text-sm font-semibold text-gray-900'>
-                  View Orders
-                </Text>
-              </VStack>
+              <ThemedCard variant='primary' size='md' className='items-center'>
+                <VStack className='items-center' space='sm'>
+                  <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
+                    <Ionicons name='receipt' size={24} color='#059669' />
+                  </Box>
+                  <ThemedText variant='caption' color='primary' weight='semibold' align='center'>
+                    View Orders
+                  </ThemedText>
+                </VStack>
+              </ThemedCard>
             </Pressable>
           </HStack>
         </VStack>
@@ -390,62 +405,62 @@ export function HomeScreen() {
 
     return (
       <VStack className='mb-8' space='lg'>
-        <Text className='text-white text-xl font-bold'>Alerts</Text>
+        <ThemedText variant='h3' color='onGradient' weight='bold'>Alerts</ThemedText>
         <VStack space='md'>
           {analytics && analytics.outOfStockItems > 0 && (
-            <Card className='p-4 bg-red-50/60 backdrop-blur-sm border border-red-200/80 rounded-2xl shadow-lg'>
+            <ThemedCard variant='primary' size='md' className='bg-red-50/60 dark:bg-red-900/20 backdrop-blur-sm border border-red-200/80 dark:border-red-800/40'>
               <HStack className='items-center' space='md'>
-                <Box className='size-10 bg-red-100 rounded-full justify-center items-center'>
+                <Box className='size-10 bg-red-100 dark:bg-red-800/50 rounded-full justify-center items-center'>
                   <Ionicons name='alert-circle' size={20} color='#DC2626' />
                 </Box>
                 <VStack className='flex-1' space='xs'>
-                  <Text className='font-bold text-red-800'>
+                  <ThemedText variant='body' weight='bold' color='danger'>
                     {analytics.outOfStockItems} Items Out of Stock
-                  </Text>
-                  <Text className='text-sm text-red-600'>
+                  </ThemedText>
+                  <ThemedText variant='caption' color='danger'>
                     Items need immediate reordering
-                  </Text>
+                  </ThemedText>
                 </VStack>
               </HStack>
-            </Card>
+            </ThemedCard>
           )}
 
           {analytics && analytics.lowStockItems > 0 && (
-            <Card className='p-4 bg-amber-50/60 backdrop-blur-sm border border-amber-200/80 rounded-2xl shadow-lg'>
+            <ThemedCard variant='primary' size='md' className='bg-amber-50/60 dark:bg-amber-900/20 backdrop-blur-sm border border-amber-200/80 dark:border-amber-800/40'>
               <HStack className='items-center' space='md'>
-                <Box className='size-10 bg-amber-100 rounded-full justify-center items-center'>
+                <Box className='size-10 bg-amber-100 dark:bg-amber-800/50 rounded-full justify-center items-center'>
                   <Ionicons name='warning' size={20} color='#D97706' />
                 </Box>
                 <VStack className='flex-1' space='xs'>
-                  <Text className='font-bold text-amber-800'>
+                  <ThemedText variant='body' weight='bold' color='warning'>
                     Low Stock Alert
-                  </Text>
-                  <Text className='text-sm text-amber-600'>
+                  </ThemedText>
+                  <ThemedText variant='caption' color='warning'>
                     {analytics.lowStockItems} items below par level
-                  </Text>
+                  </ThemedText>
                 </VStack>
               </HStack>
-            </Card>
+            </ThemedCard>
           )}
 
           {(!analytics ||
             (analytics.outOfStockItems === 0 &&
               analytics.lowStockItems === 0)) && (
-            <Card className='p-4 bg-green-50/90 backdrop-blur-sm border border-green-200/80 rounded-2xl shadow-lg'>
+            <ThemedCard variant='primary' size='md' className='bg-green-50/90 dark:bg-green-900/20 backdrop-blur-sm border border-green-200/80 dark:border-green-800/40'>
               <HStack className='items-center' space='md'>
-                <Box className='w-10 h-10 bg-green-100 rounded-full justify-center items-center'>
+                <Box className='w-10 h-10 bg-green-100 dark:bg-green-800/50 rounded-full justify-center items-center'>
                   <Ionicons name='checkmark-circle' size={20} color='#059669' />
                 </Box>
                 <VStack className='flex-1' space='xs'>
-                  <Text className='font-bold text-green-800'>
+                  <ThemedText variant='body' weight='bold' color='success'>
                     All Stock Levels Good
-                  </Text>
-                  <Text className='text-sm text-green-600'>
+                  </ThemedText>
+                  <ThemedText variant='caption' color='success'>
                     No critical inventory issues
-                  </Text>
+                  </ThemedText>
                 </VStack>
               </HStack>
-            </Card>
+            </ThemedCard>
           )}
         </VStack>
       </VStack>
@@ -460,59 +475,50 @@ export function HomeScreen() {
     return (
       <VStack className='mb-8' space='lg'>
         <HStack className='justify-between items-center'>
-          <Text className='text-white text-xl font-bold'>Pending Approval</Text>
-          <Box className='px-2 py-1 bg-orange-500 rounded-full'>
-            <Text className='text-white text-xs font-bold'>
-              {completedCounts.length}
-            </Text>
-          </Box>
+          <ThemedText variant='h3' color='onGradient' weight='bold'>Pending Approval</ThemedText>
+          <ThemedBadge variant='warning' size='sm'>
+            {completedCounts.length}
+          </ThemedBadge>
         </HStack>
         <VStack space='md'>
           {completedCounts.map((count) => (
-            <Card
+            <ThemedCard
               key={count.id}
-              className='p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-lg'
+              variant='primary'
+              size='md'
             >
               <HStack className='justify-between items-start'>
                 <VStack className='flex-1 mr-4' space='xs'>
-                  <Text className='text-lg font-bold text-gray-900'>
+                  <ThemedText variant='body' weight='bold' color='primary'>
                     {count.name}
-                  </Text>
-                  <Text className='text-sm text-gray-600'>
+                  </ThemedText>
+                  <ThemedText variant='caption' color='secondary'>
                     {count.type} • {count.location.name}
-                  </Text>
-                  <Text className='text-xs text-gray-500'>
+                  </ThemedText>
+                  <ThemedText variant='caption' color='muted'>
                     Completed:{' '}
                     {new Date(count.completedAt).toLocaleDateString()}
-                  </Text>
+                  </ThemedText>
                   {count.itemsCounted && (
-                    <Text className='text-xs text-blue-600 font-medium'>
+                    <ThemedText variant='caption' weight='medium' className='text-blue-600 dark:text-blue-400'>
                       {count.itemsCounted} items counted
-                    </Text>
+                    </ThemedText>
                   )}
                 </VStack>
-                <Pressable
-                  className='px-4 py-2 bg-green-500 rounded-lg items-center justify-center min-w-[80px]'
+                <ThemedButton
+                  variant='outline'
+                  size='sm'
                   onPress={() => handleApproveCount(count)}
-                  disabled={approveCountMutation.isPending}
+                  loading={approveCountMutation.isPending}
+                  className='bg-green-500 dark:bg-green-600 border-transparent min-w-[80px]'
+                  icon={<Ionicons name='checkmark-circle' size={16} color='white' />}
                 >
-                  {approveCountMutation.isPending ? (
-                    <Text className='text-white text-sm font-bold'>...</Text>
-                  ) : (
-                    <>
-                      <Ionicons
-                        name='checkmark-circle'
-                        size={16}
-                        color='white'
-                      />
-                      <Text className='text-white text-sm font-bold mt-1'>
-                        Approve
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
+                  <ThemedText variant='caption' weight='bold' color='white'>
+                    Approve
+                  </ThemedText>
+                </ThemedButton>
               </HStack>
-            </Card>
+            </ThemedCard>
           ))}
         </VStack>
       </VStack>
@@ -520,12 +526,7 @@ export function HomeScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       {/* Sticky Header with Safe Area */}
       <Box
         className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
@@ -559,6 +560,6 @@ export function HomeScreen() {
         {renderStats()}
         {renderQuickActions()}
       </ScrollView>
-    </LinearGradient>
+    </PageGradient>
   )
 }

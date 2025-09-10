@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons'
-import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useState } from 'react'
 import { Alert, ScrollView } from 'react-native'
@@ -13,7 +12,8 @@ import { Pressable } from '@/components/ui/pressable'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
-import { Colors } from '../constants/theme'
+import { PageGradient } from '../components/PageGradient'
+import { cn, themeClasses } from '../constants/themeClasses'
 import { api } from '../lib/api'
 import { pluralize } from '../utils/pluralize'
 import type { Order } from './OrdersScreen'
@@ -172,41 +172,26 @@ export default function OrderDetailScreen({
 
   if (loading) {
     return (
-      <LinearGradient
-        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <PageGradient>
         <Box className='flex-1 justify-center items-center'>
           <Text className='text-white text-lg'>Loading order details...</Text>
         </Box>
-      </LinearGradient>
+      </PageGradient>
     )
   }
 
   if (!order) {
     return (
-      <LinearGradient
-        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <PageGradient>
         <Box className='flex-1 justify-center items-center'>
           <Text className='text-white text-lg'>Order not found</Text>
         </Box>
-      </LinearGradient>
+      </PageGradient>
     )
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       <StatusBar style='light' />
 
       {/* Header */}
@@ -234,10 +219,12 @@ export default function OrderDetailScreen({
           <VStack space='md'>
             <HStack className='justify-between items-start'>
               <VStack space='xs'>
-                <Text className='text-xl font-bold text-gray-900'>
+                <Text
+                  className={cn('text-xl font-bold', themeClasses.text.primary)}
+                >
                   {order.orderNumber}
                 </Text>
-                <Text className='text-lg text-gray-600'>
+                <Text className={cn('text-lg', themeClasses.text.muted)}>
                   {order.supplier.name}
                 </Text>
               </VStack>
@@ -253,16 +240,30 @@ export default function OrderDetailScreen({
             {/* Order Details Grid */}
             <VStack space='sm'>
               <HStack className='justify-between'>
-                <Text className='text-sm text-gray-600'>Order Date:</Text>
-                <Text className='text-sm font-medium text-gray-900'>
+                <Text className={cn('text-sm', themeClasses.text.muted)}>
+                  Order Date:
+                </Text>
+                <Text
+                  className={cn(
+                    'text-sm font-medium',
+                    themeClasses.text.primary
+                  )}
+                >
                   {new Date(order.orderDate).toLocaleDateString()}
                 </Text>
               </HStack>
 
               {order.expectedDate && (
                 <HStack className='justify-between'>
-                  <Text className='text-sm text-gray-600'>Expected Date:</Text>
-                  <Text className='text-sm font-medium text-gray-900'>
+                  <Text className={cn('text-sm', themeClasses.text.muted)}>
+                    Expected Date:
+                  </Text>
+                  <Text
+                    className={cn(
+                      'text-sm font-medium',
+                      themeClasses.text.primary
+                    )}
+                  >
                     {new Date(order.expectedDate).toLocaleDateString()}
                   </Text>
                 </HStack>
@@ -270,15 +271,24 @@ export default function OrderDetailScreen({
 
               {order.receivedDate && (
                 <HStack className='justify-between'>
-                  <Text className='text-sm text-gray-600'>Received Date:</Text>
-                  <Text className='text-sm font-medium text-gray-900'>
+                  <Text className={cn('text-sm', themeClasses.text.muted)}>
+                    Received Date:
+                  </Text>
+                  <Text
+                    className={cn(
+                      'text-sm font-medium',
+                      themeClasses.text.primary
+                    )}
+                  >
                     {new Date(order.receivedDate).toLocaleDateString()}
                   </Text>
                 </HStack>
               )}
 
               <HStack className='justify-between'>
-                <Text className='text-sm text-gray-600'>Total Amount:</Text>
+                <Text className={cn('text-sm', themeClasses.text.muted)}>
+                  Total Amount:
+                </Text>
                 <Text className='text-lg font-bold text-green-600'>
                   ${order.totalAmount.toFixed(2)}
                 </Text>
@@ -299,14 +309,19 @@ export default function OrderDetailScreen({
               <VStack space='sm'>
                 <HStack className='justify-between items-start'>
                   <VStack className='flex-1 mr-4' space='xs'>
-                    <Text className='text-lg font-bold text-gray-900'>
+                    <Text
+                      className={cn(
+                        'text-lg font-bold',
+                        themeClasses.text.primary
+                      )}
+                    >
                       {item.product.name}
                     </Text>
-                    <Text className='text-sm text-gray-600'>
+                    <Text className={cn('text-sm', themeClasses.text.muted)}>
                       {item.product.category.name}
                     </Text>
                     {item.product.sku && (
-                      <Text className='text-xs text-gray-500'>
+                      <Text className={cn('text-xs', themeClasses.text.muted)}>
                         SKU: {item.product.sku}
                       </Text>
                     )}
@@ -319,8 +334,15 @@ export default function OrderDetailScreen({
                 {/* Quantity Information */}
                 <HStack className='justify-between items-center'>
                   <VStack space='xs'>
-                    <Text className='text-sm text-gray-600'>Ordered</Text>
-                    <Text className='text-md font-medium text-gray-900'>
+                    <Text className={cn('text-sm', themeClasses.text.muted)}>
+                      Ordered
+                    </Text>
+                    <Text
+                      className={cn(
+                        'text-md font-medium',
+                        themeClasses.text.primary
+                      )}
+                    >
                       {item.quantityOrdered}{' '}
                       {pluralize(
                         item.quantityOrdered,
@@ -334,7 +356,9 @@ export default function OrderDetailScreen({
 
                   {canReceiveItems ? (
                     <VStack space='xs' className='ml-4'>
-                      <Text className='text-sm text-gray-600'>Received</Text>
+                      <Text className={cn('text-sm', themeClasses.text.muted)}>
+                        Received
+                      </Text>
                       <HStack className='items-center bg-white border border-gray-300 rounded-lg'>
                         <Pressable
                           className='p-2'
@@ -356,7 +380,10 @@ export default function OrderDetailScreen({
                               updateReceivedQuantity(item.id, num)
                             }}
                             keyboardType='numeric'
-                            className='text-center text-gray-900'
+                            className={cn(
+                              'text-center',
+                              themeClasses.text.primary
+                            )}
                           />
                         </Input>
 
@@ -375,8 +402,15 @@ export default function OrderDetailScreen({
                     </VStack>
                   ) : (
                     <VStack space='xs'>
-                      <Text className='text-sm text-gray-600'>Received</Text>
-                      <Text className='text-md font-medium text-gray-900'>
+                      <Text className={cn('text-sm', themeClasses.text.muted)}>
+                        Received
+                      </Text>
+                      <Text
+                        className={cn(
+                          'text-md font-medium',
+                          themeClasses.text.primary
+                        )}
+                      >
                         {item.quantityReceived}{' '}
                         {pluralize(
                           item.quantityReceived,
@@ -388,7 +422,7 @@ export default function OrderDetailScreen({
                 </HStack>
 
                 <Box className='border-t border-gray-200 pt-2'>
-                  <Text className='text-sm text-gray-600'>
+                  <Text className={cn('text-sm', themeClasses.text.muted)}>
                     Unit Cost: ${item.unitCost.toFixed(2)} per{' '}
                     {item.orderingUnit.toLowerCase()}
                   </Text>
@@ -401,7 +435,11 @@ export default function OrderDetailScreen({
         {/* Notes Section */}
         <Card className='m-4 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'>
           <VStack space='sm'>
-            <Text className='text-lg font-bold text-gray-900'>Notes</Text>
+            <Text
+              className={cn('text-lg font-bold', themeClasses.text.primary)}
+            >
+              Notes
+            </Text>
             {canReceiveItems ? (
               <Input className='bg-gray-50 border border-gray-300 rounded-lg'>
                 <InputField
@@ -410,11 +448,11 @@ export default function OrderDetailScreen({
                   placeholder='Add notes about this order...'
                   multiline
                   numberOfLines={3}
-                  className='text-gray-900'
+                  className={themeClasses.text.primary}
                 />
               </Input>
             ) : (
-              <Text className='text-gray-700 italic'>
+              <Text className={cn('italic', themeClasses.text.secondary)}>
                 {order.notes || 'No notes'}
               </Text>
             )}
@@ -485,6 +523,6 @@ export default function OrderDetailScreen({
           )}
         </VStack>
       </ScrollView>
-    </LinearGradient>
+    </PageGradient>
   )
 }

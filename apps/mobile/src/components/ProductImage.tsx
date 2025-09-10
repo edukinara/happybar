@@ -51,13 +51,12 @@ export function ProductImage({
   }
 
   return (
-    <Box style={{ position: 'relative' }}>
+    <Box className='relative p-1 rounded-md bg-white'>
       <Image
         source={{ uri }}
         style={{
           width: (size / 3) * 2,
           height: size,
-          borderRadius,
         }}
         contentFit='contain'
         priority={priority}

@@ -4,9 +4,9 @@ import { HStack } from '@/components/ui/hstack'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { StatusBar } from 'expo-status-bar'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -44,6 +44,7 @@ type Supplier = {
 }
 
 type OrderItem = {
+  id?: string
   productId: string
   product: Product
   supplierId: string
@@ -53,15 +54,28 @@ type OrderItem = {
   orderingUnit: 'UNIT' | 'CASE'
 }
 
-export function CreateOrderScreen() {
+type EditOrderScreenProps = {
+  route: {
+    params: {
+      orderId: string
+    }
+  }
+}
+
+export function EditOrderScreen() {
   const navigation = useNavigation()
+  const route = useRoute()
+  const { orderId } = (route.params as any) || {}
+  
+  const [loading, setLoading] = useState(true)
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [showProductPicker, setShowProductPicker] = useState(false)
   const [showSupplierPicker, setShowSupplierPicker] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [notes, setNotes] = useState('')
   const [expectedDate, setExpectedDate] = useState('')
-  const [isCreating, setIsCreating] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [originalOrder, setOriginalOrder] = useState<any>(null)
   const insets = useSafeAreaInsets()
 
   // Data hooks
@@ -79,16 +93,64 @@ export function CreateOrderScreen() {
     category: p.category,
   }))
 
+  // Load existing order data
+  useEffect(() => {
+    const loadOrder = async () => {
+      if (!orderId) return
+      
+      try {
+        setLoading(true)
+        const response = await api.getOrder(orderId)
+        
+        if (response.success && response.data) {
+          const order = response.data
+          setOriginalOrder(order)
+          setNotes(order.notes || '')
+          setExpectedDate(order.expectedDate || '')
+          
+          // Convert order items to our format
+          const items: OrderItem[] = order.items.map((item: any) => ({
+            id: item.id,
+            productId: item.productId,
+            product: {
+              id: item.product.id,
+              name: item.product.name,
+              sku: item.product.sku,
+              unit: 'unit', // Default unit
+              costPerUnit: item.unitCost,
+              category: item.product.category,
+            },
+            supplierId: order.supplierId,
+            supplier: order.supplier,
+            quantityOrdered: item.quantityOrdered,
+            unitCost: item.unitCost,
+            orderingUnit: item.orderingUnit,
+          }))
+          
+          setOrderItems(items)
+        }
+      } catch (error) {
+        console.error('Failed to load order:', error)
+        Alert.alert('Error', 'Failed to load order data')
+        navigation.goBack()
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadOrder()
+  }, [orderId, navigation])
+
   const addOrderItem = (product: Product, supplier: Supplier) => {
-    // Check if this product+supplier combo already exists
+    // Check if this product already exists in the order
     const existingItem = orderItems.find(
-      (item) => item.productId === product.id && item.supplierId === supplier.id
+      (item) => item.productId === product.id
     )
 
     if (existingItem) {
       Alert.alert(
         'Item Already Added',
-        'This product from this supplier is already in the order.'
+        'This product is already in the order.'
       )
       return
     }
@@ -130,63 +192,32 @@ export function CreateOrderScreen() {
     )
   }
 
-  const createOrder = async () => {
+  const saveOrder = async () => {
     if (orderItems.length === 0) {
       Alert.alert('No Items', 'Please add at least one item to the order.')
       return
     }
 
     try {
-      setIsCreating(true)
+      setIsUpdating(true)
 
-      // Group items by supplier
-      const ordersBySupplier: {
-        [supplierId: string]: {
-          supplierId: string
-          supplier: Supplier
-          items: Array<{
-            productId: string
-            quantityOrdered: number
-            unitCost: number
-            orderingUnit: 'UNIT' | 'CASE'
-          }>
-        }
-      } = {}
-
-      orderItems.forEach((item) => {
-        if (!ordersBySupplier[item.supplierId]) {
-          ordersBySupplier[item.supplierId] = {
-            supplierId: item.supplierId,
-            supplier: item.supplier,
-            items: [],
-          }
-        }
-
-        ordersBySupplier[item.supplierId].items.push({
+      const updateData = {
+        expectedDate: expectedDate || undefined,
+        notes: notes || undefined,
+        items: orderItems.map(item => ({
+          id: item.id,
           productId: item.productId,
           quantityOrdered: item.quantityOrdered,
           unitCost: item.unitCost,
           orderingUnit: item.orderingUnit,
-        })
-      })
-
-      // Create orders
-      const orders = Object.values(ordersBySupplier)
-      let createdCount = 0
-
-      for (const orderData of orders) {
-        await api.createOrder({
-          supplierId: orderData.supplierId,
-          expectedDate: expectedDate || undefined,
-          notes: notes || undefined,
-          items: orderData.items,
-        })
-        createdCount++
+        })),
       }
+
+      await api.updateOrder(orderId, updateData)
 
       Alert.alert(
         'Success',
-        `Created ${createdCount} order${createdCount === 1 ? '' : 's'} successfully!`,
+        'Order updated successfully!',
         [
           {
             text: 'OK',
@@ -195,21 +226,21 @@ export function CreateOrderScreen() {
         ]
       )
     } catch (error) {
-      console.error('Failed to create order:', error)
-      Alert.alert('Error', 'Failed to create order. Please try again.')
+      console.error('Failed to update order:', error)
+      Alert.alert('Error', 'Failed to update order. Please try again.')
     } finally {
-      setIsCreating(false)
+      setIsUpdating(false)
     }
   }
 
-  if (productsLoading || suppliersLoading) {
+  if (loading || productsLoading || suppliersLoading) {
     return (
       <PageGradient>
         <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
           <ActivityIndicator size='large' color='white' />
           <Text className='text-white text-lg mt-4'>
-            Loading products and suppliers...
+            Loading order data...
           </Text>
         </Box>
       </PageGradient>
@@ -230,9 +261,14 @@ export function CreateOrderScreen() {
             <Pressable className='mr-4' onPress={() => navigation.goBack()}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
-            <Text className='text-white dark:text-typography-600 text-xl font-bold'>
-              Create Order
-            </Text>
+            <VStack>
+              <Text className='text-white text-xl font-bold'>
+                Edit Order
+              </Text>
+              <Text className='text-white/80 text-sm'>
+                {originalOrder?.orderNumber}
+              </Text>
+            </VStack>
           </HStack>
         </HStack>
       </Box>
@@ -240,7 +276,7 @@ export function CreateOrderScreen() {
       {/* Order Details */}
       <VStack className='px-6 py-4' space='md'>
         <VStack space='sm'>
-          <Text className='font-medium text-white/90 dark:text-typography-600'>
+          <Text className='font-medium text-white/90'>
             Expected Delivery (Optional)
           </Text>
           <TextInput
@@ -252,9 +288,7 @@ export function CreateOrderScreen() {
         </VStack>
 
         <VStack space='sm'>
-          <Text className='font-medium text-white/90 dark:text-typography-600'>
-            Notes (Optional)
-          </Text>
+          <Text className='font-medium text-white/90'>Notes (Optional)</Text>
           <TextInput
             className={cn('p-3 rounded-lg', themeClasses.input.base)}
             placeholder='Add notes for this order...'
@@ -274,9 +308,7 @@ export function CreateOrderScreen() {
           className='p-4 bg-indigo-500 rounded-lg flex-row items-center justify-center'
         >
           <Ionicons name='add' size={20} color='white' />
-          <Text className='text-white dark:text-white font-medium ml-2'>
-            Add Product
-          </Text>
+          <Text className='text-white font-medium ml-2'>Add Product</Text>
         </Pressable>
       </Box>
 
@@ -288,14 +320,18 @@ export function CreateOrderScreen() {
             space='lg'
           >
             <Box className='size-16 bg-gray-100 rounded-full justify-center items-center'>
-              <Ionicons name='basket-outline' size={32} color='#8B5CF6' />
+              <Ionicons
+                name='basket-outline'
+                size={32}
+                color='#8B5CF6'
+              />
             </Box>
             <VStack className='items-center' space='sm'>
               <Heading className='text-lg font-semibold text-white'>
                 No Items Added
               </Heading>
-              <Text className='text-white/60 dark:text-white/60 text-center'>
-                Add products to create your order
+              <Text className='text-white/60 text-center'>
+                Add products to this order
               </Text>
             </VStack>
           </VStack>
@@ -303,7 +339,7 @@ export function CreateOrderScreen() {
           <VStack space='md'>
             {orderItems.map((item, index) => (
               <Box
-                key={`${item.productId}-${item.supplierId}-${index}`}
+                key={`${item.productId}-${index}`}
                 className={cn('rounded-xl p-4', themeClasses.card.solid)}
               >
                 {/* Product & Supplier Info */}
@@ -316,9 +352,7 @@ export function CreateOrderScreen() {
                   </Box>
 
                   <VStack className='flex-1' space='xs'>
-                    <Text
-                      className={cn('font-semibold', themeClasses.text.primary)}
-                    >
+                    <Text className={cn('font-semibold', themeClasses.text.primary)}>
                       {item.product.name}
                     </Text>
                     <Text className={cn('text-sm', themeClasses.text.muted)}>
@@ -334,7 +368,11 @@ export function CreateOrderScreen() {
                     onPress={() => removeOrderItem(index)}
                     className='p-2'
                   >
-                    <Ionicons name='trash-outline' size={20} color='#EF4444' />
+                    <Ionicons
+                      name='trash-outline'
+                      size={20}
+                      color='#EF4444'
+                    />
                   </Pressable>
                 </HStack>
 
@@ -363,9 +401,13 @@ export function CreateOrderScreen() {
                         }
                         className='p-3'
                       >
-                        <Ionicons name='remove' size={16} color='#8B5CF6' />
+                        <Ionicons
+                          name='remove'
+                          size={16}
+                          color='#8B5CF6'
+                        />
                       </Pressable>
-                      <Text className='px-4 font-medium dark:text-typography-600'>
+                      <Text className='px-4 font-medium'>
                         {item.quantityOrdered}
                       </Text>
                       <Pressable
@@ -393,7 +435,7 @@ export function CreateOrderScreen() {
                       Unit Cost
                     </Text>
                     <TextInput
-                      className='w-20 p-2 border border-gray-300 rounded-lg text-center dark:text-typography-600'
+                      className='w-20 p-2 border border-gray-300 rounded-lg text-center'
                       value={item.unitCost.toString()}
                       onChangeText={(text) => {
                         const cost = parseFloat(text) || 0
@@ -413,9 +455,7 @@ export function CreateOrderScreen() {
                     >
                       Total
                     </Text>
-                    <Text
-                      className={cn('font-semibold', themeClasses.text.primary)}
-                    >
+                    <Text className={cn('font-semibold', themeClasses.text.primary)}>
                       ${(item.quantityOrdered * item.unitCost).toFixed(2)}
                     </Text>
                   </VStack>
@@ -428,48 +468,34 @@ export function CreateOrderScreen() {
 
       {/* Bottom Actions */}
       {orderItems.length > 0 && (
-        <Box
-          className={cn(
-            'p-6 pt-4 pb-16 border-t border-gray-200 dark:border-gray-700',
-            themeClasses.bg.card
-          )}
-        >
+        <Box className={cn('p-6 pt-4 border-t border-gray-200 dark:border-gray-700', themeClasses.bg.card)}>
           <VStack space='sm'>
             <HStack className='items-center justify-between'>
               <Text className={cn(themeClasses.text.muted)}>
                 {orderItems.length} item{orderItems.length === 1 ? '' : 's'}
               </Text>
-              <Text
-                className={cn(
-                  'font-semibold text-lg',
-                  themeClasses.text.primary
-                )}
-              >
+              <Text className={cn('font-semibold text-lg', themeClasses.text.primary)}>
                 Total: ${calculateTotal().toFixed(2)}
               </Text>
             </HStack>
 
             <Pressable
-              onPress={createOrder}
-              disabled={isCreating}
+              onPress={saveOrder}
+              disabled={isUpdating}
               className={`py-4 rounded-xl items-center ${
-                isCreating ? 'bg-gray-300' : 'bg-indigo-500'
+                isUpdating ? 'bg-gray-300' : 'bg-green-600'
               }`}
             >
-              {isCreating ? (
+              {isUpdating ? (
                 <HStack className='items-center' space='sm'>
                   <ActivityIndicator size='small' color='white' />
-                  <Text
-                    className={cn('font-semibold', themeClasses.text.primary)}
-                  >
-                    Creating Order...
+                  <Text className='text-white font-semibold'>
+                    Updating Order...
                   </Text>
                 </HStack>
               ) : (
-                <Text
-                  className={cn('font-semibold', themeClasses.text.primary)}
-                >
-                  Create Order{orderItems.length > 1 ? 's' : ''}
+                <Text className='text-white font-semibold'>
+                  Save Changes
                 </Text>
               )}
             </Pressable>
@@ -487,16 +513,9 @@ export function CreateOrderScreen() {
           <VStack className='flex-1'>
             <HStack className='items-center justify-between p-6 pb-4 border-b border-gray-200'>
               <Pressable onPress={() => setShowProductPicker(false)}>
-                <Text className='text-amber-500 dark:text-amber-500 font-medium'>
-                  Cancel
-                </Text>
+                <Text className='text-indigo-500 font-medium'>Cancel</Text>
               </Pressable>
-              <Heading
-                className={cn(
-                  'text-lg font-semibold',
-                  themeClasses.text.primary
-                )}
-              >
+              <Heading className={cn('text-lg font-semibold', themeClasses.text.primary)}>
                 Select Product
               </Heading>
               <Box className='w-16' />
@@ -525,9 +544,7 @@ export function CreateOrderScreen() {
                     </Box>
 
                     <VStack className='flex-1' space='xs'>
-                      <Text
-                        className={cn('font-medium', themeClasses.text.primary)}
-                      >
+                      <Text className={cn('font-medium', themeClasses.text.primary)}>
                         {product.name}
                       </Text>
                       <Text className={cn('text-sm', themeClasses.text.muted)}>
@@ -560,16 +577,9 @@ export function CreateOrderScreen() {
           <VStack className='flex-1'>
             <HStack className='items-center justify-between p-6 pb-4 border-b border-gray-200'>
               <Pressable onPress={() => setShowSupplierPicker(false)}>
-                <Text className='text-amber-500 dark:text-amber-500 font-medium'>
-                  Back
-                </Text>
+                <Text className='text-indigo-500 font-medium'>Back</Text>
               </Pressable>
-              <Heading
-                className={cn(
-                  'text-lg font-semibold',
-                  themeClasses.text.primary
-                )}
-              >
+              <Heading className={cn('text-lg font-semibold', themeClasses.text.primary)}>
                 Select Supplier
               </Heading>
               <Box className='w-16' />
@@ -591,23 +601,14 @@ export function CreateOrderScreen() {
                     className={cn('p-4 rounded-lg', themeClasses.card.primary)}
                   >
                     <VStack space='xs'>
-                      <Text
-                        className={cn('font-medium', themeClasses.text.primary)}
-                      >
+                      <Text className={cn('font-medium', themeClasses.text.primary)}>
                         {supplier.name}
                       </Text>
                       {supplier.contactEmail && (
-                        <Text
-                          className={cn('text-sm', themeClasses.text.muted)}
-                        >
+                        <Text className={cn('text-sm', themeClasses.text.muted)}>
                           Contact: {supplier.contactEmail}
                         </Text>
                       )}
-                      {/* {supplier.email && (
-                        <Text className={cn('text-sm', themeClasses.text.muted)}>
-                          {supplier.email}
-                        </Text>
-                      )} */}
                     </VStack>
                   </Pressable>
                 ))}

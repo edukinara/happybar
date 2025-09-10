@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
-import { LinearGradient } from 'expo-linear-gradient'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Alert, BackHandler, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -25,8 +24,8 @@ import { Pressable } from '@/components/ui/pressable'
 import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
+import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { Colors } from '../constants/theme'
 import { useProductByUPC } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -315,30 +314,20 @@ export function ScanScreen() {
 
   if (!permission) {
     return (
-      <LinearGradient
-        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <PageGradient>
         <Center className='flex-1'>
           <Spinner size='large' color='white' />
           <Text className='text-white text-lg mt-4'>
             Requesting camera permission...
           </Text>
         </Center>
-      </LinearGradient>
+      </PageGradient>
     )
   }
 
   if (!permission.granted) {
     return (
-      <LinearGradient
-        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <PageGradient>
         <Center className='flex-1 px-6'>
           <Box className='w-20 h-20 bg-white/20 rounded-full justify-center items-center mb-6'>
             <Ionicons name='camera-outline' size={40} color='white' />
@@ -359,7 +348,7 @@ export function ScanScreen() {
             </ButtonText>
           </Button>
         </Center>
-      </LinearGradient>
+      </PageGradient>
     )
   }
 
@@ -534,7 +523,7 @@ export function ScanScreen() {
                   <Text className='text-white font-medium' numberOfLines={1}>
                     {recentScans[0].productName}
                   </Text>
-                  <Text className='text-gray-400 text-sm'>
+                  <Text className='{themeClasses.text.muted} text-sm'>
                     {new Date(recentScans[0].timestamp).toLocaleTimeString()}
                   </Text>
                 </VStack>
@@ -583,7 +572,7 @@ export function ScanScreen() {
         <ModalBackdrop className='bg-black/70' />
         <ModalContent className='m-6 max-w-md bg-white'>
           <ModalHeader>
-            <Text className='text-2xl font-bold text-gray-900'>
+            <Text className='text-2xl font-bold {themeClasses.text.primary}'>
               Product Scanned
             </Text>
             <ModalCloseButton
@@ -609,10 +598,10 @@ export function ScanScreen() {
                   />
 
                   <VStack space='sm' className='flex-1'>
-                    <Text className='text-xl font-bold text-gray-900'>
+                    <Text className='text-xl font-bold {themeClasses.text.primary}'>
                       {scannedProduct.name}
                     </Text>
-                    <Text className='text-gray-600'>
+                    <Text className='{themeClasses.text.muted}'>
                       {scannedProduct.sku && `SKU: ${scannedProduct.sku} • `}
                       Current: {scannedProduct.currentStock}{' '}
                       {pluralize(
@@ -626,7 +615,7 @@ export function ScanScreen() {
                 </HStack>
 
                 <VStack space='sm'>
-                  <Text className='text-gray-700 font-medium'>
+                  <Text className='{themeClasses.text.secondaryfont-medium}'>
                     Count Quantity
                   </Text>
                   <HStack className='justify-center items-center' space='lg'>
@@ -678,7 +667,9 @@ export function ScanScreen() {
                   setIsScanning(true)
                 }}
               >
-                <ButtonText className='text-gray-700'>Cancel</ButtonText>
+                <ButtonText className='{themeClasses.text.secondary}'>
+                  Cancel
+                </ButtonText>
               </Button>
 
               <Button

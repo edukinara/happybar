@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05611E9A3548D99DD0BED932 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E700D5CAAEB4E8781134253A /* ExpoModulesProvider.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		199ACA721021C5111B36A336 /* libPods-HappyBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 784F5609DA2AB129E5212A1D /* libPods-HappyBar.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		4CEBAF98D7AE9C6C19CBCA9E /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A119577BA4B3292C44B38AEE /* ExpoModulesProvider.swift */; };
+		6075542A2C3BB930D1BD16CD /* libPods-HappyBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 965BD3B573BC89141D0FC388 /* libPods-HappyBar.a */; };
+		B8DEE3EA07F4A2A0DAA03A06 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8ACDFE944AE956020390F4BE /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		C7C5AC1C75083810AA927F76 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3E7D00F4EB6C9834CB14DACB /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,13 +20,13 @@
 		13B07F961A680F5B00A75B9A /* HappyBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HappyBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = HappyBar/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = HappyBar/Info.plist; sourceTree = "<group>"; };
-		3E7D00F4EB6C9834CB14DACB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = HappyBar/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		66E8BBA3125D986286D6670E /* Pods-HappyBar.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HappyBar.debug.xcconfig"; path = "Target Support Files/Pods-HappyBar/Pods-HappyBar.debug.xcconfig"; sourceTree = "<group>"; };
-		784F5609DA2AB129E5212A1D /* libPods-HappyBar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HappyBar.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E0715F8891DE39830195400 /* Pods-HappyBar.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HappyBar.release.xcconfig"; path = "Target Support Files/Pods-HappyBar/Pods-HappyBar.release.xcconfig"; sourceTree = "<group>"; };
+		6A9BFBBD52A34C8F74380004 /* Pods-HappyBar.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HappyBar.debug.xcconfig"; path = "Target Support Files/Pods-HappyBar/Pods-HappyBar.debug.xcconfig"; sourceTree = "<group>"; };
+		8A9E1152E1158547FE034300 /* Pods-HappyBar.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HappyBar.release.xcconfig"; path = "Target Support Files/Pods-HappyBar/Pods-HappyBar.release.xcconfig"; sourceTree = "<group>"; };
+		8ACDFE944AE956020390F4BE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = HappyBar/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		965BD3B573BC89141D0FC388 /* libPods-HappyBar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HappyBar.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A119577BA4B3292C44B38AEE /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HappyBar/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = HappyBar/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E700D5CAAEB4E8781134253A /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HappyBar/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = HappyBar/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* HappyBar-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "HappyBar-Bridging-Header.h"; path = "HappyBar/HappyBar-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,23 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				199ACA721021C5111B36A336 /* libPods-HappyBar.a in Frameworks */,
+				6075542A2C3BB930D1BD16CD /* libPods-HappyBar.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		11A387D78F13FAC1908542C7 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				66E8BBA3125D986286D6670E /* Pods-HappyBar.debug.xcconfig */,
-				7E0715F8891DE39830195400 /* Pods-HappyBar.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* HappyBar */ = {
 			isa = PBXGroup;
 			children = (
@@ -63,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				3E7D00F4EB6C9834CB14DACB /* PrivacyInfo.xcprivacy */,
+				8ACDFE944AE956020390F4BE /* PrivacyInfo.xcprivacy */,
 			);
 			name = HappyBar;
 			sourceTree = "<group>";
@@ -72,15 +62,23 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				784F5609DA2AB129E5212A1D /* libPods-HappyBar.a */,
+				965BD3B573BC89141D0FC388 /* libPods-HappyBar.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		3A6141C4C11208602A785080 /* HappyBar */ = {
+		37388B9603B574C256F01D55 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				E700D5CAAEB4E8781134253A /* ExpoModulesProvider.swift */,
+				4E99EFC18FE6A38B30082BDB /* HappyBar */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		4E99EFC18FE6A38B30082BDB /* HappyBar */ = {
+			isa = PBXGroup;
+			children = (
+				A119577BA4B3292C44B38AEE /* ExpoModulesProvider.swift */,
 			);
 			name = HappyBar;
 			sourceTree = "<group>";
@@ -99,8 +97,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				11A387D78F13FAC1908542C7 /* Pods */,
-				C4F921A99C59D3076942BA51 /* ExpoModulesProviders */,
+				A55415A3404CDD268557DFD7 /* Pods */,
+				37388B9603B574C256F01D55 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,6 +113,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		A55415A3404CDD268557DFD7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				6A9BFBBD52A34C8F74380004 /* Pods-HappyBar.debug.xcconfig */,
+				8A9E1152E1158547FE034300 /* Pods-HappyBar.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,14 +130,6 @@
 			);
 			name = Supporting;
 			path = HappyBar/Supporting;
-			sourceTree = "<group>";
-		};
-		C4F921A99C59D3076942BA51 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				3A6141C4C11208602A785080 /* HappyBar */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "HappyBar" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				C9B0D2603F132E161CBE8BEF /* [Expo] Configure project */,
+				8FF92CDED9C0B69C2AA80DFC /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				A3C413F8D6C8EC71C30D5545 /* [CP] Embed Pods Frameworks */,
+				BCC3203CA24DAB4CD53B6D2A /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -167,8 +167,6 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
-						DevelopmentTeam = "4VS893XARN";
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -198,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				C7C5AC1C75083810AA927F76 /* PrivacyInfo.xcprivacy in Resources */,
+				B8DEE3EA07F4A2A0DAA03A06 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,25 +282,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HappyBar/Pods-HappyBar-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A3C413F8D6C8EC71C30D5545 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HappyBar/Pods-HappyBar-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HappyBar/Pods-HappyBar-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C9B0D2603F132E161CBE8BEF /* [Expo] Configure project */ = {
+		8FF92CDED9C0B69C2AA80DFC /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -321,6 +301,24 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-HappyBar/expo-configure-project.sh\"\n";
 		};
+		BCC3203CA24DAB4CD53B6D2A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HappyBar/Pods-HappyBar-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HappyBar/Pods-HappyBar-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -329,7 +327,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				05611E9A3548D99DD0BED932 /* ExpoModulesProvider.swift in Sources */,
+				4CEBAF98D7AE9C6C19CBCA9E /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,7 +336,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 66E8BBA3125D986286D6670E /* Pods-HappyBar.debug.xcconfig */;
+			baseConfigurationReference = 6A9BFBBD52A34C8F74380004 /* Pods-HappyBar.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -369,15 +367,12 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "4VS893XARN";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7E0715F8891DE39830195400 /* Pods-HappyBar.release.xcconfig */;
+			baseConfigurationReference = 8A9E1152E1158547FE034300 /* Pods-HappyBar.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -402,9 +397,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "4VS893XARN";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

@@ -34,7 +34,7 @@ cssInterop(PrimitiveIcon, {
 });
 
 const inputStyle = tva({
-  base: 'border-background-300 flex-row overflow-hidden content-center data-[hover=true]:border-outline-400 data-[focus=true]:border-primary-700 data-[focus=true]:hover:border-primary-700 data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-background-300 items-center',
+  base: 'border-background-300 dark:border-background-700 bg-white dark:bg-background-900 flex-row overflow-hidden content-center data-[hover=true]:border-outline-400 dark:data-[hover=true]:border-outline-600 data-[focus=true]:border-primary-700 dark:data-[focus=true]:border-primary-400 data-[focus=true]:hover:border-primary-700 dark:data-[focus=true]:hover:border-primary-400 data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-background-300 dark:data-[disabled=true]:hover:border-background-700 items-center',
 
   variants: {
     size: {
@@ -76,7 +76,7 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: 'flex-1 text-typography-900 py-0 px-3 placeholder:text-typography-500 h-full ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
+  base: 'flex-1 py-0 px-3 h-full ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed text-typography-900 dark:text-typography-50 placeholder:text-typography-500 dark:placeholder:text-typography-400',
 
   parentVariants: {
     variant: {

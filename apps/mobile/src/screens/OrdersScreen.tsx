@@ -1,19 +1,24 @@
 import { Ionicons } from '@expo/vector-icons'
-import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
 import React, { useMemo, useState } from 'react'
 import { RefreshControl, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import { Pressable } from '@/components/ui/pressable'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
-import { Colors } from '../constants/theme'
+import { PageGradient } from '../components/PageGradient'
+import { 
+  ThemedCard, 
+  ThemedButton, 
+  ThemedInput, 
+  ThemedText, 
+  ThemedHeading, 
+  ThemedBadge 
+} from '../components/themed'
+import { themeClasses, cn } from '../constants/themeClasses'
 import { api } from '../lib/api'
 
 export interface Order {
@@ -141,10 +146,22 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
     }
   }
 
+  const getStatusVariant = (status: Order['status']) => {
+    switch (status) {
+      case 'DRAFT': return 'default'
+      case 'SENT': return 'info'  
+      case 'PARTIALLY_RECEIVED': return 'warning'
+      case 'RECEIVED': return 'success'
+      case 'CANCELLED': return 'danger'
+      default: return 'default'
+    }
+  }
+
   const renderOrderCard = (order: Order) => (
-    <Card
+    <ThemedCard
       key={order.id}
-      className='bg-white elevation-sm p-4 rounded-xl border-[1px] border-white/50'
+      variant="elevated"
+      size="md"
     >
       <Pressable
         onPress={() =>
@@ -154,81 +171,95 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
         <HStack space='md' className='items-center justify-center w-full'>
           <VStack className='items-start flex-1 w-full'>
             <HStack className='justify-between items-center w-full'>
-              <Text className='text-lg font-bold text-gray-900'>
+              <ThemedText variant="h4" color="primary">
                 {order.orderNumber}
-              </Text>
-              <Box
-                className={`px-2 py-0 rounded-md ${ORDER_STATUS_COLORS[order.status]}`}
+              </ThemedText>
+              <ThemedBadge
+                variant={getStatusVariant(order.status)}
+                size="sm"
               >
-                <Text className='text-xs py-0.5 font-medium text-white'>
-                  {ORDER_STATUS_LABELS[order.status]}
-                </Text>
-              </Box>
+                {ORDER_STATUS_LABELS[order.status]}
+              </ThemedBadge>
             </HStack>
-            <Text className='text-md text-gray-600'>{order.supplier.name}</Text>
+            <ThemedText color="secondary">{order.supplier.name}</ThemedText>
 
             <HStack className='justify-between items-center gap-1'>
-              <Text className='text-sm text-gray-600'>
+              <ThemedText variant="caption" color="muted">
                 Items: {order.items.length}
-              </Text>
-              <Text className='text-sm text-gray-600'>•</Text>
-              <Text className='text-sm text-gray-600'>
+              </ThemedText>
+              <ThemedText variant="caption" color="muted">•</ThemedText>
+              <ThemedText variant="caption" color="muted">
                 Total: $
                 {order.totalAmount.toLocaleString(undefined, {
                   maximumFractionDigits: 2,
                 })}
-              </Text>
-              <Text className='text-sm text-gray-600'>•</Text>
-              <Text className='text-sm text-gray-500'>
+              </ThemedText>
+              <ThemedText variant="caption" color="muted">•</ThemedText>
+              <ThemedText variant="caption" color="muted">
                 {new Date(order.orderDate).toLocaleDateString()}
-              </Text>
+              </ThemedText>
             </HStack>
           </VStack>
           <Ionicons name='chevron-forward' size={20} color='rgba(0,0,0,0.5)' />
         </HStack>
         <VStack space='sm'>
           {order.status === 'DRAFT' && (
-            <Pressable
-              className='flex-row items-center justify-center bg-blue-600 py-2 rounded-lg mt-2'
-              onPress={() => handleStatusChange(order.id, 'SENT')}
-            >
-              <Ionicons name='send' size={16} color='white' />
-              <Text className='text-white font-medium ml-1'>Send Order</Text>
-            </Pressable>
+            <HStack space='sm' className='mt-2'>
+              <ThemedButton
+                variant="warning"
+                size="sm"
+                icon={<Ionicons name='create' size={16} color='white' />}
+                className="flex-1"
+                onPress={() =>
+                  navigation.navigate('EditOrder', { orderId: order.id })
+                }
+              >
+                Edit
+              </ThemedButton>
+              <ThemedButton
+                variant="primary"
+                size="sm"
+                icon={<Ionicons name='send' size={16} color='white' />}
+                className="flex-1"
+                onPress={() => handleStatusChange(order.id, 'SENT')}
+              >
+                Send
+              </ThemedButton>
+            </HStack>
           )}
 
           {(order.status === 'SENT' ||
             order.status === 'PARTIALLY_RECEIVED') && (
-            <Pressable
-              className='flex-row items-center justify-center bg-green-600 py-2 rounded-lg mt-2'
+            <ThemedButton
+              variant="success"
+              size="sm"
+              icon={<Ionicons name='checkmark-circle' size={16} color='white' />}
+              fullWidth
+              className="mt-2"
               onPress={() =>
                 navigation.navigate('OrderDetail', { orderId: order.id })
               }
             >
-              <Ionicons name='checkmark-circle' size={16} color='white' />
-              <Text className='text-white font-medium ml-1'>Receive Items</Text>
-            </Pressable>
+              Receive Items
+            </ThemedButton>
           )}
         </VStack>
       </Pressable>
-    </Card>
+    </ThemedCard>
   )
 
   if (loading) {
     return (
-      <Box className='flex-1 justify-center items-center'>
-        <Text className='text-white'>Loading orders...</Text>
-      </Box>
+      <PageGradient>
+        <Box className='flex-1 justify-center items-center'>
+          <ThemedText color="white" align="center">Loading orders...</ThemedText>
+        </Box>
+      </PageGradient>
     )
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       <StatusBar style='light' />
 
       {/* Sticky Header with Safe Area */}
@@ -241,25 +272,23 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
             <Pressable className='mr-4' onPress={() => navigation.goBack()}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
-            <Text className='text-white text-xl font-bold'>Orders</Text>
+            <ThemedHeading variant="h3" color="white">Orders</ThemedHeading>
           </HStack>
         </HStack>
       </Box>
 
       {/* Search Container */}
       <Box className='p-4'>
-        <Input
-          className='border-white/30 rounded-xl h-12 bg-white elevation-md'
-          size='lg'
-        >
-          <InputField
-            placeholder='Search orders...'
-            placeholderTextColor='rgba(0,0,0,0.4)'
-            className='text-black/90'
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-          />
-        </Input>
+        <ThemedInput
+          variant="filled"
+          size="lg"
+          leftIcon={<Ionicons name="search" size={20} color="rgba(255,255,255,0.7)" />}
+          fieldProps={{
+            placeholder: 'Search orders...',
+            value: searchTerm,
+            onChangeText: setSearchTerm,
+          }}
+        />
       </Box>
 
       {/* Filter Buttons */}
@@ -298,14 +327,15 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
                 borderColor: 'rgba(255, 255, 255, 0.3)',
               }}
             >
-              <Text
-                className='font-semibold text-sm'
+              <ThemedText
+                variant="caption"
+                weight="semibold"
                 style={{
-                  color: statusFilter === status ? Colors.primary : 'white',
+                  color: statusFilter === status ? '#8B5CF6' : 'white',
                 }}
               >
                 {status === 'ALL' ? 'All' : ORDER_STATUS_FILTER_LABELS[status]}
-              </Text>
+              </ThemedText>
             </Pressable>
           ))}
         </ScrollView>
@@ -333,19 +363,19 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
               size={48}
               color='rgba(255,255,255,0.4)'
             />
-            <Text className='text-lg font-bold text-white mt-4 mb-2'>
+            <ThemedHeading variant="h3" color="white" align="center" className="mt-4 mb-2">
               No orders found
-            </Text>
-            <Text className='text-md text-white/80 text-center'>
+            </ThemedHeading>
+            <ThemedText color="white" align="center" className="opacity-80">
               {searchTerm || statusFilter !== 'ALL'
                 ? 'Try adjusting your search or filters'
                 : 'Create your first order to get started'}
-            </Text>
+            </ThemedText>
           </VStack>
         ) : (
           <VStack space='md'>{filteredOrders.map(renderOrderCard)}</VStack>
         )}
       </ScrollView>
-    </LinearGradient>
+    </PageGradient>
   )
 }

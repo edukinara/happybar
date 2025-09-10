@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
 import React, { useCallback, useState } from 'react'
 import {
@@ -13,14 +12,18 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import { Pressable } from '@/components/ui/pressable'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
+import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { Colors } from '../constants/theme'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import { api } from '../lib/api'
 import { pluralize } from '../utils/pluralize'
 
@@ -335,119 +338,126 @@ export function OrderSuggestionsScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <LinearGradient
-        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <PageGradient>
         <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
           <ActivityIndicator size='large' color='white' />
-          <Text className='text-white text-lg mt-4'>
+          <ThemedText
+            variant='bodyLarge'
+            color='onGradient'
+            weight='medium'
+            style={{ marginTop: 16 }}
+          >
             Loading order suggestions...
-          </Text>
+          </ThemedText>
         </Box>
-      </LinearGradient>
+      </PageGradient>
     )
   }
 
   // Empty state
   if (suggestions.length === 0) {
     return (
-      <LinearGradient
-        colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <PageGradient>
         <StatusBar style='light' />
 
         {/* Header */}
         <Box
-          className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+          className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
           style={{ paddingTop: insets.top + 4 }}
         >
-          <HStack className='justify-between items-center'>
-            <HStack space='md' className='items-center'>
-              <Pressable className='mr-4' onPress={() => navigation.goBack()}>
+          <HStack className='justify-between items-center p-2'>
+            <HStack className='items-center gap-4'>
+              <Pressable onPress={() => navigation.goBack()}>
                 <Ionicons name='arrow-back' size={24} color='white' />
               </Pressable>
-              <Text className='text-white text-xl font-bold'>
+              <ThemedHeading variant='h2' color='onGradient' weight='bold'>
                 Order Suggestions
-              </Text>
+              </ThemedHeading>
             </HStack>
           </HStack>
         </Box>
 
         {/* Empty state */}
-        <VStack className='flex-1 justify-center items-center px-4' space='lg'>
+        <VStack
+          className='flex-1 justify-center items-center px-4'
+          style={{ gap: 24 }}
+        >
           <Box className='w-16 h-16 bg-white/20 rounded-full justify-center items-center'>
             <Ionicons name='checkmark-circle' size={32} color='white' />
           </Box>
-          <VStack className='items-center' space='sm'>
-            <Text className='text-white text-xl font-bold'>
+          <VStack className='items-center' style={{ gap: 8 }}>
+            <ThemedHeading
+              variant='h2'
+              color='onGradient'
+              weight='bold'
+              align='center'
+            >
               No Suggestions Available
-            </Text>
-            <Text className='text-white/80 text-center text-lg'>
+            </ThemedHeading>
+            <ThemedText
+              variant='bodyLarge'
+              color='onGradientMuted'
+              align='center'
+            >
               All your inventory items are above their minimum levels. Great
               job!
-            </Text>
+            </ThemedText>
           </VStack>
-          <Pressable
+          <ThemedButton
             onPress={loadSuggestions}
-            className='px-6 py-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30'
+            variant='outline'
+            size='lg'
+            className='bg-white/20 border-white/40'
           >
-            <Text className='text-white font-medium'>Refresh</Text>
-          </Pressable>
+            <ThemedText variant='body' weight='medium' color='onGradient'>
+              Refresh
+            </ThemedText>
+          </ThemedButton>
         </VStack>
-      </LinearGradient>
+      </PageGradient>
     )
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       <StatusBar style='light' />
 
       {/* Header */}
       <Box
-        className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
         style={{ paddingTop: insets.top + 4 }}
       >
-        <HStack className='justify-between items-center'>
-          <HStack space='md' className='items-center'>
-            <Pressable className='mr-4' onPress={() => navigation.goBack()}>
+        <HStack className='justify-between items-center p-2'>
+          <HStack className='items-center gap-4'>
+            <Pressable onPress={() => navigation.goBack()}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
-            <Text className='text-white text-xl font-bold'>
+            <ThemedHeading variant='h2' color='onGradient' weight='bold'>
               Order Suggestions
-            </Text>
+            </ThemedHeading>
           </HStack>
-          <Pressable
+          <ThemedButton
             onPress={() => (navigation as any).navigate('CreateOrder')}
-            className='p-2'
+            variant='primary'
+            className='bg-white/20 dark:bg-white/20 rounded-full size-10 p-0'
           >
-            <Ionicons name='add' size={24} color='white' />
-          </Pressable>
+            <Ionicons name='add' size={22} color='white' />
+          </ThemedButton>
         </HStack>
       </Box>
 
       {/* Summary */}
-      <VStack className='px-4 py-3 bg-white/10' space='sm'>
-        <Text className='text-white/90'>
+      <VStack className='px-4 py-3 bg-white/10' style={{ gap: 8 }}>
+        <ThemedText variant='body' color='onGradientMuted'>
           {suggestions.length} supplier{suggestions.length === 1 ? '' : 's'}{' '}
           with low stock items
-        </Text>
+        </ThemedText>
         {selectedItems.size > 0 && (
-          <Text className='text-white font-medium'>
+          <ThemedText variant='body' color='onGradient' weight='medium'>
             {selectedItems.size} item{selectedItems.size === 1 ? '' : 's'}{' '}
             selected • ${calculateTotalCost().toFixed(2)} estimated
-          </Text>
+          </ThemedText>
         )}
       </VStack>
 
@@ -466,11 +476,13 @@ export function OrderSuggestionsScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <VStack className='px-4 py-4' space='md'>
+        <VStack className='py-4 px-2' style={{ gap: 16 }}>
           {suggestions.map((suggestion) => (
-            <Card
+            <ThemedCard
               key={suggestion.supplier.id}
-              className='p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'
+              variant='primary'
+              size='lg'
+              className='bg-white/80'
             >
               {/* Supplier Header */}
               <HStack className='items-center justify-between mb-4'>
@@ -489,27 +501,31 @@ export function OrderSuggestionsScreen() {
                     }
                   />
                   <VStack className='flex-1'>
-                    <Text className='font-bold text-gray-900 text-lg'>
+                    <ThemedText
+                      variant='bodyLarge'
+                      weight='bold'
+                      color='primary'
+                    >
                       {suggestion.supplier.name}
-                    </Text>
-                    <Text className='text-sm text-gray-600'>
+                    </ThemedText>
+                    <ThemedText variant='caption' color='muted'>
                       {suggestion.items.length} item
                       {suggestion.items.length === 1 ? '' : 's'} • $
                       {suggestion.totalEstimatedCost.toFixed(2)}
-                    </Text>
+                    </ThemedText>
                   </VStack>
                 </HStack>
               </HStack>
 
               {/* Items */}
-              <VStack space='sm'>
+              <VStack style={{ gap: 12 }}>
                 {suggestion.items.map((item) => (
                   <Pressable
                     key={item.product.id}
                     onPress={() =>
                       toggleItem(item.product.id, suggestion.supplier.id)
                     }
-                    className='flex-row items-center p-3 bg-white/50 rounded-xl border border-white/30'
+                    className='flex-row items-center p-3 bg-white/60 dark:bg-white/10 rounded-xl border border-white/20'
                   >
                     {/* Selection checkbox */}
                     <Box className='mr-3'>
@@ -529,131 +545,172 @@ export function OrderSuggestionsScreen() {
                     </Box>
 
                     {/* Product Image */}
-                    <Box className='mr-3'>
-                      <ProductImage
-                        uri={item.product.image}
-                        {...ProductImageVariants.small}
-                      />
-                    </Box>
-
-                    {/* Product Info */}
-                    <VStack className='flex-1' space='xs'>
-                      <Text
-                        className='font-bold text-gray-900'
-                        numberOfLines={1}
-                      >
-                        {item.product.name}
-                      </Text>
-                      <HStack className='items-center' space='md'>
-                        <Text className='text-sm text-gray-600'>
-                          {item.location.name}
-                        </Text>
-                        <Text className='text-sm text-red-600 font-medium'>
-                          {+item.currentQuantity.toFixed(2)}/
-                          {item.minimumQuantity}
-                        </Text>
-                      </HStack>
-                    </VStack>
-
-                    {/* Quantity, Unit & Cost */}
-                    <VStack className='items-end' space='xs'>
-                      {selectedItems.has(item.product.id) ? (
-                        <VStack className='items-end' space='xs'>
-                          <Input className='w-16 bg-white border border-gray-300 rounded-lg'>
-                            <InputField
-                              value={getFinalQuantity(
-                                item.product.id,
-                                item.suggestedQuantity
-                              ).toString()}
-                              onChangeText={(text: string) => {
-                                const quantity =
-                                  parseInt(text) || item.suggestedQuantity
-                                updateQuantity(item.product.id, quantity)
-                              }}
-                              keyboardType='numeric'
-                              className='text-center text-gray-900 text-sm'
-                            />
-                          </Input>
-                          {/* Ordering Unit Selector - only show if packSize exists */}
-                          {item.packSize && (
-                            <HStack className='items-center' space='xs'>
-                              <Pressable
-                                onPress={() =>
-                                  updateOrderingUnit(
-                                    item.product.id,
-                                    'UNIT',
-                                    item
-                                  )
-                                }
-                                className={`px-2 py-1 rounded-lg ${
+                    <HStack className='flex-1 items-center'>
+                      <Box className='mr-3'>
+                        <ProductImage
+                          uri={item.product.image}
+                          {...ProductImageVariants.small}
+                        />
+                      </Box>
+                      <VStack className='gap-1'>
+                        {/* Product Info */}
+                        <VStack className='flex-1' style={{ gap: 1 }}>
+                          <ThemedText
+                            variant='body'
+                            weight='bold'
+                            color='primary'
+                            numberOfLines={1}
+                          >
+                            {item.product.name}
+                          </ThemedText>
+                          <HStack className='items-center' style={{ gap: 16 }}>
+                            <ThemedText variant='caption' color='muted'>
+                              {item.location.name}
+                            </ThemedText>
+                            <ThemedText
+                              variant='caption'
+                              weight='medium'
+                              color='danger'
+                            >
+                              {+item.currentQuantity.toFixed(2)}/
+                              {item.minimumQuantity}
+                            </ThemedText>
+                          </HStack>
+                        </VStack>
+                        {/* Ordering Unit Selector - only show if packSize exists */}
+                        {item.packSize && selectedItems.has(item.product.id) ? (
+                          <HStack className='items-center gap-2'>
+                            <ThemedButton
+                              onPress={() =>
+                                updateOrderingUnit(
+                                  item.product.id,
+                                  'UNIT',
+                                  item
+                                )
+                              }
+                              variant={
+                                getFinalOrderingUnit(
+                                  item.product.id,
+                                  item.orderingUnit
+                                ) === 'UNIT'
+                                  ? 'primary'
+                                  : 'outline'
+                              }
+                              size='sm'
+                              className='px-3 py-1'
+                            >
+                              <ThemedText
+                                variant='caption'
+                                weight={
                                   getFinalOrderingUnit(
                                     item.product.id,
                                     item.orderingUnit
                                   ) === 'UNIT'
-                                    ? 'bg-blue-100 border border-blue-300'
-                                    : 'bg-gray-100 border border-gray-300'
-                                }`}
-                              >
-                                <Text
-                                  className={`text-xs ${
-                                    getFinalOrderingUnit(
-                                      item.product.id,
-                                      item.orderingUnit
-                                    ) === 'UNIT'
-                                      ? 'text-blue-700 font-bold'
-                                      : 'text-gray-600'
-                                  }`}
-                                >
-                                  Unit
-                                </Text>
-                              </Pressable>
-                              <Pressable
-                                onPress={() =>
-                                  updateOrderingUnit(
-                                    item.product.id,
-                                    'CASE',
-                                    item
-                                  )
+                                    ? 'bold'
+                                    : 'medium'
                                 }
-                                className={`px-2 py-1 rounded-lg ${
+                                color={
+                                  getFinalOrderingUnit(
+                                    item.product.id,
+                                    item.orderingUnit
+                                  ) === 'UNIT'
+                                    ? 'onGradient'
+                                    : 'muted'
+                                }
+                              >
+                                Unit
+                              </ThemedText>
+                            </ThemedButton>
+                            <ThemedButton
+                              onPress={() =>
+                                updateOrderingUnit(
+                                  item.product.id,
+                                  'CASE',
+                                  item
+                                )
+                              }
+                              variant={
+                                getFinalOrderingUnit(
+                                  item.product.id,
+                                  item.orderingUnit
+                                ) === 'CASE'
+                                  ? 'primary'
+                                  : 'outline'
+                              }
+                              size='sm'
+                              className='px-3 py-1'
+                            >
+                              <ThemedText
+                                variant='caption'
+                                weight={
                                   getFinalOrderingUnit(
                                     item.product.id,
                                     item.orderingUnit
                                   ) === 'CASE'
-                                    ? 'bg-blue-100 border border-blue-300'
-                                    : 'bg-gray-100 border border-gray-300'
-                                }`}
+                                    ? 'bold'
+                                    : 'medium'
+                                }
+                                color={
+                                  getFinalOrderingUnit(
+                                    item.product.id,
+                                    item.orderingUnit
+                                  ) === 'CASE'
+                                    ? 'onGradient'
+                                    : 'muted'
+                                }
                               >
-                                <Text
-                                  className={`text-xs ${
-                                    getFinalOrderingUnit(
-                                      item.product.id,
-                                      item.orderingUnit
-                                    ) === 'CASE'
-                                      ? 'text-blue-700 font-bold'
-                                      : 'text-gray-600'
-                                  }`}
-                                >
-                                  Case
-                                  {item.packSize ? ` (${item.packSize})` : ''}
-                                </Text>
-                              </Pressable>
-                            </HStack>
-                          )}
+                                Case
+                                {item.packSize ? ` (${item.packSize})` : ''}
+                              </ThemedText>
+                            </ThemedButton>
+                          </HStack>
+                        ) : null}
+                      </VStack>
+                    </HStack>
+
+                    {/* Quantity, Unit & Cost */}
+                    <VStack className='items-end' style={{ gap: 4 }}>
+                      {selectedItems.has(item.product.id) ? (
+                        <VStack className='items-end' style={{ gap: 4 }}>
+                          <ThemedInput
+                            variant='default'
+                            size='sm'
+                            fieldProps={{
+                              value: getFinalQuantity(
+                                item.product.id,
+                                item.suggestedQuantity
+                              ).toString(),
+                              onChangeText: (text: string) => {
+                                const quantity =
+                                  parseInt(text) || item.suggestedQuantity
+                                updateQuantity(item.product.id, quantity)
+                              },
+                              keyboardType: 'numeric',
+                            }}
+                            className='w-16'
+                          />
                         </VStack>
                       ) : (
-                        <Text className='text-sm font-bold text-gray-900'>
+                        <ThemedText
+                          variant='caption'
+                          weight='bold'
+                          color='primary'
+                        >
                           {item.suggestedQuantity}{' '}
                           {pluralize(item.suggestedQuantity, item.orderingUnit)}
                           {item.orderingUnit === 'CASE' && item.packSize && (
-                            <Text className='text-xs text-gray-600'>
+                            <ThemedText variant='caption' color='muted'>
                               {' '}
                               ({item.packSize * item.suggestedQuantity} units)
-                            </Text>
+                            </ThemedText>
                           )}
-                        </Text>
+                        </ThemedText>
                       )}
-                      <Text className='text-sm font-bold text-green-600'>
+                      <ThemedText
+                        variant='caption'
+                        weight='bold'
+                        color='success'
+                      >
                         $
                         {(
                           getFinalQuantity(
@@ -661,46 +718,57 @@ export function OrderSuggestionsScreen() {
                             item.suggestedQuantity
                           ) * getFinalUnitCost(item.product.id, item.unitCost)
                         ).toFixed(2)}
-                      </Text>
+                      </ThemedText>
                     </VStack>
                   </Pressable>
                 ))}
               </VStack>
-            </Card>
+            </ThemedCard>
           ))}
         </VStack>
       </ScrollView>
 
       {/* Bottom Actions */}
       {selectedItems.size > 0 && (
-        <Card className='m-4 p-4 bg-white/90 backdrop-blur-sm rounded-2xl border border-white/50'>
-          <VStack space='sm'>
+        <ThemedCard variant='primary' size='lg' className='m-4'>
+          <VStack style={{ gap: 8 }}>
             <HStack className='items-center justify-between'>
-              <Text className='text-gray-700'>
+              <ThemedText variant='body' color='secondary'>
                 {selectedItems.size} item{selectedItems.size === 1 ? '' : 's'}{' '}
                 selected
-              </Text>
-              <Text className='font-bold text-gray-900 text-lg'>
+              </ThemedText>
+              <ThemedText variant='bodyLarge' weight='bold' color='primary'>
                 Total: ${calculateTotalCost().toFixed(2)}
-              </Text>
+              </ThemedText>
             </HStack>
 
-            <Pressable
+            <ThemedButton
               onPress={createOrdersFromSelections}
               disabled={isCreatingOrders}
-              className={`py-4 rounded-xl items-center ${
-                isCreatingOrders ? 'bg-gray-400' : 'bg-blue-600'
-              }`}
+              variant={isCreatingOrders ? 'outline' : 'primary'}
+              size='lg'
+              fullWidth
+              className={
+                isCreatingOrders ? 'bg-gray-400 border-transparent' : ''
+              }
             >
               {isCreatingOrders ? (
-                <HStack className='items-center' space='sm'>
+                <HStack className='items-center' style={{ gap: 8 }}>
                   <ActivityIndicator size='small' color='white' />
-                  <Text className='text-white font-bold text-lg'>
+                  <ThemedText
+                    variant='bodyLarge'
+                    weight='bold'
+                    color='onGradient'
+                  >
                     Creating Orders...
-                  </Text>
+                  </ThemedText>
                 </HStack>
               ) : (
-                <Text className='text-white font-bold text-lg'>
+                <ThemedText
+                  variant='bodyLarge'
+                  weight='bold'
+                  color='onGradient'
+                >
                   Create Orders (
                   {
                     Object.keys(
@@ -718,12 +786,12 @@ export function OrderSuggestionsScreen() {
                     ).length
                   }
                   )
-                </Text>
+                </ThemedText>
               )}
-            </Pressable>
+            </ThemedButton>
           </VStack>
-        </Card>
+        </ThemedCard>
       )}
-    </LinearGradient>
+    </PageGradient>
   )
 }

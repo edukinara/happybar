@@ -23,8 +23,9 @@ import React, { useCallback, useState } from 'react'
 import { Alert, BackHandler, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { Colors } from '../constants/theme'
+import { cn, themeClasses } from '../constants/themeClasses'
 import { useProducts, type InventoryProduct } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -297,12 +298,7 @@ export function CountScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       {/* Header */}
       <Box className='px-6 pb-4' style={{ paddingTop: insets.top + 16 }}>
         <HStack className='justify-between items-center mb-4'>
@@ -409,7 +405,9 @@ export function CountScreen() {
         {recentScans.length > 0 && (
           <Box className='p-6 pb-3 border-b border-gray-100'>
             <HStack className='justify-between items-center mb-2'>
-              <Text className='text-lg font-bold text-gray-900'>
+              <Text
+                className={cn('text-lg font-bold', themeClasses.text.primary)}
+              >
                 Recent Counts
               </Text>
               <Pressable
@@ -428,7 +426,10 @@ export function CountScreen() {
                   >
                     <HStack className='justify-between items-center'>
                       <Text
-                        className='font-medium text-gray-900 text-sm'
+                        className={cn(
+                          'font-medium text-sm',
+                          themeClasses.text.primary
+                        )}
                         numberOfLines={1}
                       >
                         {item.productName}
@@ -437,7 +438,9 @@ export function CountScreen() {
                         {item.countedQuantity}
                       </Text>
                     </HStack>
-                    <Text className='text-xs text-gray-500 mt-1'>
+                    <Text
+                      className={cn('text-xs mt-1', themeClasses.text.muted)}
+                    >
                       {new Date(item.timestamp).toLocaleTimeString()}
                     </Text>
                   </Box>
@@ -452,7 +455,9 @@ export function CountScreen() {
           {isLoading ? (
             <Box className='flex-1 justify-center items-center'>
               <Spinner size='large' color='#8B5CF6' />
-              <Text className='text-gray-600 mt-4'>Loading products...</Text>
+              <Text className='{themeClasses.text.muted} mt-4'>
+                Loading products...
+              </Text>
             </Box>
           ) : (
             <ScrollView
@@ -476,14 +481,16 @@ export function CountScreen() {
                     className='border-[1px] border-black/10 rounded-lg'
                   />
                 </Input>
-                <Text className='text-lg font-bold text-gray-900'>
+                <Text
+                  className={cn('text-lg font-bold', themeClasses.text.primary)}
+                >
                   Select Product to Count
                 </Text>
 
                 {filteredProducts.length === 0 ? (
                   <Box className='py-12 items-center'>
                     <Ionicons name='search-outline' size={48} color='#D1D5DB' />
-                    <Text className='text-gray-500 text-center mt-4'>
+                    <Text className='{themeClasses.text.muted} text-center mt-4'>
                       {searchQuery
                         ? 'No products found matching your search'
                         : 'No products available'}
@@ -537,7 +544,7 @@ export function CountScreen() {
                                 className={`font-medium ${
                                   countedItem
                                     ? 'text-purple-900'
-                                    : 'text-gray-900'
+                                    : themeClasses.text.primary
                                 }`}
                                 numberOfLines={1}
                               >
@@ -551,7 +558,7 @@ export function CountScreen() {
                               className={`text-sm ${
                                 countedItem
                                   ? 'text-purple-600'
-                                  : 'text-gray-500'
+                                  : themeClasses.text.muted
                               }`}
                             >
                               {product.sku && `SKU: ${product.sku} • `}
@@ -626,7 +633,9 @@ export function CountScreen() {
         <ModalBackdrop className='bg-black/70' />
         <ModalContent className='m-6 max-w-md bg-white'>
           <ModalHeader>
-            <Text className='text-2xl font-bold text-gray-900'>
+            <Text
+              className={cn('text-2xl font-bold', themeClasses.text.primary)}
+            >
               Count Product
             </Text>
             <ModalCloseButton
@@ -643,10 +652,15 @@ export function CountScreen() {
             {selectedProduct && (
               <VStack space='lg'>
                 <VStack space='sm'>
-                  <Text className='text-xl font-bold text-gray-900'>
+                  <Text
+                    className={cn(
+                      'text-xl font-bold',
+                      themeClasses.text.primary
+                    )}
+                  >
                     {selectedProduct.name}
                   </Text>
-                  <Text className='text-gray-600'>
+                  <Text className={themeClasses.text.muted}>
                     {selectedProduct.sku && `SKU: ${selectedProduct.sku} • `}
                     Current:{' '}
                     {selectedProduct.inventoryItems.reduce(
@@ -666,7 +680,9 @@ export function CountScreen() {
                 </VStack>
 
                 <VStack space='sm'>
-                  <Text className='text-gray-700 font-medium'>
+                  <Text
+                    className={cn('font-medium', themeClasses.text.secondary)}
+                  >
                     Count Quantity
                   </Text>
                   <HStack className='justify-center items-center' space='lg'>
@@ -716,7 +732,9 @@ export function CountScreen() {
                   setSelectedProduct(null)
                 }}
               >
-                <ButtonText className='text-gray-700'>Cancel</ButtonText>
+                <ButtonText className={themeClasses.text.secondary}>
+                  Cancel
+                </ButtonText>
               </Button>
 
               <Button
@@ -732,6 +750,6 @@ export function CountScreen() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </LinearGradient>
+    </PageGradient>
   )
 }

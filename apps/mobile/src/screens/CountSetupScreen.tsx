@@ -5,7 +5,6 @@ import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { LinearGradient } from 'expo-linear-gradient'
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Alert,
@@ -16,7 +15,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 // import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context' // useSafeAreaInsets not used
-import { Colors } from '../constants/theme'
+import { PageGradient } from '../components/PageGradient'
 import { useLocations } from '../hooks/useInventoryData'
 import type { RootStackParamList } from '../navigation/RootNavigator'
 import { useCountStore } from '../stores/countStore'
@@ -650,12 +649,7 @@ export default function CountSetupScreen() {
         style={{ flex: 1, height: '100%' }}
         keyboardVerticalOffset={0}
       >
-        <LinearGradient
-          colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-          style={{ flex: 1 }}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
+        <PageGradient>
           {/* Header */}
           <SafeAreaView edges={['top']}>
             <HStack className='items-center justify-between p-4'>
@@ -751,7 +745,7 @@ export default function CountSetupScreen() {
               </Pressable>
             </HStack>
           </Box>
-        </LinearGradient>
+        </PageGradient>
       </KeyboardAvoidingView>
       <SafeAreaView edges={['bottom']} className='pb-20' />
     </Box>

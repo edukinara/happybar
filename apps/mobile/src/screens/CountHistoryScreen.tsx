@@ -6,13 +6,13 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
-import { LinearGradient } from 'expo-linear-gradient'
 import React, { useState } from 'react'
 import { Alert, FlatList, Pressable, RefreshControl } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { Colors } from '../constants/theme'
+import { themeClasses, cn } from '../constants/themeClasses'
 import { CountItem, useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
 
@@ -95,15 +95,15 @@ export function CountHistoryScreen() {
   }
 
   const getVarianceColor = (variance: number) => {
-    if (variance === 0) return Colors.success
-    if (Math.abs(variance) <= 2) return Colors.warning
-    return Colors.error
+    if (variance === 0) return '#10B981'
+    if (Math.abs(variance) <= 2) return '#F59E0B'
+    return '#EF4444'
   }
 
   const getVarianceBackground = (variance: number) => {
-    if (variance === 0) return Colors.successLight
-    if (Math.abs(variance) <= 2) return Colors.warningLight
-    return Colors.errorLight
+    if (variance === 0) return '#ECFDF5'
+    if (Math.abs(variance) <= 2) return '#FFFBEB'
+    return '#FEF2F2'
   }
 
   const formatTimestamp = (timestamp: string) => {
@@ -129,7 +129,7 @@ export function CountHistoryScreen() {
     const areaName = getAreaName(item.areaId, item.countSessionId)
     return (
       <Box
-        className='bg-white'
+        className={themeClasses.bg.card}
         style={{
           borderRadius: 16,
           marginBottom: 12,
@@ -155,10 +155,10 @@ export function CountHistoryScreen() {
 
             {/* Product Info */}
             <VStack className='flex-1' style={{ marginRight: 16 }}>
-              <Text className='text-gray-900 font-semibold text-base mb-1'>
+              <Text className='{themeClasses.text.primary} font-semibold text-base mb-1'>
                 {item.productName}
               </Text>
-              <Text className='text-gray-500 text-sm'>
+              <Text className='{themeClasses.text.muted} text-sm'>
                 {item.sku && `SKU: ${item.sku} • `}
                 {formatTimestamp(item.timestamp)}
               </Text>
@@ -169,7 +169,7 @@ export function CountHistoryScreen() {
                 {areaName && (
                   <>
                     {item.countSessionId && (
-                      <Text className='text-gray-400 text-xs'>•</Text>
+                      <Text className='{themeClasses.text.muted} text-xs'>•</Text>
                     )}
                     <Text
                       className='text-purple-600 text-xs text-ellipsis w-full'
@@ -184,10 +184,10 @@ export function CountHistoryScreen() {
 
             {/* Count Details */}
             <VStack className='items-center' style={{ marginRight: 16 }}>
-              <Text className='text-gray-900 font-bold text-lg'>
+              <Text className='{themeClasses.text.primary} font-bold text-lg'>
                 {item.countedQuantity}
               </Text>
-              <Text className='text-gray-500 text-xs'>
+              <Text className='{themeClasses.text.muted} text-xs'>
                 {pluralize(item.countedQuantity, item.container || 'unit')}
               </Text>
             </VStack>
@@ -211,7 +211,7 @@ export function CountHistoryScreen() {
                   {item.variance}
                 </Text>
               </Box>
-              <Text className='text-gray-400 text-xs mt-1'>
+              <Text className='{themeClasses.text.muted} text-xs mt-1'>
                 vs {item.currentStock}
               </Text>
             </VStack>
@@ -244,12 +244,7 @@ export function CountHistoryScreen() {
   ]
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       {/* Header */}
       <SafeAreaView>
         <HStack className='items-center justify-between p-4'>
@@ -311,7 +306,7 @@ export function CountHistoryScreen() {
                 <Text
                   className='font-semibold text-center text-sm'
                   style={{
-                    color: filter === item.key ? Colors.primary : 'white',
+                    color: filter === item.key ? '#8B5CF6' : 'white',
                   }}
                 >
                   {item.label} ({item.count})
@@ -335,7 +330,7 @@ export function CountHistoryScreen() {
           />
         ) : (
           <Box
-            className='bg-white'
+            className={themeClasses.bg.card}
             style={{
               borderRadius: 16,
               padding: 40,
@@ -345,7 +340,7 @@ export function CountHistoryScreen() {
           >
             <Box
               style={{
-                backgroundColor: Colors.primaryLight,
+                backgroundColor: '#F3E8FF',
                 width: 64,
                 height: 64,
                 borderRadius: 32,
@@ -357,13 +352,13 @@ export function CountHistoryScreen() {
               <Ionicons
                 name='clipboard-outline'
                 size={28}
-                color={Colors.primary}
+                color='#8B5CF6'
               />
             </Box>
-            <Text className='text-gray-900 font-semibold text-lg text-center'>
+            <Text className='{themeClasses.text.primary} font-semibold text-lg text-center'>
               No counts found
             </Text>
-            <Text className='text-gray-500 text-center mt-2'>
+            <Text className='{themeClasses.text.muted} text-center mt-2'>
               {filter === 'all'
                 ? 'Start scanning items to see count history'
                 : `No counts found for "${filterButtons.find((b) => b.key === filter)?.label}" filter`}
@@ -380,6 +375,6 @@ export function CountHistoryScreen() {
           </Box>
         )}
       </VStack>
-    </LinearGradient>
+    </PageGradient>
   )
 }

@@ -1,5 +1,5 @@
-'use client'
-import { vars } from 'nativewind'
+'use client';
+import { vars } from 'nativewind';
 
 export const config = {
   light: vars({
@@ -252,7 +252,7 @@ export const config = {
     '--color-info-900': '199 235 252',
     '--color-info-950': '236 248 254',
 
-    /* Typography */
+    /* Typography - Made much lighter for dark mode */
     '--color-typography-0': '23 23 23',
     '--color-typography-50': '38 38 39',
     '--color-typography-100': '64 64 64',
@@ -260,11 +260,11 @@ export const config = {
     '--color-typography-300': '115 115 115',
     '--color-typography-400': '140 140 140',
     '--color-typography-500': '163 163 163',
-    '--color-typography-600': '212 212 212',
-    '--color-typography-700': '219 219 220',
-    '--color-typography-800': '229 229 229',
-    '--color-typography-900': '245 245 245',
-    '--color-typography-950': '254 254 255',
+    '--color-typography-600': '250 250 250',  // Much lighter for muted text
+    '--color-typography-700': '255 255 255',  // White for secondary text  
+    '--color-typography-800': '255 255 255',  // White
+    '--color-typography-900': '255 255 255',  // Pure white for primary text
+    '--color-typography-950': '255 255 255',  // Pure white
 
     /* Outline */
     '--color-outline-0': '26 23 23',
@@ -306,4 +306,4 @@ export const config = {
     '--color-indicator-info': '161 199 245',
     '--color-indicator-error': '232 70 69',
   }),
-}
+};

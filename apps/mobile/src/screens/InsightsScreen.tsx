@@ -6,11 +6,10 @@ import { Pressable, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Card } from '@/components/ui/card'
-import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
+import { PageGradient } from '../components/PageGradient'
+import { ThemedCard, ThemedHeading, ThemedText } from '../components/themed'
 import { Colors } from '../constants/theme'
 
 export function InsightsScreen() {
@@ -72,21 +71,18 @@ export function InsightsScreen() {
   ]
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
       <StatusBar style='light' />
 
       {/* Header */}
       <Box
-        className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
         style={{ paddingTop: insets.top + 4 }}
       >
-        <HStack className='justify-between items-center'>
-          <Text className='text-white text-xl font-bold'>Insights</Text>
+        <HStack className='justify-between items-center p-2'>
+          <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+            Insights
+          </ThemedHeading>
         </HStack>
       </Box>
 
@@ -95,9 +91,9 @@ export function InsightsScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        <VStack className='px-4 py-4' space='md'>
+        <VStack className='px-4 py-4 gap-8' space='md'>
           {/* Quick Stats */}
-          <Card className='p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'>
+          <ThemedCard variant='primary' size='lg'>
             <HStack style={{ alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Box
                 style={{
@@ -111,9 +107,9 @@ export function InsightsScreen() {
               >
                 <Ionicons name='speedometer' size={16} color={Colors.primary} />
               </Box>
-              <Heading size='lg' className='text-gray-900 font-bold'>
+              <ThemedHeading variant='h3' weight='bold' color='primary'>
                 Quick Stats
-              </Heading>
+              </ThemedHeading>
             </HStack>
 
             <VStack style={{ gap: 12 }}>
@@ -142,39 +138,31 @@ export function InsightsScreen() {
                         color={stat.color}
                       />
                     </Box>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText
+                      variant='body'
+                      weight='medium'
+                      color='secondary'
+                    >
                       {stat.label}
-                    </Text>
+                    </ThemedText>
                   </HStack>
-                  <Text
-                    className='font-bold text-lg'
+                  <ThemedText
+                    variant='bodyLarge'
+                    weight='bold'
                     style={{ color: stat.color }}
                   >
                     {stat.value}
-                  </Text>
+                  </ThemedText>
                 </HStack>
               ))}
             </VStack>
-          </Card>
+          </ThemedCard>
 
           {/* AI-Powered Insights */}
-          <Box
-            className='bg-white'
-            style={{
-              borderRadius: 16,
-              padding: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 5,
-              borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }}
-          >
+          <ThemedCard variant='primary' size='lg'>
             <HStack style={{ alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <LinearGradient
-                colors={[Colors.primary, Colors.primary + 'DD']}
+                colors={['#8B5CF6', '#8B5CF6DD']}
                 style={{
                   width: 32,
                   height: 32,
@@ -185,9 +173,9 @@ export function InsightsScreen() {
               >
                 <Ionicons name='sparkles' size={16} color='white' />
               </LinearGradient>
-              <Heading size='lg' className='text-gray-900 font-bold'>
+              <ThemedHeading variant='h3' weight='bold' color='primary'>
                 Smart Recommendations
-              </Heading>
+              </ThemedHeading>
             </HStack>
 
             <VStack style={{ gap: 12 }}>
@@ -204,14 +192,18 @@ export function InsightsScreen() {
                   style={{ alignItems: 'center', gap: 12, marginBottom: 8 }}
                 >
                   <Ionicons name='bulb' size={18} color={Colors.success} />
-                  <Text className='font-semibold text-gray-900'>
+                  <ThemedText variant='body' weight='semibold' color='primary'>
                     Optimize Ordering
-                  </Text>
+                  </ThemedText>
                 </HStack>
-                <Text className='text-gray-600 text-sm leading-5'>
+                <ThemedText
+                  variant='caption'
+                  color='muted'
+                  style={{ lineHeight: 20 }}
+                >
                   Consider increasing order quantity for Premium Vodka by 15%
                   based on recent sales trends.
-                </Text>
+                </ThemedText>
               </LinearGradient>
 
               <LinearGradient
@@ -227,50 +219,37 @@ export function InsightsScreen() {
                   style={{ alignItems: 'center', gap: 12, marginBottom: 8 }}
                 >
                   <Ionicons name='warning' size={18} color={Colors.warning} />
-                  <Text className='font-semibold text-gray-900'>
+                  <ThemedText variant='body' weight='semibold' color='primary'>
                     Restock Alert
-                  </Text>
+                  </ThemedText>
                 </HStack>
-                <Text className='text-gray-600 text-sm leading-5'>
+                <ThemedText
+                  variant='caption'
+                  color='muted'
+                  style={{ lineHeight: 20 }}
+                >
                   3 high-demand items are approaching minimum stock levels.
                   Schedule reorder soon.
-                </Text>
+                </ThemedText>
               </LinearGradient>
             </VStack>
-          </Box>
+          </ThemedCard>
 
           {/* Analytics Cards */}
           <VStack style={{ gap: 16 }}>
-            <Heading
-              size='lg'
-              className='text-white font-bold'
+            <ThemedHeading
+              variant='h3'
+              color='onGradient'
+              weight='bold'
               style={{ marginLeft: 4 }}
             >
               Analytics Dashboard
-            </Heading>
+            </ThemedHeading>
 
             <VStack style={{ gap: 12 }}>
               {insightCards.map((card, index) => (
                 <Pressable key={index}>
-                  <LinearGradient
-                    colors={[
-                      'rgba(255, 255, 255, 0.95)',
-                      'rgba(255, 255, 255, 0.9)',
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      borderRadius: 16,
-                      padding: 20,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.05,
-                      shadowRadius: 8,
-                      elevation: 3,
-                      borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                    }}
-                  >
+                  <ThemedCard variant='primary' size='lg'>
                     <HStack
                       style={{
                         alignItems: 'center',
@@ -305,24 +284,28 @@ export function InsightsScreen() {
                         </LinearGradient>
 
                         <VStack className='flex-1'>
-                          <Heading
-                            size='sm'
-                            className='text-gray-900 font-semibold'
+                          <ThemedText
+                            variant='body'
+                            weight='semibold'
+                            color='primary'
                           >
                             {card.title}
-                          </Heading>
-                          <Text
-                            className='text-gray-600 text-sm'
+                          </ThemedText>
+                          <ThemedText
+                            variant='caption'
+                            color='muted'
                             style={{ marginTop: 2 }}
                           >
                             {card.description}
-                          </Text>
-                          <Text
-                            className='text-gray-500 text-xs font-medium'
+                          </ThemedText>
+                          <ThemedText
+                            variant='caption'
+                            weight='medium'
+                            color='muted'
                             style={{ marginTop: 4 }}
                           >
                             {card.metrics}
-                          </Text>
+                          </ThemedText>
                         </VStack>
                       </HStack>
 
@@ -343,7 +326,7 @@ export function InsightsScreen() {
                         />
                       </Box>
                     </HStack>
-                  </LinearGradient>
+                  </ThemedCard>
                 </Pressable>
               ))}
             </VStack>
@@ -351,7 +334,7 @@ export function InsightsScreen() {
 
           {/* Coming Soon */}
           <LinearGradient
-            colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
+            colors={['rgba(255, 255, 255, 0.10)', 'rgba(255, 255, 255, 0.05)']}
             style={{
               borderRadius: 16,
               padding: 24,
@@ -373,19 +356,26 @@ export function InsightsScreen() {
             >
               <Ionicons name='construct' size={28} color='white' />
             </Box>
-            <Heading size='lg' className='text-white font-bold text-center'>
+            <ThemedHeading
+              variant='h3'
+              color='onGradient'
+              weight='bold'
+              align='center'
+            >
               More Insights Coming Soon
-            </Heading>
-            <Text
-              className='text-white/80 text-center'
+            </ThemedHeading>
+            <ThemedText
+              variant='body'
+              color='onGradientMuted'
+              align='center'
               style={{ marginTop: 8 }}
             >
               Advanced analytics, predictive insights, and custom reports are in
               development.
-            </Text>
+            </ThemedText>
           </LinearGradient>
         </VStack>
       </ScrollView>
-    </LinearGradient>
+    </PageGradient>
   )
 }

@@ -1,18 +1,24 @@
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import { Box } from '@/components/ui/box'
-import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
 import React, { useState } from 'react'
-import { Pressable, ScrollView, Switch } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { Colors } from '../constants/theme'
+import { ScrollView, Switch } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { PageGradient } from '../components/PageGradient'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedText,
+} from '../components/themed'
 import { useAuthStore } from '../stores/authStore'
 
 export function SettingsScreen() {
+  const insets = useSafeAreaInsets()
   const { logout, user } = useAuthStore()
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [lowStockAlerts, setLowStockAlerts] = useState(true)
@@ -135,18 +141,13 @@ export function SettingsScreen() {
   // )
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1, paddingBottom: 24 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient style={{ paddingBottom: 24 }}>
       {/* Header */}
-      <SafeAreaView edges={['top']}>
+      {/* <SafeAreaView edges={['top']}>
         <HStack className='items-center justify-between p-4'>
-          <Heading size='xl' className='text-white font-bold'>
+          <ThemedHeading variant='h1' color='onGradient' weight='bold'>
             Settings
-          </Heading>
+          </ThemedHeading>
           <Pressable
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -161,7 +162,28 @@ export function SettingsScreen() {
             <Ionicons name='notifications' size={24} color='white' />
           </Pressable>
         </HStack>
-      </SafeAreaView>
+      </SafeAreaView> */}
+      {/* Header */}
+      <StatusBar style='light' />
+
+      {/* Header */}
+
+      <Box
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        style={{ paddingTop: insets.top + 4 }}
+      >
+        <HStack className='justify-between items-center p-2'>
+          <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+            Settings
+          </ThemedHeading>
+          {/* <ThemedButton
+                  variant='primary'
+                  className='bg-white/20 dark:bg-white/20 rounded-full size-10 p-0'
+                >
+                  <Ionicons name='notifications' size={24} color='white' />
+                </ThemedButton> */}
+        </HStack>
+      </Box>
 
       <ScrollView
         className='flex-1'
@@ -174,20 +196,7 @@ export function SettingsScreen() {
       >
         <VStack style={{ gap: 20 }}>
           {/* Profile Card */}
-          <Box
-            className='bg-white'
-            style={{
-              borderRadius: 16,
-              padding: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 5,
-              borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }}
-          >
+          <ThemedCard variant='primary' size='lg'>
             <HStack style={{ alignItems: 'center', gap: 16 }}>
               <Avatar size='md'>
                 <AvatarFallbackText>{user?.name}</AvatarFallbackText>
@@ -199,38 +208,26 @@ export function SettingsScreen() {
               </Avatar>
 
               <VStack className='flex-1'>
-                <Heading size='lg' className='text-gray-900 font-bold'>
+                <ThemedHeading variant='h3' weight='bold' color='primary'>
                   {user?.name}
-                </Heading>
-                <Text
-                  className='text-gray-500 text-sm'
+                </ThemedHeading>
+                <ThemedText
+                  variant='caption'
+                  color='muted'
                   style={{ marginTop: 4 }}
                 >
                   {user?.email}
-                </Text>
+                </ThemedText>
               </VStack>
             </HStack>
-          </Box>
+          </ThemedCard>
 
           {/* Notifications */}
-          <Box
-            className='bg-white'
-            style={{
-              borderRadius: 16,
-              padding: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 5,
-              borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }}
-          >
+          <ThemedCard variant='primary' size='lg'>
             <HStack style={{ alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Box
                 style={{
-                  backgroundColor: Colors.primaryLight,
+                  backgroundColor: '#A78BFADD',
                   width: 32,
                   height: 32,
                   borderRadius: 8,
@@ -238,15 +235,11 @@ export function SettingsScreen() {
                   alignItems: 'center',
                 }}
               >
-                <Ionicons
-                  name='notifications'
-                  size={16}
-                  color={Colors.primary}
-                />
+                <Ionicons name='notifications' size={16} color='#8B5CF6' />
               </Box>
-              <Heading size='lg' className='text-gray-900 font-bold'>
+              <ThemedHeading variant='h3' weight='bold' color='primary'>
                 Notifications
-              </Heading>
+              </ThemedHeading>
             </HStack>
 
             <VStack style={{ gap: 12 }}>
@@ -278,34 +271,35 @@ export function SettingsScreen() {
                   }}
                 >
                   <VStack className='flex-1' style={{ marginRight: 12 }}>
-                    <Text className='text-gray-900 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       {item.title}
-                    </Text>
-                    <Text
-                      className='text-gray-600 text-sm'
+                    </ThemedText>
+                    <ThemedText
+                      variant='caption'
+                      color='muted'
                       style={{ marginTop: 2 }}
                     >
                       {item.description}
-                    </Text>
+                    </ThemedText>
                   </VStack>
                   <Switch
                     value={item.enabled}
                     onValueChange={item.onToggle}
                     trackColor={{
                       false: '#F3F4F6',
-                      true: Colors.primary + '40',
+                      true: '#8B5CF640',
                     }}
-                    thumbColor={item.enabled ? Colors.primary : '#9CA3AF'}
+                    thumbColor={item.enabled ? '#8B5CF6' : '#9CA3AF'}
                   />
                 </HStack>
               ))}
             </VStack>
-          </Box>
+          </ThemedCard>
 
           {/* Settings Groups */}
           {/* {settingsGroups.map((group, groupIndex) => (
             <Box
-              className='bg-white'
+              className={themeClasses.bg.card}
               key={groupIndex}
               style={{
                 borderRadius: 16,
@@ -324,7 +318,7 @@ export function SettingsScreen() {
               >
                 <Box
                   style={{
-                    backgroundColor: Colors.primaryLight,
+                    backgroundColor: '#A78BFADD',
                     width: 32,
                     height: 32,
                     borderRadius: 8,
@@ -335,10 +329,10 @@ export function SettingsScreen() {
                   <Ionicons
                     name={group.icon as keyof typeof Ionicons.glyphMap}
                     size={16}
-                    color={Colors.primary}
+                    color='#8B5CF6'
                   />
                 </Box>
-                <Heading size='lg' className='text-gray-900 font-bold'>
+                <Heading size='lg' className={cn('font-bold', themeClasses.text.primary)}>
                   {group.title}
                 </Heading>
               </HStack>
@@ -353,7 +347,7 @@ export function SettingsScreen() {
 
           {/* App Info */}
           <LinearGradient
-            colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
+            colors={['rgba(255, 255, 255, 0.10)', 'rgba(255, 255, 255, 0.05)']}
             style={{
               borderRadius: 16,
               padding: 20,
@@ -363,48 +357,44 @@ export function SettingsScreen() {
             }}
           >
             <VStack style={{ alignItems: 'center', gap: 8 }}>
-              <Text className='text-white/80 text-sm font-medium'>
+              <ThemedText
+                variant='body'
+                color='onGradientMuted'
+                weight='medium'
+              >
                 Happy Bar Mobile
-              </Text>
-              {/* <Text className='text-white/60 text-xs'>
+              </ThemedText>
+              {/* <ThemedText variant='caption' color='onGradientMuted'>
                 Version 1.0.0 • Build 1
-              </Text> */}
-              <Text
-                className='text-white/60 text-xs text-center'
+              </ThemedText> */}
+              <ThemedText
+                variant='caption'
+                color='onGradientMuted'
+                align='center'
                 style={{ marginTop: 4 }}
               >
                 © 2025 Happy Bar. All rights reserved.
-              </Text>
+              </ThemedText>
             </VStack>
           </LinearGradient>
 
           {/* Logout Button */}
-          <Pressable onPress={handleLogout}>
-            <LinearGradient
-              colors={[Colors.error, '#DC2626']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{
-                borderRadius: 16,
-                padding: 18,
-                alignItems: 'center',
-                shadowColor: Colors.error,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.25,
-                shadowRadius: 8,
-                elevation: 6,
-              }}
-            >
-              <HStack style={{ alignItems: 'center', gap: 12 }}>
-                <Ionicons name='log-out' size={20} color='white' />
-                <Text className='text-white font-semibold text-base'>
-                  Logout
-                </Text>
-              </HStack>
-            </LinearGradient>
-          </Pressable>
+          <ThemedButton
+            variant='danger'
+            size='lg'
+            onPress={handleLogout}
+            fullWidth
+            className='bg-red-500 dark:bg-red-700 border-transparent shadow-lg rounded-lg'
+          >
+            <HStack className='gap-2'>
+              <Ionicons name='log-out' size={20} color='white' />
+              <ThemedText variant='body' weight='semibold' color='onGradient'>
+                Logout
+              </ThemedText>
+            </HStack>
+          </ThemedButton>
         </VStack>
       </ScrollView>
-    </LinearGradient>
+    </PageGradient>
   )
 }

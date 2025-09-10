@@ -1,12 +1,9 @@
 import { Box } from '@/components/ui/box'
-import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
-import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
 import pluralize from 'pluralize'
 import React, { useState } from 'react'
 import {
@@ -15,12 +12,22 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import { Colors } from '../constants/theme'
+import { cn } from '../constants/themeClasses'
 import { useInventoryLevels, useLowStockItems } from '../hooks/useInventoryData'
 
 export function InventoryScreen() {
+  const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'low' | 'out'>('all')
@@ -77,7 +84,7 @@ export function InventoryScreen() {
 
     return (
       <Pressable style={{ marginBottom: 12 }}>
-        <Box className='bg-white elevation-sm p-4 rounded-xl border-[1px] border-white/50'>
+        <ThemedCard variant='primary' size='md'>
           <HStack
             style={{ alignItems: 'center', justifyContent: 'space-between' }}
           >
@@ -91,38 +98,48 @@ export function InventoryScreen() {
 
             {/* Product Info */}
             <VStack className='flex-1' style={{ marginRight: 16 }}>
-              <Heading size='sm' className='text-gray-900 font-semibold'>
+              <ThemedText variant='body' weight='semibold' color='primary'>
                 {item.product?.name || 'Unknown Product'}
-              </Heading>
-              <Text className='text-gray-500 text-sm' style={{ marginTop: 2 }}>
+              </ThemedText>
+              <ThemedText
+                variant='caption'
+                color='muted'
+                style={{ marginTop: 2 }}
+              >
                 SKU: {item.product?.sku || 'N/A'}
-              </Text>
-              <Text className='text-gray-600 text-sm' style={{ marginTop: 2 }}>
+              </ThemedText>
+              <ThemedText
+                variant='caption'
+                color='muted'
+                style={{ marginTop: 2 }}
+              >
                 {item.product.unitSize}
                 {item.product?.unit} • {item.product?.container}
-              </Text>
+              </ThemedText>
             </VStack>
 
             {/* Quantity Info */}
             <VStack style={{ alignItems: 'flex-end', marginRight: 16 }}>
-              <Text
-                className='font-bold text-xl'
+              <ThemedText
+                variant='h3'
+                weight='bold'
                 style={{ color: status.color, marginBottom: 2 }}
               >
                 {+item.currentQuantity.toFixed(2)}
-              </Text>
-              <Text className='text-gray-500 text-xs'>
+              </ThemedText>
+              <ThemedText variant='caption' color='muted'>
                 {item.currentQuantity > 1
                   ? pluralize(item.product?.container || 'units')
                   : item.product?.container || 'unit'}
-              </Text>
+              </ThemedText>
               {item.parLevel && (
-                <Text
-                  className='text-gray-400 text-xs'
+                <ThemedText
+                  variant='caption'
+                  color='muted'
                   style={{ marginTop: 2 }}
                 >
                   Par: {item.parLevel}
-                </Text>
+                </ThemedText>
               )}
             </VStack>
 
@@ -144,7 +161,7 @@ export function InventoryScreen() {
               />
             </Box>
           </HStack>
-        </Box>
+        </ThemedCard>
       </Pressable>
     )
   }
@@ -159,44 +176,29 @@ export function InventoryScreen() {
   ]
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1, paddingBottom: 16 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient style={{ paddingBottom: 16 }}>
       {/* Header */}
-      <SafeAreaView edges={['top']}>
-        <HStack className='items-center justify-between p-4'>
-          <VStack>
-            <Heading size='xl' className='text-white font-bold'>
-              Inventory
-            </Heading>
-            {isFetching && !isLoading && (
-              <HStack className='items-center' style={{ marginTop: 4 }}>
-                <ActivityIndicator size='small' color='white' />
-                <Text className='text-white/80 text-sm ml-2'>
-                  Refreshing...
-                </Text>
-              </HStack>
-            )}
-          </VStack>
-          <Pressable
+      <StatusBar style='light' />
+
+      {/* Header */}
+
+      <Box
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        style={{ paddingTop: insets.top + 4 }}
+      >
+        <HStack className='justify-between items-center p-2'>
+          <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+            Inventory
+          </ThemedHeading>
+          <ThemedButton
             onPress={() => navigation.navigate('AddProduct' as never)}
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backdropFilter: 'blur(10px)',
-            }}
+            variant='primary'
+            className='bg-white/20 dark:bg-white/20 rounded-full size-10 p-0'
           >
-            <Ionicons name='add' size={24} color='white' />
-          </Pressable>
+            <Ionicons name='add' size={22} color='white' />
+          </ThemedButton>
         </HStack>
-      </SafeAreaView>
+      </Box>
 
       <ScrollView
         className='flex-1'
@@ -210,56 +212,49 @@ export function InventoryScreen() {
           <RefreshControl
             refreshing={isFetching}
             onRefresh={refetch}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
+            colors={['#8B5CF6']}
+            tintColor='#8B5CF6'
             progressBackgroundColor='white'
           />
         }
       >
         <VStack style={{ gap: 16 }}>
           {/* Search Bar */}
-          <Input
-            className='border-white/30 rounded-xl h-12 bg-white elevation-md'
-            size='lg'
-          >
-            <InputField
-              placeholder='Search orders...'
-              placeholderTextColor='rgba(0,0,0,0.4)'
-              className='text-black/90'
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </Input>
+          <ThemedInput
+            variant='default'
+            size='md'
+            fieldProps={{
+              placeholder: 'Search inventory...',
+              value: searchQuery,
+              onChangeText: setSearchQuery,
+            }}
+            className='elevation-md'
+          />
 
           {/* Filter Buttons */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <HStack style={{ gap: 8, paddingHorizontal: 4 }}>
+            <HStack style={{ gap: 12, paddingHorizontal: 4 }}>
               {filterButtons.map((button) => (
-                <Pressable
+                <ThemedButton
                   key={button.key}
+                  variant={filterType === button.key ? 'primary' : 'outline'}
+                  size='sm'
                   onPress={() => setFilterType(button.key as any)}
-                  style={{
-                    backgroundColor:
-                      filterType === button.key
-                        ? 'rgba(255, 255, 255, 0.95)'
-                        : 'rgba(255, 255, 255, 0.2)',
-                    paddingVertical: 10,
-                    paddingHorizontal: 16,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                  }}
+                  className={cn(
+                    'h-10 px-4',
+                    filterType === button.key
+                      ? 'bg-white dark:bg-white/25 border-transparent dark:border dark:border-white/80'
+                      : 'bg-white/20 dark:bg-white/10 border-white/40 dark:border-transparent'
+                  )}
                 >
-                  <Text
-                    className='font-semibold text-sm'
-                    style={{
-                      color:
-                        filterType === button.key ? Colors.primary : 'white',
-                    }}
+                  <ThemedText
+                    variant='caption'
+                    weight='semibold'
+                    color={filterType === button.key ? 'primary' : 'onGradient'}
                   >
                     {button.label}
-                  </Text>
-                </Pressable>
+                  </ThemedText>
+                </ThemedButton>
               ))}
             </HStack>
           </ScrollView>
@@ -267,13 +262,15 @@ export function InventoryScreen() {
           {/* Inventory List */}
           {isLoading ? (
             <Box className='items-center justify-center'>
-              <ActivityIndicator size='large' color={Colors.primary} />
-              <Text
-                className='text-white/60 font-medium'
+              <ActivityIndicator size='large' color='white' />
+              <ThemedText
+                variant='body'
+                color='onGradientMuted'
+                weight='medium'
                 style={{ marginTop: 12 }}
               >
                 Loading inventory...
-              </Text>
+              </ThemedText>
             </Box>
           ) : (
             <VStack style={{ gap: 4 }}>
@@ -281,7 +278,7 @@ export function InventoryScreen() {
                 <Box key={item.id}>{renderInventoryItem({ item })}</Box>
               ))}
               {filteredItems.length === 0 && (
-                <Box className='bg-white elevation-sm p-4 rounded-xl border-[1px] border-white/50'>
+                <ThemedCard variant='primary' size='lg'>
                   <Box
                     style={{
                       backgroundColor: Colors.primaryLight,
@@ -299,23 +296,30 @@ export function InventoryScreen() {
                       color={Colors.primary}
                     />
                   </Box>
-                  <Text className='text-gray-900 font-semibold text-center'>
+                  <ThemedText
+                    variant='body'
+                    weight='semibold'
+                    color='primary'
+                    align='center'
+                  >
                     No items found
-                  </Text>
-                  <Text
-                    className='text-gray-500 text-center'
+                  </ThemedText>
+                  <ThemedText
+                    variant='caption'
+                    color='muted'
+                    align='center'
                     style={{ marginTop: 4 }}
                   >
                     {searchQuery
                       ? 'Try adjusting your search'
                       : 'Add products to get started'}
-                  </Text>
-                </Box>
+                  </ThemedText>
+                </ThemedCard>
               )}
             </VStack>
           )}
         </VStack>
       </ScrollView>
-    </LinearGradient>
+    </PageGradient>
   )
 }

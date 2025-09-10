@@ -8,10 +8,15 @@ export const Colors = {
   secondaryDark: '#D97706',
   secondaryLight: '#FCD34DDD',
 
-  // Page Gradient
+  // Page Gradient - Light Mode
   gradStart: '#6366F1',
   gradMid: '#8B5CF6',
   gradEnd: '#A855F7',
+
+  // Page Gradient - Dark Mode (darker, more subtle)
+  gradStartDark: '#191a52',
+  gradMidDark: '#160236',
+  gradEndDark: '#080014',
 
   // Semantic colors
   success: '#10B981',
