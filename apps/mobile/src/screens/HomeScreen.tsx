@@ -12,12 +12,12 @@ import { VStack } from '@/components/ui/vstack'
 
 import { HappyBarLogo } from '../components/brand/HappyBarLogo'
 import { PageGradient } from '../components/PageGradient'
-import { 
-  ThemedCard, 
-  ThemedButton, 
-  ThemedText, 
+import {
+  ThemedBadge,
+  ThemedButton,
+  ThemedCard,
   ThemedHeading,
-  ThemedBadge 
+  ThemedText,
 } from '../components/themed'
 import { usePageGradient } from '../constants/gradients'
 import { useInventoryAnalytics } from '../hooks/useAnalyticsData'
@@ -155,7 +155,9 @@ export function HomeScreen() {
 
   const renderStats = () => (
     <VStack className='mb-8' space='lg'>
-      <ThemedHeading variant='h3' color='onGradient'>Analytics</ThemedHeading>
+      <ThemedHeading variant='h3' color='onGradient'>
+        Analytics
+      </ThemedHeading>
       <VStack space='md'>
         <HStack space='md'>
           <ThemedCard variant='primary' size='md' className='flex-1'>
@@ -163,7 +165,9 @@ export function HomeScreen() {
               <Box className='w-8 h-8 bg-green-100 rounded-full justify-center items-center'>
                 <Ionicons name='trending-up' size={16} color='#059669' />
               </Box>
-              <ThemedText variant='overline' color='success' weight='bold'>+12%</ThemedText>
+              <ThemedText variant='overline' color='success' weight='bold'>
+                +12%
+              </ThemedText>
             </HStack>
             <VStack space='xs'>
               <ThemedText variant='h2' color='primary' weight='bold'>
@@ -182,13 +186,17 @@ export function HomeScreen() {
               <Box className='w-8 h-8 bg-purple-100 rounded-full justify-center items-center'>
                 <Ionicons name='cube-outline' size={16} color='#7C3AED' />
               </Box>
-              <ThemedText variant='overline' color='purple' weight='bold'>+3</ThemedText>
+              <ThemedText variant='overline' color='purple' weight='bold'>
+                +3
+              </ThemedText>
             </HStack>
             <VStack space='xs'>
               <ThemedText variant='h2' color='primary' weight='bold'>
                 {analytics?.totalProducts?.toString() || '0'}
               </ThemedText>
-              <ThemedText variant='caption' color='secondary'>Products</ThemedText>
+              <ThemedText variant='caption' color='secondary'>
+                Products
+              </ThemedText>
             </VStack>
           </ThemedCard>
         </HStack>
@@ -199,7 +207,9 @@ export function HomeScreen() {
               <Box className='w-8 h-8 bg-amber-100 rounded-full justify-center items-center'>
                 <Ionicons name='speedometer' size={16} color='#D97706' />
               </Box>
-              <ThemedText variant='overline' color='warning' weight='bold'>-5%</ThemedText>
+              <ThemedText variant='overline' color='warning' weight='bold'>
+                -5%
+              </ThemedText>
             </HStack>
             <VStack space='xs'>
               <ThemedText variant='h2' color='primary' weight='bold'>
@@ -207,7 +217,9 @@ export function HomeScreen() {
                   ? `${analytics.turnoverRate.toFixed(1)}x`
                   : '0x'}
               </ThemedText>
-              <ThemedText variant='caption' color='secondary'>Turnover</ThemedText>
+              <ThemedText variant='caption' color='secondary'>
+                Turnover
+              </ThemedText>
             </VStack>
           </ThemedCard>
 
@@ -216,7 +228,13 @@ export function HomeScreen() {
               <Box className='w-8 h-8 bg-blue-100 rounded-full justify-center items-center'>
                 <Ionicons name='analytics' size={16} color='#2563EB' />
               </Box>
-              <ThemedText variant='overline' className='text-blue-600 dark:text-blue-400' weight='bold'>-0.5%</ThemedText>
+              <ThemedText
+                variant='overline'
+                className='text-blue-600 dark:text-blue-400'
+                weight='bold'
+              >
+                -0.5%
+              </ThemedText>
             </HStack>
             <VStack space='xs'>
               <ThemedText variant='h2' color='primary' weight='bold'>
@@ -224,7 +242,9 @@ export function HomeScreen() {
                   ? `${analytics.wastePercentage.toFixed(1)}%`
                   : '0%'}
               </ThemedText>
-              <ThemedText variant='caption' color='secondary'>Waste</ThemedText>
+              <ThemedText variant='caption' color='secondary'>
+                Waste
+              </ThemedText>
             </VStack>
           </ThemedCard>
         </HStack>
@@ -273,12 +293,21 @@ export function HomeScreen() {
                 />
               </Box>
               <VStack className='items-center' space='xs'>
-                <ThemedText variant='h4' color='onGradient' weight='bold' align='center'>
+                <ThemedText
+                  variant='h4'
+                  color='onGradient'
+                  weight='bold'
+                  align='center'
+                >
                   {activeSession ? 'Resume Count' : 'Start New Count'}
                 </ThemedText>
                 {activeSession ? (
                   <VStack className='items-center' space='xs'>
-                    <ThemedText variant='body' color='onGradientSubtle' align='center'>
+                    <ThemedText
+                      variant='body'
+                      color='onGradientSubtle'
+                      align='center'
+                    >
                       {activeSession.name}
                     </ThemedText>
                     <ThemedText variant='caption' color='onGradientMuted'>
@@ -286,7 +315,11 @@ export function HomeScreen() {
                     </ThemedText>
                   </VStack>
                 ) : (
-                  <ThemedText variant='body' color='onGradientSubtle' align='center'>
+                  <ThemedText
+                    variant='body'
+                    color='onGradientSubtle'
+                    align='center'
+                  >
                     Create a new inventory count
                   </ThemedText>
                 )}
@@ -301,7 +334,9 @@ export function HomeScreen() {
   const renderQuickActions = () => {
     return (
       <VStack className='mb-8' space='lg'>
-        <ThemedHeading variant='h3' color='onGradient'>Quick Actions</ThemedHeading>
+        <ThemedHeading variant='h3' color='onGradient'>
+          Quick Actions
+        </ThemedHeading>
         <VStack space='md'>
           {/* Only show Quick Count if no full/cycle count is in progress */}
           <HStack space='md'>
@@ -326,16 +361,29 @@ export function HomeScreen() {
                   }
                 }}
               >
-                <ThemedCard variant='primary' size='md' className='items-center'>
+                <ThemedCard
+                  variant='primary'
+                  size='md'
+                  className='items-center'
+                >
                   <VStack className='items-center' space='sm'>
                     <Box className='size-12 bg-purple-100 rounded-full justify-center items-center'>
                       <Ionicons name='scan' size={24} color='#7C3AED' />
                     </Box>
-                    <ThemedText variant='caption' color='primary' weight='semibold' align='center'>
+                    <ThemedText
+                      variant='caption'
+                      color='primary'
+                      weight='semibold'
+                      align='center'
+                    >
                       Quick Count
                     </ThemedText>
                     {totalCounts > 0 && (
-                      <ThemedText variant='overline' color='purple' weight='medium'>
+                      <ThemedText
+                        variant='overline'
+                        color='purple'
+                        weight='medium'
+                      >
                         {totalCounts} counted
                       </ThemedText>
                     )}
@@ -373,7 +421,12 @@ export function HomeScreen() {
                   <Box className='size-12 bg-blue-100 rounded-full justify-center items-center'>
                     <Ionicons name='cart' size={24} color='#2563EB' />
                   </Box>
-                  <ThemedText variant='caption' color='primary' weight='semibold' align='center'>
+                  <ThemedText
+                    variant='caption'
+                    color='primary'
+                    weight='semibold'
+                    align='center'
+                  >
                     Create Order
                   </ThemedText>
                 </VStack>
@@ -388,7 +441,12 @@ export function HomeScreen() {
                   <Box className='size-12 bg-green-100 rounded-full justify-center items-center'>
                     <Ionicons name='receipt' size={24} color='#059669' />
                   </Box>
-                  <ThemedText variant='caption' color='primary' weight='semibold' align='center'>
+                  <ThemedText
+                    variant='caption'
+                    color='primary'
+                    weight='semibold'
+                    align='center'
+                  >
                     View Orders
                   </ThemedText>
                 </VStack>
@@ -405,10 +463,16 @@ export function HomeScreen() {
 
     return (
       <VStack className='mb-8' space='lg'>
-        <ThemedText variant='h3' color='onGradient' weight='bold'>Alerts</ThemedText>
+        <ThemedText variant='h3' color='onGradient' weight='bold'>
+          Alerts
+        </ThemedText>
         <VStack space='md'>
           {analytics && analytics.outOfStockItems > 0 && (
-            <ThemedCard variant='primary' size='md' className='bg-red-50/60 dark:bg-red-900/20 backdrop-blur-sm border border-red-200/80 dark:border-red-800/40'>
+            <ThemedCard
+              variant='primary'
+              size='md'
+              className='bg-red-50/60 dark:bg-red-900/20 backdrop-blur-sm border border-red-200/80 dark:border-red-800/40'
+            >
               <HStack className='items-center' space='md'>
                 <Box className='size-10 bg-red-100 dark:bg-red-800/50 rounded-full justify-center items-center'>
                   <Ionicons name='alert-circle' size={20} color='#DC2626' />
@@ -426,7 +490,11 @@ export function HomeScreen() {
           )}
 
           {analytics && analytics.lowStockItems > 0 && (
-            <ThemedCard variant='primary' size='md' className='bg-amber-50/60 dark:bg-amber-900/20 backdrop-blur-sm border border-amber-200/80 dark:border-amber-800/40'>
+            <ThemedCard
+              variant='primary'
+              size='md'
+              className='bg-amber-50/60 dark:bg-amber-900/20 backdrop-blur-sm border border-amber-200/80 dark:border-amber-800/40'
+            >
               <HStack className='items-center' space='md'>
                 <Box className='size-10 bg-amber-100 dark:bg-amber-800/50 rounded-full justify-center items-center'>
                   <Ionicons name='warning' size={20} color='#D97706' />
@@ -446,7 +514,11 @@ export function HomeScreen() {
           {(!analytics ||
             (analytics.outOfStockItems === 0 &&
               analytics.lowStockItems === 0)) && (
-            <ThemedCard variant='primary' size='md' className='bg-green-50/90 dark:bg-green-900/20 backdrop-blur-sm border border-green-200/80 dark:border-green-800/40'>
+            <ThemedCard
+              variant='primary'
+              size='md'
+              className='bg-green-50/90 dark:bg-green-900/20 backdrop-blur-sm border border-green-200/80 dark:border-green-800/40'
+            >
               <HStack className='items-center' space='md'>
                 <Box className='w-10 h-10 bg-green-100 dark:bg-green-800/50 rounded-full justify-center items-center'>
                   <Ionicons name='checkmark-circle' size={20} color='#059669' />
@@ -475,18 +547,16 @@ export function HomeScreen() {
     return (
       <VStack className='mb-8' space='lg'>
         <HStack className='justify-between items-center'>
-          <ThemedText variant='h3' color='onGradient' weight='bold'>Pending Approval</ThemedText>
+          <ThemedText variant='h3' color='onGradient' weight='bold'>
+            Pending Approval
+          </ThemedText>
           <ThemedBadge variant='warning' size='sm'>
             {completedCounts.length}
           </ThemedBadge>
         </HStack>
         <VStack space='md'>
           {completedCounts.map((count) => (
-            <ThemedCard
-              key={count.id}
-              variant='primary'
-              size='md'
-            >
+            <ThemedCard key={count.id} variant='primary' size='md'>
               <HStack className='justify-between items-start'>
                 <VStack className='flex-1 mr-4' space='xs'>
                   <ThemedText variant='body' weight='bold' color='primary'>
@@ -500,7 +570,11 @@ export function HomeScreen() {
                     {new Date(count.completedAt).toLocaleDateString()}
                   </ThemedText>
                   {count.itemsCounted && (
-                    <ThemedText variant='caption' weight='medium' className='text-blue-600 dark:text-blue-400'>
+                    <ThemedText
+                      variant='caption'
+                      weight='medium'
+                      className='text-blue-600 dark:text-blue-400'
+                    >
                       {count.itemsCounted} items counted
                     </ThemedText>
                   )}
@@ -511,7 +585,9 @@ export function HomeScreen() {
                   onPress={() => handleApproveCount(count)}
                   loading={approveCountMutation.isPending}
                   className='bg-green-500 dark:bg-green-600 border-transparent min-w-[80px]'
-                  icon={<Ionicons name='checkmark-circle' size={16} color='white' />}
+                  icon={
+                    <Ionicons name='checkmark-circle' size={16} color='white' />
+                  }
                 >
                   <ThemedText variant='caption' weight='bold' color='white'>
                     Approve
@@ -539,7 +615,7 @@ export function HomeScreen() {
       <ScrollView
         className='flex-1'
         contentContainerStyle={{
-          padding: 20,
+          padding: 16,
           paddingTop: 24,
           paddingBottom: 100,
         }}

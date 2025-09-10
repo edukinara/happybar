@@ -4,23 +4,26 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native'
-import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Button, ButtonText } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import { Pressable } from '@/components/ui/pressable'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
 import { ProductContainer, ProductUnit } from '@happy-bar/types'
 import { CatalogProduct, CatalogSearch } from '../components/CatalogSearch'
-import { Colors } from '../constants/theme'
+import { PageGradient } from '../components/PageGradient'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import {
   useCategories,
   useCreateProduct,
@@ -300,121 +303,130 @@ export function AddProductScreen() {
   )
 
   return (
-    <LinearGradient
-      colors={[Colors.gradStart, Colors.gradMid, Colors.gradEnd]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <PageGradient>
+      <StatusBar style='light' />
+
       {/* Header */}
-      <Box className='px-6 pb-4' style={{ paddingTop: insets.top + 16 }}>
-        <HStack className='justify-between items-center'>
-          <HStack className='items-center' space='md'>
-            <Pressable
-              className='w-10 h-10 rounded-full bg-white/20 justify-center items-center'
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name='arrow-back' size={20} color='white' />
+      <Box
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        style={{ paddingTop: insets.top + 4 }}
+      >
+        <HStack className='justify-between items-center p-2'>
+          <HStack className='items-center gap-4'>
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
+            <VStack>
+              <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+                Add Product
+              </ThemedHeading>
+              <ThemedText variant='caption' color='onGradientMuted'>
+                Create new inventory item
+              </ThemedText>
+            </VStack>
           </HStack>
-          <VStack className='items-center flex-1'>
-            <Text className='text-white text-lg font-bold'>Add Product</Text>
-            <Text className='text-white/70 text-sm'>
-              Create new inventory item
-            </Text>
-          </VStack>
-          <Box className='w-10' />
         </HStack>
       </Box>
 
       {/* Content */}
-      <Box
-        className='flex-1 bg-white rounded-t-3xl'
-        style={{ paddingBottom: 96 }}
-      >
+
+      <Box className='p-0 mb-36 flex flex-1 overflow-hidden'>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
           <ScrollView
             className='flex-1'
-            contentContainerStyle={{ padding: 24 }}
+            contentContainerStyle={{ padding: 12 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps='handled'
           >
             <VStack space='lg' className='w-full'>
               {/* Catalog Search */}
-              <Card className='p-5 bg-white border border-gray-200 rounded-2xl'>
+              <ThemedCard variant='primary' size='md'>
                 <CatalogSearch
                   onSelect={handleCatalogSelect}
                   placeholder='Search catalog to auto-fill product details...'
                 />
-              </Card>
+              </ThemedCard>
 
               {/* Basic Information */}
-              <Card className='p-5 bg-white border border-gray-200 rounded-2xl'>
+              <ThemedCard variant='primary' size='md'>
                 <VStack space='md'>
-                  <Text className='text-lg font-bold text-gray-900'>
+                  <ThemedHeading variant='h3' weight='bold' color='primary'>
                     Basic Information
-                  </Text>
+                  </ThemedHeading>
 
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Product Name *
-                    </Text>
-                    <Input variant='outline' size='md'>
-                      <InputField
-                        placeholder='e.g., Budweiser Beer'
-                        value={formData.name}
-                        onChangeText={(value) =>
-                          handleInputChange('name', value)
-                        }
-                      />
-                    </Input>
+                    </ThemedText>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      fieldProps={{
+                        placeholder: 'e.g., Budweiser Beer',
+                        value: formData.name,
+                        onChangeText: (value) =>
+                          handleInputChange('name', value),
+                      }}
+                    />
                   </VStack>
 
                   <HStack space='sm'>
                     <VStack space='sm' className='flex-1'>
-                      <Text className='text-gray-700 font-medium'>SKU</Text>
-                      <Input variant='outline' size='md'>
-                        <InputField
-                          placeholder='e.g., BUD-001'
-                          value={formData.sku}
-                          onChangeText={(value) =>
-                            handleInputChange('sku', value)
-                          }
-                        />
-                      </Input>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                      >
+                        SKU
+                      </ThemedText>
+                      <ThemedInput
+                        variant='default'
+                        size='md'
+                        fieldProps={{
+                          placeholder: 'e.g., BUD-001',
+                          value: formData.sku,
+                          onChangeText: (value) =>
+                            handleInputChange('sku', value),
+                        }}
+                      />
                     </VStack>
                     <VStack space='sm' className='flex-1'>
-                      <Text className='text-gray-700 font-medium'>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                      >
                         UPC/Barcode
-                      </Text>
-                      <Input variant='outline' size='md'>
-                        <InputField
-                          placeholder='123456789012'
-                          value={formData.upc}
-                          onChangeText={(value) =>
-                            handleInputChange('upc', value)
-                          }
-                          keyboardType='numeric'
-                        />
-                      </Input>
+                      </ThemedText>
+                      <ThemedInput
+                        variant='default'
+                        size='md'
+                        fieldProps={{
+                          placeholder: '123456789012',
+                          value: formData.upc,
+                          onChangeText: (value) =>
+                            handleInputChange('upc', value),
+                          keyboardType: 'numeric',
+                        }}
+                      />
                     </VStack>
                   </HStack>
 
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Category *
-                    </Text>
+                    </ThemedText>
                     <Pressable
                       onPress={() => setShowCategoryPicker(true)}
                       className='border border-gray-300 rounded-lg p-3'
                     >
                       <HStack className='justify-between items-center'>
-                        <Text className='text-gray-900'>
+                        <ThemedText variant='body' color='primary'>
                           {selectedCategory?.name || 'Select a category'}
-                        </Text>
+                        </ThemedText>
                         <Ionicons
                           name='chevron-down'
                           size={20}
@@ -424,26 +436,32 @@ export function AddProductScreen() {
                     </Pressable>
                   </VStack>
                 </VStack>
-              </Card>
+              </ThemedCard>
 
               {/* Unit & Packaging */}
-              <Card className='p-5 bg-white border border-gray-200 rounded-2xl'>
+              <ThemedCard variant='primary' size='md'>
                 <VStack space='md'>
-                  <Text className='text-lg font-bold text-gray-900'>
+                  <ThemedHeading variant='h3' weight='bold' color='primary'>
                     Unit & Packaging
-                  </Text>
+                  </ThemedHeading>
 
                   <HStack space='sm'>
                     <VStack space='sm' className='flex-1'>
-                      <Text className='text-gray-700 font-medium'>Unit *</Text>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                      >
+                        Unit *
+                      </ThemedText>
                       <Pressable
                         onPress={() => setShowUnitPicker(true)}
                         className='border border-gray-300 rounded-lg p-3'
                       >
                         <HStack className='justify-between items-center'>
-                          <Text className='text-gray-900'>
+                          <ThemedText variant='body' color='primary'>
                             {selectedUnit?.label || 'Select unit'}
-                          </Text>
+                          </ThemedText>
                           <Ionicons
                             name='chevron-down'
                             size={20}
@@ -453,17 +471,21 @@ export function AddProductScreen() {
                       </Pressable>
                     </VStack>
                     <VStack space='sm' className='flex-1'>
-                      <Text className='text-gray-700 font-medium'>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                      >
                         Container
-                      </Text>
+                      </ThemedText>
                       <Pressable
                         onPress={() => setShowContainerPicker(true)}
                         className='border border-gray-300 rounded-lg p-3'
                       >
                         <HStack className='justify-between items-center'>
-                          <Text className='text-gray-900'>
+                          <ThemedText variant='body' color='primary'>
                             {selectedContainer?.label || 'Select container'}
-                          </Text>
+                          </ThemedText>
                           <Ionicons
                             name='chevron-down'
                             size={20}
@@ -476,170 +498,195 @@ export function AddProductScreen() {
 
                   <HStack space='sm'>
                     <VStack space='sm' className='flex-1'>
-                      <Text className='text-gray-700 font-medium'>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                      >
                         Unit Size
-                      </Text>
-                      <Input variant='outline' size='md'>
-                        <InputField
-                          placeholder='750'
-                          value={formData.unitSize.toString()}
-                          onChangeText={(value) =>
+                      </ThemedText>
+                      <ThemedInput
+                        variant='default'
+                        size='md'
+                        fieldProps={{
+                          placeholder: '750',
+                          value: formData.unitSize.toString(),
+                          onChangeText: (value) =>
                             handleInputChange(
                               'unitSize',
                               parseFloat(value) || 1
-                            )
-                          }
-                          keyboardType='numeric'
-                        />
-                      </Input>
+                            ),
+                          keyboardType: 'numeric',
+                        }}
+                      />
                     </VStack>
                     <VStack space='sm' className='flex-1'>
-                      <Text className='text-gray-700 font-medium'>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                      >
                         Case Size
-                      </Text>
-                      <Input variant='outline' size='md'>
-                        <InputField
-                          placeholder='12'
-                          value={formData.caseSize.toString()}
-                          onChangeText={(value) =>
-                            handleInputChange('caseSize', parseInt(value) || 1)
-                          }
-                          keyboardType='numeric'
-                        />
-                      </Input>
+                      </ThemedText>
+                      <ThemedInput
+                        variant='default'
+                        size='md'
+                        fieldProps={{
+                          placeholder: '12',
+                          value: formData.caseSize.toString(),
+                          onChangeText: (value) =>
+                            handleInputChange('caseSize', parseInt(value) || 1),
+                          keyboardType: 'numeric',
+                        }}
+                      />
                     </VStack>
                   </HStack>
 
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Alcohol Content (%)
-                    </Text>
-                    <Input variant='outline' size='md'>
-                      <InputField
-                        placeholder='5.0'
-                        value={formData.alcoholContent?.toString() || ''}
-                        onChangeText={(value) =>
+                    </ThemedText>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      fieldProps={{
+                        placeholder: '5.0',
+                        value: formData.alcoholContent?.toString() || '',
+                        onChangeText: (value) =>
                           handleInputChange(
                             'alcoholContent',
                             parseFloat(value) || 0
-                          )
-                        }
-                        keyboardType='numeric'
-                      />
-                    </Input>
+                          ),
+                        keyboardType: 'numeric',
+                      }}
+                    />
                   </VStack>
                 </VStack>
-              </Card>
+              </ThemedCard>
 
               {/* Pricing */}
-              <Card className='p-5 bg-white border border-gray-200 rounded-2xl'>
+              <ThemedCard variant='primary' size='md'>
                 <VStack space='md'>
-                  <Text className='text-lg font-bold text-gray-900'>
+                  <ThemedHeading variant='h3' weight='bold' color='primary'>
                     Pricing
-                  </Text>
+                  </ThemedHeading>
 
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Cost Per Unit *
-                    </Text>
-                    <Input variant='outline' size='md'>
-                      <InputField
-                        placeholder='2.50'
-                        value={formData.costPerUnit?.toString() || ''}
-                        onChangeText={(value) =>
+                    </ThemedText>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      fieldProps={{
+                        placeholder: '2.50',
+                        value: formData.costPerUnit?.toString() || '',
+                        onChangeText: (value) =>
                           handleInputChange(
                             'costPerUnit',
                             parseFloat(value) || 0
-                          )
-                        }
-                        keyboardType='numeric'
-                      />
-                    </Input>
+                          ),
+                        keyboardType: 'numeric',
+                      }}
+                    />
                   </VStack>
 
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Cost Per Case
-                    </Text>
-                    <Input variant='outline' size='md'>
-                      <InputField
-                        placeholder='60.00'
-                        value={formData.costPerCase?.toString() || ''}
-                        onChangeText={(value) =>
+                    </ThemedText>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      fieldProps={{
+                        placeholder: '60.00',
+                        value: formData.costPerCase?.toString() || '',
+                        onChangeText: (value) =>
                           handleInputChange(
                             'costPerCase',
                             parseFloat(value) || 0
-                          )
-                        }
-                        keyboardType='numeric'
-                      />
-                    </Input>
-                    <Text className='text-gray-500 text-xs'>
+                          ),
+                        keyboardType: 'numeric',
+                      }}
+                    />
+                    <ThemedText
+                      variant='caption'
+                      color='muted'
+                      style={{ marginTop: 4 }}
+                    >
                       Leave empty to calculate based on unit cost × case size
-                    </Text>
+                    </ThemedText>
                   </VStack>
 
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Sell Price
-                    </Text>
-                    <Input variant='outline' size='md'>
-                      <InputField
-                        placeholder='5.00'
-                        value={formData.sellPrice?.toString() || ''}
-                        onChangeText={(value) =>
-                          handleInputChange('sellPrice', parseFloat(value) || 0)
-                        }
-                        keyboardType='numeric'
-                      />
-                    </Input>
+                    </ThemedText>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      fieldProps={{
+                        placeholder: '5.00',
+                        value: formData.sellPrice?.toString() || '',
+                        onChangeText: (value) =>
+                          handleInputChange(
+                            'sellPrice',
+                            parseFloat(value) || 0
+                          ),
+                        keyboardType: 'numeric',
+                      }}
+                    />
                   </VStack>
                 </VStack>
-              </Card>
+              </ThemedCard>
 
               {/* Suppliers */}
-              <Card className='p-5 bg-white border border-gray-200 rounded-2xl'>
-                <VStack space='md'>
+              <ThemedCard variant='primary' size='md'>
+                <VStack space='lg'>
                   <HStack className='justify-between items-center'>
-                    <Text className='text-lg font-bold text-gray-900'>
+                    <ThemedHeading variant='h3' weight='bold' color='primary'>
                       Suppliers
-                    </Text>
+                    </ThemedHeading>
                     <Pressable
                       onPress={() => setShowSupplierPicker(true)}
                       disabled={suppliers.length === 0}
-                      className='bg-purple-100 px-3 py-2 rounded-lg'
+                      className='bg-purple-100 dark:bg-purple-900/50 px-3 py-2 rounded-lg'
                       style={{
                         opacity: suppliers.length === 0 ? 0.5 : 1,
                       }}
                     >
                       <HStack className='items-center' space='xs'>
                         <Ionicons name='add' size={16} color='#8B5CF6' />
-                        <Text className='text-purple-600 font-medium text-sm'>
+                        <ThemedText
+                          variant='caption'
+                          weight='medium'
+                          color='primary'
+                        >
                           Add Supplier
-                        </Text>
+                        </ThemedText>
                       </HStack>
                     </Pressable>
                   </HStack>
 
                   {suppliers.length === 0 ? (
-                    <Text className='text-gray-500 text-sm'>
+                    <ThemedText variant='caption' color='onGradientMuted'>
                       No suppliers available. Create suppliers first to assign
                       them to products.
-                    </Text>
+                    </ThemedText>
                   ) : (
                     <VStack space='md'>
                       {/* Current Suppliers */}
                       {productSuppliers.length > 0 && (
                         <VStack space='sm'>
                           {productSuppliers.map((supplier) => (
-                            <Box
+                            <ThemedCard
                               key={supplier.supplierId}
-                              className='bg-gray-50 border border-gray-200 rounded-xl p-4'
+                              className='bg-gray-50 dark:bg-white/5'
                             >
                               <VStack space='md'>
                                 <HStack className='justify-between items-center'>
                                   <HStack className='items-center' space='sm'>
-                                    <Box className='bg-purple-100 rounded-full p-2'>
+                                    <Box className='bg-purple-100 dark:bg-purple-100 rounded-full p-2'>
                                       <Ionicons
                                         name='business'
                                         size={16}
@@ -647,13 +694,21 @@ export function AddProductScreen() {
                                       />
                                     </Box>
                                     <VStack>
-                                      <Text className='font-semibold text-gray-900'>
+                                      <ThemedText
+                                        variant='body'
+                                        weight='semibold'
+                                        color='primary'
+                                      >
                                         {supplier.supplierName}
-                                      </Text>
+                                      </ThemedText>
                                       {supplier.isPreferred && (
-                                        <Text className='text-purple-600 text-xs font-medium'>
+                                        <ThemedText
+                                          variant='caption'
+                                          weight='medium'
+                                          color='primary'
+                                        >
                                           Preferred
-                                        </Text>
+                                        </ThemedText>
                                       )}
                                     </VStack>
                                   </HStack>
@@ -676,72 +731,92 @@ export function AddProductScreen() {
                                 <VStack space='sm'>
                                   <HStack space='sm'>
                                     <VStack space='xs' className='flex-1'>
-                                      <Text className='text-gray-600 text-xs font-medium'>
+                                      <ThemedText
+                                        variant='caption'
+                                        weight='medium'
+                                        color='muted'
+                                      >
                                         Cost/Unit
-                                      </Text>
-                                      <Input variant='outline' size='sm'>
-                                        <InputField
-                                          value={supplier.costPerUnit.toString()}
-                                          onChangeText={(value) =>
+                                      </ThemedText>
+                                      <ThemedInput
+                                        variant='default'
+                                        size='sm'
+                                        fieldProps={{
+                                          value:
+                                            supplier.costPerUnit.toString(),
+                                          onChangeText: (value) =>
                                             updateProductSupplier(
                                               supplier.supplierId,
                                               'costPerUnit',
                                               parseFloat(value) || 0
-                                            )
-                                          }
-                                          keyboardType='numeric'
-                                        />
-                                      </Input>
+                                            ),
+                                          keyboardType: 'numeric',
+                                        }}
+                                      />
                                     </VStack>
                                     <VStack space='xs' className='flex-1'>
-                                      <Text className='text-gray-600 text-xs font-medium'>
+                                      <ThemedText
+                                        variant='caption'
+                                        weight='medium'
+                                        color='muted'
+                                      >
                                         Cost/Case
-                                      </Text>
-                                      <Input variant='outline' size='sm'>
-                                        <InputField
-                                          value={
+                                      </ThemedText>
+                                      <ThemedInput
+                                        variant='default'
+                                        size='sm'
+                                        fieldProps={{
+                                          value:
                                             supplier.costPerCase?.toString() ||
-                                            ''
-                                          }
-                                          onChangeText={(value) =>
+                                            '',
+                                          onChangeText: (value) =>
                                             updateProductSupplier(
                                               supplier.supplierId,
                                               'costPerCase',
                                               value
                                                 ? parseFloat(value)
                                                 : undefined
-                                            )
-                                          }
-                                          keyboardType='numeric'
-                                          placeholder='Optional'
-                                        />
-                                      </Input>
+                                            ),
+                                          keyboardType: 'numeric',
+                                          placeholder: 'Optional',
+                                        }}
+                                      />
                                     </VStack>
                                   </HStack>
 
                                   <HStack space='sm'>
                                     <VStack space='xs' className='flex-1'>
-                                      <Text className='text-gray-600 text-xs font-medium'>
+                                      <ThemedText
+                                        variant='caption'
+                                        weight='medium'
+                                        color='muted'
+                                      >
                                         Min Order
-                                      </Text>
-                                      <Input variant='outline' size='sm'>
-                                        <InputField
-                                          value={supplier.minimumOrder.toString()}
-                                          onChangeText={(value) =>
+                                      </ThemedText>
+                                      <ThemedInput
+                                        variant='default'
+                                        size='sm'
+                                        fieldProps={{
+                                          value:
+                                            supplier.minimumOrder.toString(),
+                                          onChangeText: (value) =>
                                             updateProductSupplier(
                                               supplier.supplierId,
                                               'minimumOrder',
                                               parseInt(value) || 1
-                                            )
-                                          }
-                                          keyboardType='numeric'
-                                        />
-                                      </Input>
+                                            ),
+                                          keyboardType: 'numeric',
+                                        }}
+                                      />
                                     </VStack>
                                     <VStack space='xs' className='flex-1'>
-                                      <Text className='text-gray-600 text-xs font-medium'>
+                                      <ThemedText
+                                        variant='caption'
+                                        weight='medium'
+                                        color='muted'
+                                      >
                                         Order By
-                                      </Text>
+                                      </ThemedText>
                                       <Pressable
                                         onPress={() =>
                                           updateProductSupplier(
@@ -752,36 +827,42 @@ export function AddProductScreen() {
                                               : 'UNIT'
                                           )
                                         }
-                                        className='border border-gray-300 rounded-lg p-2 bg-white'
+                                        className='border border-gray-300 rounded-lg p-1 h-10 bg-purple-500/20 dark:bg-purple-900/60'
                                       >
-                                        <Text className='text-gray-900 text-center'>
+                                        <ThemedText
+                                          variant='body'
+                                          color='primary'
+                                          align='center'
+                                        >
                                           {supplier.orderingUnit}
-                                        </Text>
+                                        </ThemedText>
                                       </Pressable>
                                     </VStack>
                                   </HStack>
                                 </VStack>
                               </VStack>
-                            </Box>
+                            </ThemedCard>
                           ))}
                         </VStack>
                       )}
                     </VStack>
                   )}
                 </VStack>
-              </Card>
+              </ThemedCard>
 
               {/* Submit Button */}
-              <Button
+              <ThemedButton
+                variant='primary'
                 size='lg'
                 onPress={handleSubmit}
                 disabled={isSubmitting}
-                className={`rounded-xl mt-4 ${isSubmitting ? 'bg-gray-400' : 'bg-purple-600'}`}
+                className='mt-4 rounded-xl border border-white/50 p-2 h-14 bg-white/30 dark:bg-purple-800/80'
+                fullWidth
               >
-                <ButtonText className='text-white font-bold text-lg'>
+                <ThemedText variant='body' weight='bold' color='onGradient'>
                   {isSubmitting ? 'Creating Product...' : 'Create Product'}
-                </ButtonText>
-              </Button>
+                </ThemedText>
+              </ThemedButton>
             </VStack>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -789,16 +870,22 @@ export function AddProductScreen() {
 
       {/* Unit Picker Modal */}
       {showUnitPicker && (
-        <Box className='absolute inset-0 bg-black/50 justify-end'>
-          <Card className='bg-white rounded-t-3xl p-6'>
+        <Box className='absolute inset-0 bg-black/50 justify-end bottom-36'>
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className='bg-gray-200 dark:bg-gray-900 rounded-2xl'
+          >
             <VStack space='md'>
               <HStack className='justify-between items-center'>
-                <Text className='text-lg font-bold'>Select Unit</Text>
+                <ThemedHeading variant='h3' weight='bold' color='primary'>
+                  Select Unit
+                </ThemedHeading>
                 <Pressable onPress={() => setShowUnitPicker(false)}>
                   <Ionicons name='close' size={24} color='#6B7280' />
                 </Pressable>
               </HStack>
-              <ScrollView style={{ maxHeight: 300, marginBottom: 96 }}>
+              <ScrollView style={{ maxHeight: 300 }}>
                 <VStack space='xs'>
                   {PRODUCT_UNITS.map((unit) => (
                     <Pressable
@@ -809,28 +896,36 @@ export function AddProductScreen() {
                         setShowUnitPicker(false)
                       }}
                     >
-                      <Text className='text-gray-900'>{unit.label}</Text>
+                      <ThemedText variant='body' color='primary'>
+                        {unit.label}
+                      </ThemedText>
                     </Pressable>
                   ))}
                 </VStack>
               </ScrollView>
             </VStack>
-          </Card>
+          </ThemedCard>
         </Box>
       )}
 
       {/* Container Picker Modal */}
       {showContainerPicker && (
-        <Box className='absolute inset-0 bg-black/50 justify-end'>
-          <Card className='bg-white rounded-t-3xl p-6'>
+        <Box className='absolute inset-0 bg-black/50 justify-end bottom-36'>
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className='bg-gray-200 dark:bg-gray-900 rounded-2xl'
+          >
             <VStack space='md'>
               <HStack className='justify-between items-center'>
-                <Text className='text-lg font-bold'>Select Container</Text>
+                <ThemedHeading variant='h3' weight='bold' color='primary'>
+                  Select Container
+                </ThemedHeading>
                 <Pressable onPress={() => setShowContainerPicker(false)}>
                   <Ionicons name='close' size={24} color='#6B7280' />
                 </Pressable>
               </HStack>
-              <ScrollView style={{ maxHeight: 300, marginBottom: 96 }}>
+              <ScrollView style={{ maxHeight: 300 }}>
                 <VStack space='xs'>
                   {PRODUCT_CONTAINERS.map((container) => (
                     <Pressable
@@ -841,28 +936,36 @@ export function AddProductScreen() {
                         setShowContainerPicker(false)
                       }}
                     >
-                      <Text className='text-gray-900'>{container.label}</Text>
+                      <ThemedText variant='body' color='primary'>
+                        {container.label}
+                      </ThemedText>
                     </Pressable>
                   ))}
                 </VStack>
               </ScrollView>
             </VStack>
-          </Card>
+          </ThemedCard>
         </Box>
       )}
 
       {/* Category Picker Modal */}
       {showCategoryPicker && (
-        <Box className='absolute inset-0 bg-black/50 justify-end'>
-          <Card className='bg-white rounded-t-3xl p-6'>
+        <Box className='absolute inset-0 bg-black/50 justify-end bottom-36'>
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className='bg-gray-200 dark:bg-gray-900 rounded-2xl'
+          >
             <VStack space='md'>
               <HStack className='justify-between items-center'>
-                <Text className='text-lg font-bold'>Select Category</Text>
+                <ThemedHeading variant='h3' weight='bold' color='primary'>
+                  Select Category
+                </ThemedHeading>
                 <Pressable onPress={() => setShowCategoryPicker(false)}>
                   <Ionicons name='close' size={24} color='#6B7280' />
                 </Pressable>
               </HStack>
-              <ScrollView style={{ maxHeight: 300, marginBottom: 96 }}>
+              <ScrollView style={{ maxHeight: 300 }}>
                 <VStack space='xs'>
                   {categories?.categories?.map((category) => (
                     <Pressable
@@ -873,28 +976,36 @@ export function AddProductScreen() {
                         setShowCategoryPicker(false)
                       }}
                     >
-                      <Text className='text-gray-900'>{category.name}</Text>
+                      <ThemedText variant='body' color='primary'>
+                        {category.name}
+                      </ThemedText>
                     </Pressable>
                   ))}
                 </VStack>
               </ScrollView>
             </VStack>
-          </Card>
+          </ThemedCard>
         </Box>
       )}
 
       {/* Supplier Picker Modal */}
       {showSupplierPicker && (
-        <Box className='absolute inset-0 bg-black/50 justify-end'>
-          <Card className='bg-white rounded-t-3xl p-6'>
+        <Box className='absolute inset-0 bg-black/50 justify-end bottom-36'>
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className='bg-gray-200 dark:bg-gray-900 rounded-2xl'
+          >
             <VStack space='md'>
               <HStack className='justify-between items-center'>
-                <Text className='text-lg font-bold'>Select Supplier</Text>
+                <ThemedHeading variant='h3' weight='bold' color='primary'>
+                  Select Supplier
+                </ThemedHeading>
                 <Pressable onPress={() => setShowSupplierPicker(false)}>
                   <Ionicons name='close' size={24} color='#6B7280' />
                 </Pressable>
               </HStack>
-              <ScrollView style={{ maxHeight: 300, marginBottom: 96 }}>
+              <ScrollView style={{ maxHeight: 300 }}>
                 <VStack space='xs'>
                   {suppliers
                     .filter(
@@ -918,23 +1029,31 @@ export function AddProductScreen() {
                           setShowSupplierForm(true)
                         }}
                       >
-                        <Text className='text-gray-900'>{supplier.name}</Text>
+                        <ThemedText variant='body' color='primary'>
+                          {supplier.name}
+                        </ThemedText>
                       </Pressable>
                     ))}
                 </VStack>
               </ScrollView>
             </VStack>
-          </Card>
+          </ThemedCard>
         </Box>
       )}
 
       {/* Supplier Form Modal */}
       {showSupplierForm && (
-        <Box className='absolute inset-0 bg-black/50 justify-end'>
-          <Card className='bg-white rounded-t-3xl p-6'>
+        <Box className='absolute inset-0 bg-black/50 justify-end bottom-36'>
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className='bg-gray-200 dark:bg-gray-900 rounded-2xl'
+          >
             <VStack space='md'>
               <HStack className='justify-between items-center'>
-                <Text className='text-lg font-bold'>Add Supplier Details</Text>
+                <ThemedHeading variant='h3' weight='bold' color='primary'>
+                  Add Supplier Details
+                </ThemedHeading>
                 <Pressable
                   onPress={() => {
                     setShowSupplierForm(false)
@@ -952,18 +1071,22 @@ export function AddProductScreen() {
                 </Pressable>
               </HStack>
 
-              <ScrollView style={{ maxHeight: 400, marginBottom: 96 }}>
+              <ScrollView style={{ maxHeight: 400 }}>
                 <VStack space='md'>
                   {/* Selected Supplier */}
                   <VStack space='sm'>
-                    <Text className='text-gray-700 font-medium'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
                       Selected Supplier
-                    </Text>
-                    <Box className='bg-gray-100 rounded-lg p-3'>
-                      <Text className='text-gray-900 font-semibold'>
+                    </ThemedText>
+                    <Box className='bg-gray-100 dark:bg-gray-800/60 rounded-lg p-3'>
+                      <ThemedText
+                        variant='body'
+                        weight='semibold'
+                        color='primary'
+                      >
                         {suppliers.find((s) => s.id === selectedSupplierId)
                           ?.name || 'Select a supplier'}
-                      </Text>
+                      </ThemedText>
                     </Box>
                   </VStack>
 
@@ -972,9 +1095,14 @@ export function AddProductScreen() {
                       onPress={() => setShowSupplierPicker(true)}
                       className='bg-purple-100 rounded-lg p-3'
                     >
-                      <Text className='text-purple-600 font-medium text-center'>
+                      <ThemedText
+                        variant='body'
+                        weight='medium'
+                        color='primary'
+                        align='center'
+                      >
                         Choose Supplier
-                      </Text>
+                      </ThemedText>
                     </Pressable>
                   )}
 
@@ -983,73 +1111,89 @@ export function AddProductScreen() {
                       {/* Cost Fields */}
                       <HStack space='sm'>
                         <VStack space='sm' className='flex-1'>
-                          <Text className='text-gray-700 font-medium'>
+                          <ThemedText
+                            variant='body'
+                            weight='medium'
+                            color='primary'
+                          >
                             Cost Per Unit
-                          </Text>
-                          <Input variant='outline' size='md'>
-                            <InputField
-                              placeholder={formData.costPerUnit.toString()}
-                              value={
-                                supplierFormData.costPerUnit?.toString() || ''
-                              }
-                              onChangeText={(value) =>
+                          </ThemedText>
+                          <ThemedInput
+                            variant='default'
+                            size='md'
+                            fieldProps={{
+                              placeholder: formData.costPerUnit.toString(),
+                              value:
+                                supplierFormData.costPerUnit?.toString() || '',
+                              onChangeText: (value) =>
                                 setSupplierFormData((prev) => ({
                                   ...prev,
                                   costPerUnit: parseFloat(value) || 0,
-                                }))
-                              }
-                              keyboardType='numeric'
-                            />
-                          </Input>
+                                })),
+                              keyboardType: 'numeric',
+                            }}
+                          />
                         </VStack>
                         <VStack space='sm' className='flex-1'>
-                          <Text className='text-gray-700 font-medium'>
+                          <ThemedText
+                            variant='body'
+                            weight='medium'
+                            color='primary'
+                          >
                             Cost Per Case
-                          </Text>
-                          <Input variant='outline' size='md'>
-                            <InputField
-                              placeholder={
-                                formData.costPerCase?.toString() || 'Optional'
-                              }
-                              value={
-                                supplierFormData.costPerCase?.toString() || ''
-                              }
-                              onChangeText={(value) =>
+                          </ThemedText>
+                          <ThemedInput
+                            variant='default'
+                            size='md'
+                            fieldProps={{
+                              placeholder:
+                                formData.costPerCase?.toString() || 'Optional',
+                              value:
+                                supplierFormData.costPerCase?.toString() || '',
+                              onChangeText: (value) =>
                                 setSupplierFormData((prev) => ({
                                   ...prev,
                                   costPerCase: parseFloat(value) || 0,
-                                }))
-                              }
-                              keyboardType='numeric'
-                            />
-                          </Input>
+                                })),
+                              keyboardType: 'numeric',
+                            }}
+                          />
                         </VStack>
                       </HStack>
 
                       {/* Order Details */}
                       <HStack space='sm'>
                         <VStack space='sm' className='flex-1'>
-                          <Text className='text-gray-700 font-medium'>
+                          <ThemedText
+                            variant='body'
+                            weight='medium'
+                            color='primary'
+                          >
                             Minimum Order
-                          </Text>
-                          <Input variant='outline' size='md'>
-                            <InputField
-                              placeholder='1'
-                              value={supplierFormData.minimumOrder.toString()}
-                              onChangeText={(value) =>
+                          </ThemedText>
+                          <ThemedInput
+                            variant='default'
+                            size='md'
+                            fieldProps={{
+                              placeholder: '1',
+                              value: supplierFormData.minimumOrder.toString(),
+                              onChangeText: (value) =>
                                 setSupplierFormData((prev) => ({
                                   ...prev,
                                   minimumOrder: parseInt(value) || 1,
-                                }))
-                              }
-                              keyboardType='numeric'
-                            />
-                          </Input>
+                                })),
+                              keyboardType: 'numeric',
+                            }}
+                          />
                         </VStack>
                         <VStack space='sm' className='flex-1'>
-                          <Text className='text-gray-700 font-medium'>
+                          <ThemedText
+                            variant='body'
+                            weight='medium'
+                            color='primary'
+                          >
                             Order By
-                          </Text>
+                          </ThemedText>
                           <Pressable
                             onPress={() =>
                               setSupplierFormData((prev) => ({
@@ -1060,12 +1204,12 @@ export function AddProductScreen() {
                                     : 'UNIT',
                               }))
                             }
-                            className='border border-gray-300 rounded-lg p-3 bg-white'
+                            className='border border-gray-300 rounded-lg p-2 bg-purple-500/20 dark:bg-purple-900/60'
                           >
                             <HStack className='justify-between items-center'>
-                              <Text className='text-gray-900'>
+                              <ThemedText variant='body' color='primary'>
                                 {supplierFormData.orderingUnit}
-                              </Text>
+                              </ThemedText>
                               <Ionicons
                                 name='chevron-down'
                                 size={20}
@@ -1078,34 +1222,46 @@ export function AddProductScreen() {
 
                       {/* Action Buttons */}
                       <HStack space='sm' className='pt-4'>
-                        <Button
-                          className='bg-gray-200 flex-1'
+                        <ThemedButton
+                          variant='outline'
+                          size='md'
                           onPress={() => {
                             setShowSupplierForm(false)
                             setSelectedSupplierId('')
                           }}
+                          style={{ flex: 1 }}
                         >
-                          <ButtonText className='text-gray-700'>
+                          <ThemedText
+                            variant='body'
+                            weight='medium'
+                            color='primary'
+                          >
                             Cancel
-                          </ButtonText>
-                        </Button>
-                        <Button
-                          className='bg-purple-600 flex-1'
+                          </ThemedText>
+                        </ThemedButton>
+                        <ThemedButton
+                          variant='primary'
+                          size='md'
                           onPress={addSupplierToProduct}
+                          style={{ flex: 1 }}
                         >
-                          <ButtonText className='text-white'>
+                          <ThemedText
+                            variant='body'
+                            weight='medium'
+                            color='onGradient'
+                          >
                             Add Supplier
-                          </ButtonText>
-                        </Button>
+                          </ThemedText>
+                        </ThemedButton>
                       </HStack>
                     </VStack>
                   )}
                 </VStack>
               </ScrollView>
             </VStack>
-          </Card>
+          </ThemedCard>
         </Box>
       )}
-    </LinearGradient>
+    </PageGradient>
   )
 }

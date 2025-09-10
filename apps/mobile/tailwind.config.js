@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class',
+  darkMode: 'media',
   content: [
     './app/**/*.{html,js,jsx,ts,tsx,mdx}',
     './components/**/*.{html,js,jsx,ts,tsx,mdx}',
@@ -10,15 +10,16 @@ module.exports = {
   ],
   presets: [require('nativewind/preset')],
   important: 'html',
-  safelist: [
-    {
-      pattern:
-        /(bg|border|text|stroke|fill)-(primary|secondary|tertiary|error|success|warning|info|typography|outline|background|indicator|text|card)-(0|50|100|200|300|400|500|600|700|800|900|950|white|gray|black|error|warning|muted|success|info|light|dark|primary|secondary|onGradient)/,
-    },
-  ],
+  // safelist: [
+  //   {
+  //     pattern:
+  //       /(bg|border|text|stroke|fill)-(primary|secondary|tertiary|error|success|warning|info|typography|outline|background|indicator|text|card)-(0|50|100|200|300|400|500|600|700|800|900|950|white|gray|black|error|warning|muted|success|info|light|dark|primary|secondary|onGradient)/,
+  //   },
+  // ],
   theme: {
     extend: {
       colors: {
+        brand: 'rgb(var(--color-brand)/<alpha-value>)',
         primary: {
           0: 'rgb(var(--color-primary-0)/<alpha-value>)',
           50: 'rgb(var(--color-primary-50)/<alpha-value>)',
@@ -134,7 +135,7 @@ module.exports = {
           black: '#181718',
           // Semantic text colors that adapt to dark mode
           primary: 'rgb(var(--color-typography-900)/<alpha-value>)',
-          secondary: 'rgb(var(--color-typography-700)/<alpha-value>)', 
+          secondary: 'rgb(var(--color-typography-700)/<alpha-value>)',
           muted: 'rgb(var(--color-typography-600)/<alpha-value>)',
         },
         outline: {
@@ -180,7 +181,7 @@ module.exports = {
         // Semantic colors for easy dark mode handling (following Gluestack UI docs pattern)
         text: {
           primary: 'rgb(var(--color-typography-900)/<alpha-value>)',
-          secondary: 'rgb(var(--color-typography-700)/<alpha-value>)', 
+          secondary: 'rgb(var(--color-typography-700)/<alpha-value>)',
           muted: 'rgb(var(--color-typography-600)/<alpha-value>)',
           onGradient: '#FFFFFF',
         },

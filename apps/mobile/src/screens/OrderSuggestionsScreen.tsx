@@ -425,7 +425,7 @@ export function OrderSuggestionsScreen() {
 
       {/* Header */}
       <Box
-        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
         style={{ paddingTop: insets.top + 4 }}
       >
         <HStack className='justify-between items-center p-2'>
@@ -464,7 +464,7 @@ export function OrderSuggestionsScreen() {
       {/* Suggestions List */}
       <ScrollView
         className='flex-1'
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
         refreshControl={
           <RefreshControl
             refreshing={isLoading}

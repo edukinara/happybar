@@ -2,16 +2,14 @@ import React, { useState } from 'react'
 import { ActivityIndicator, ScrollView } from 'react-native'
 
 import { Box } from '@/components/ui/box'
-import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import { Pressable } from '@/components/ui/pressable'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
 import { useDebounce } from '../hooks/useDebounce'
 import { useCatalog } from '../hooks/useInventoryData'
 import { ProductImage, ProductImageVariants } from './ProductImage'
+import { ThemedCard, ThemedInput, ThemedText } from './themed'
 
 // CatalogProduct type for mobile
 export interface CatalogProduct {
@@ -75,28 +73,30 @@ export function CatalogSearch({
   return (
     <VStack space='sm' className={className}>
       <VStack space='sm'>
-        <Text className='text-gray-700 font-medium'>
+        <ThemedText variant='body' weight='medium' color='primary'>
           Search Catalog (Optional)
-        </Text>
-        <Input variant='outline' size='md'>
-          <InputField
-            placeholder={placeholder}
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            onFocus={handleSearchFocus}
-            onBlur={handleSearchBlur}
-            autoCapitalize='none'
-            autoCorrect={false}
-          />
-        </Input>
-        <Text className='text-gray-500 text-xs'>
+        </ThemedText>
+        <ThemedInput
+          variant='default'
+          size='md'
+          fieldProps={{
+            placeholder,
+            value: searchTerm,
+            onChangeText: setSearchTerm,
+            onFocus: handleSearchFocus,
+            onBlur: handleSearchBlur,
+            autoCapitalize: 'none',
+            autoCorrect: false,
+          }}
+        />
+        <ThemedText variant='caption' color='muted'>
           Search to auto-fill product details from catalog
-        </Text>
+        </ThemedText>
       </VStack>
 
       {/* Search Results */}
       {showResults && hasValidSearch && (
-        <Card className='border border-gray-200 rounded-lg'>
+        <ThemedCard variant='primary' size='md'>
           <ScrollView
             style={{ maxHeight: 256 }}
             showsVerticalScrollIndicator={true}
@@ -104,32 +104,38 @@ export function CatalogSearch({
             nestedScrollEnabled={true}
             bounces={false}
           >
-            <VStack space='xs' className='p-3'>
+            <VStack space='md' style={{ padding: 4 }}>
               {!hasValidSearch ? (
-                <Box className='p-4'>
-                  <Text className='text-gray-500 text-center'>
+                <Box style={{ padding: 16 }}>
+                  <ThemedText variant='body' color='muted' align='center'>
                     Type at least 3 characters to search
-                  </Text>
+                  </ThemedText>
                 </Box>
               ) : isLoading ? (
-                <Box className='p-4 items-center'>
+                <Box style={{ padding: 16, alignItems: 'center' }}>
                   <ActivityIndicator color='#8B5CF6' />
-                  <Text className='text-gray-500 text-center mt-2'>
+                  <ThemedText
+                    variant='body'
+                    color='muted'
+                    align='center'
+                    style={{ marginTop: 8 }}
+                  >
                     Searching catalog...
-                  </Text>
+                  </ThemedText>
                 </Box>
               ) : catalogProducts.length === 0 ? (
-                <Box className='p-4'>
-                  <Text className='text-gray-500 text-center'>
+                <Box style={{ padding: 16 }}>
+                  <ThemedText variant='body' color='muted' align='center'>
                     No products found in catalog
-                  </Text>
+                  </ThemedText>
                 </Box>
               ) : (
                 catalogProducts.map((product) => (
                   <Pressable
                     key={product.id}
-                    className='p-3 rounded-lg border border-gray-100 bg-white'
+                    // style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#F3F4F6', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}
                     onPress={() => handleSelect(product)}
+                    className='border border-gray-300 dark:border-white/30 rounded-lg p-3 bg-black/5 dark:bg-white/5'
                   >
                     <HStack space='sm'>
                       {/* Product Image */}
@@ -139,74 +145,91 @@ export function CatalogSearch({
                       />
 
                       {/* Product Content */}
-                      <VStack space='sm' className='flex-1'>
+                      <VStack space='2xs' className='flex-1'>
                         {/* Product Name and Category */}
                         <HStack className='justify-between items-start'>
-                          <VStack className='flex-1 mr-2'>
-                            <Text
-                              className='font-semibold text-gray-900 flex-1'
+                          <VStack className='flex-1' style={{ marginRight: 8 }}>
+                            <ThemedText
+                              variant='body'
+                              weight='semibold'
+                              color='primary'
                               numberOfLines={2}
                             >
                               {product.name}
-                            </Text>
+                            </ThemedText>
                           </VStack>
                           {product.category && (
-                            <Box className='bg-gray-100 px-2 py-1 rounded-full'>
-                              <Text className='text-xs text-gray-600'>
+                            <Box className='rounded-lg py-0.5 px-2 bg-white dark:bg-white/20'>
+                              <ThemedText variant='caption' color='muted'>
                                 {product.category.name}
-                              </Text>
+                              </ThemedText>
                             </Box>
                           )}
                         </HStack>
 
                         {/* Product Details */}
-                        <HStack space='md' className='flex-wrap'>
+                        <HStack
+                          space='md'
+                          className='flex-wrap justify-between'
+                        >
                           {product.upc && (
-                            <Text className='text-xs text-gray-500'>
+                            <ThemedText variant='caption' color='muted'>
                               UPC: {product.upc}
-                            </Text>
+                            </ThemedText>
                           )}
-                          {product.unitSize && product.unit && (
-                            <Text className='text-xs text-gray-500'>
-                              {product.unitSize}
-                              {product.unit}
-                            </Text>
-                          )}
-                          {product.container && (
-                            <Text className='text-xs text-gray-500'>
-                              {product.container}
-                            </Text>
-                          )}
-                          {product.caseSize && (
-                            <Text className='text-xs text-gray-500'>
-                              Case: {product.caseSize}
-                            </Text>
-                          )}
-                        </HStack>
-
-                        {/* Pricing */}
-                        {(product.costPerUnit || product.costPerCase) && (
-                          <HStack space='md'>
-                            {product.costPerUnit && (
-                              <Text className='text-xs text-green-600 font-medium'>
-                                Unit: ${product.costPerUnit.toFixed(2)}
-                              </Text>
+                          <HStack space='sm'>
+                            {product.unitSize && product.unit && (
+                              <ThemedText variant='caption' color='muted' bold>
+                                {product.unitSize}
+                                {product.unit}
+                              </ThemedText>
                             )}
-                            {product.costPerCase && (
-                              <Text className='text-xs text-green-600 font-medium'>
-                                Case: ${product.costPerCase.toFixed(2)}
-                              </Text>
+                            {product.container && (
+                              <ThemedText variant='caption' color='muted'>
+                                {product.container}
+                              </ThemedText>
                             )}
                           </HStack>
-                        )}
+                        </HStack>
                       </VStack>
+                    </HStack>
+
+                    {/* Pricing */}
+                    <HStack space='md' className=' w-full justify-between'>
+                      {product.caseSize && (
+                        <ThemedText variant='caption' color='muted'>
+                          Case: {product.caseSize}
+                        </ThemedText>
+                      )}
+                      {(product.costPerUnit || product.costPerCase) && (
+                        <HStack space='md'>
+                          {product.costPerUnit && (
+                            <ThemedText
+                              variant='caption'
+                              weight='medium'
+                              color='success'
+                            >
+                              Unit: ${product.costPerUnit.toFixed(2)}
+                            </ThemedText>
+                          )}
+                          {product.costPerCase && (
+                            <ThemedText
+                              variant='caption'
+                              weight='medium'
+                              color='success'
+                            >
+                              Case: ${product.costPerCase.toFixed(2)}
+                            </ThemedText>
+                          )}
+                        </HStack>
+                      )}
                     </HStack>
                   </Pressable>
                 ))
               )}
             </VStack>
           </ScrollView>
-        </Card>
+        </ThemedCard>
       )}
     </VStack>
   )

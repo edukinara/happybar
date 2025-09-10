@@ -7,7 +7,7 @@
     "start:go": "expo start",
     "android": "DARK_MODE=media expo run:android",
     "ios": "DARK_MODE=media expo run:ios",
-    "web": "DARK_MODE=class expo start --web",
+    "web": "DARK_MODE=media expo start --web",
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
     "build:dev:ios": "eas build --platform ios --profile development --local",

@@ -188,7 +188,7 @@ export function SettingsScreen() {
       <ScrollView
         className='flex-1'
         contentContainerStyle={{
-          paddingHorizontal: 20,
+          paddingHorizontal: 16,
           paddingTop: 10,
           paddingBottom: 100,
         }}

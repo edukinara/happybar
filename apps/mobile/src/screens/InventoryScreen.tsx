@@ -203,7 +203,7 @@ export function InventoryScreen() {
       <ScrollView
         className='flex-1'
         contentContainerStyle={{
-          paddingHorizontal: 20,
+          paddingHorizontal: 12,
           paddingTop: 10,
           paddingBottom: 100,
         }}
