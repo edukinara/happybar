@@ -8,7 +8,11 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "http://192.168.1.62:3001",
-        "EXPO_PUBLIC_DEV_MODE": "true"
+        "EXPO_PUBLIC_DEV_MODE": "true",
+        "NODE_ENV": "development"
+      },
+      "android": {
+        "buildType": "apk"
       }
     },
     "preview": {
@@ -18,7 +22,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.happybar.app",
-        "EXPO_PUBLIC_DEV_MODE": "false"
+        "EXPO_PUBLIC_DEV_MODE": "false",
+        "NODE_ENV": "production"
       }
     },
     "production": {
@@ -27,7 +32,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.happybar.app",
-        "EXPO_PUBLIC_DEV_MODE": "false"
+        "EXPO_PUBLIC_DEV_MODE": "false",
+        "NODE_ENV": "production"
       }
     }
   },

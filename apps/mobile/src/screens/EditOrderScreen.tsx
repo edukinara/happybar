@@ -4,7 +4,7 @@ import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { StatusBar } from 'expo-status-bar'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -25,6 +25,7 @@ import {
 import { cn, themeClasses } from '../constants/themeClasses'
 import { useProducts, useSuppliers } from '../hooks/useInventoryData'
 import { api } from '../lib/api'
+import { pos } from '../utils/pos'
 
 type Product = {
   id: string
@@ -58,12 +59,11 @@ type OrderItem = {
   orderingUnit: 'UNIT' | 'CASE'
 }
 
-
 export function EditOrderScreen() {
   const navigation = useNavigation()
   const route = useRoute()
   const { orderId } = (route.params as any) || {}
-  
+
   const [loading, setLoading] = useState(true)
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [showProductPicker, setShowProductPicker] = useState(false)
@@ -94,17 +94,17 @@ export function EditOrderScreen() {
   useEffect(() => {
     const loadOrder = async () => {
       if (!orderId) return
-      
+
       try {
         setLoading(true)
         const response = await api.getOrder(orderId)
-        
+
         if (response.success && response.data) {
           const order = response.data
           setOriginalOrder(order)
           setNotes(order.notes || '')
           setExpectedDate(order.expectedDate || '')
-          
+
           // Convert order items to our format
           const items: OrderItem[] = order.items.map((item: any) => ({
             id: item.id,
@@ -123,7 +123,7 @@ export function EditOrderScreen() {
             unitCost: item.unitCost,
             orderingUnit: item.orderingUnit,
           }))
-          
+
           setOrderItems(items)
         }
       } catch (error) {
@@ -134,7 +134,7 @@ export function EditOrderScreen() {
         setLoading(false)
       }
     }
-    
+
     loadOrder()
   }, [orderId, navigation])
 
@@ -145,10 +145,7 @@ export function EditOrderScreen() {
     )
 
     if (existingItem) {
-      Alert.alert(
-        'Item Already Added',
-        'This product is already in the order.'
-      )
+      Alert.alert('Item Already Added', 'This product is already in the order.')
       return
     }
 
@@ -201,7 +198,7 @@ export function EditOrderScreen() {
       const updateData = {
         expectedDate: expectedDate || undefined,
         notes: notes || undefined,
-        items: orderItems.map(item => ({
+        items: orderItems.map((item) => ({
           id: item.id,
           productId: item.productId,
           quantityOrdered: item.quantityOrdered,
@@ -212,16 +209,12 @@ export function EditOrderScreen() {
 
       await api.updateOrder(orderId, updateData)
 
-      Alert.alert(
-        'Success',
-        'Order updated successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      )
+      Alert.alert('Success', 'Order updated successfully!', [
+        {
+          text: 'OK',
+          onPress: () => navigation.goBack(),
+        },
+      ])
     } catch (error) {
       console.error('Failed to update order:', error)
       Alert.alert('Error', 'Failed to update order. Please try again.')
@@ -236,7 +229,12 @@ export function EditOrderScreen() {
         <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
           <ActivityIndicator size='large' color='white' />
-          <ThemedText variant='body' color='onGradient' weight='medium' style={{ marginTop: 16 }}>
+          <ThemedText
+            variant='body'
+            color='onGradient'
+            weight='medium'
+            style={{ marginTop: 16 }}
+          >
             Loading order data...
           </ThemedText>
         </Box>
@@ -251,7 +249,7 @@ export function EditOrderScreen() {
       {/* Header */}
       <Box
         className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
-        style={{ paddingTop: insets.top + 4 }}
+        style={{ paddingTop: pos(8, insets.top + 4) }}
       >
         <HStack className='justify-between items-center p-2'>
           <HStack space='md' className='items-center'>
@@ -271,16 +269,20 @@ export function EditOrderScreen() {
       </Box>
 
       {/* Content ScrollView */}
-      <ScrollView 
-        className='flex-1' 
+      <ScrollView
+        className='flex-1'
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 16 }}
       >
         {/* Order Details */}
         <VStack space='xl' className='pt-4'>
           <VStack className='px-6' space='lg'>
             <VStack space='sm'>
-              <ThemedText variant='body' color='onGradientMuted' weight='medium'>
+              <ThemedText
+                variant='body'
+                color='onGradientMuted'
+                weight='medium'
+              >
                 Expected Delivery (Optional)
               </ThemedText>
               <ThemedInput
@@ -295,7 +297,11 @@ export function EditOrderScreen() {
             </VStack>
 
             <VStack space='sm'>
-              <ThemedText variant='body' color='onGradientMuted' weight='medium'>
+              <ThemedText
+                variant='body'
+                color='onGradientMuted'
+                weight='medium'
+              >
                 Notes (Optional)
               </ThemedText>
               <ThemedInput
@@ -347,10 +353,18 @@ export function EditOrderScreen() {
                   <Ionicons name='basket-outline' size={32} color='white' />
                 </Box>
                 <VStack className='items-center' space='sm'>
-                  <ThemedHeading variant='h3' color='onGradient' weight='semibold'>
+                  <ThemedHeading
+                    variant='h3'
+                    color='onGradient'
+                    weight='semibold'
+                  >
                     No Items Added
                   </ThemedHeading>
-                  <ThemedText variant='body' color='onGradientMuted' align='center'>
+                  <ThemedText
+                    variant='body'
+                    color='onGradientMuted'
+                    align='center'
+                  >
                     Add products to this order
                   </ThemedText>
                 </VStack>
@@ -363,113 +377,138 @@ export function EditOrderScreen() {
                     variant='primary'
                     size='md'
                   >
-                {/* Product & Supplier Info */}
-                <HStack className='items-start' space='sm'>
-                  <Box>
-                    <ProductImage
-                      uri={item.product.image}
-                      {...ProductImageVariants.small}
-                    />
-                  </Box>
+                    {/* Product & Supplier Info */}
+                    <HStack className='items-start' space='sm'>
+                      <Box>
+                        <ProductImage
+                          uri={item.product.image}
+                          {...ProductImageVariants.small}
+                        />
+                      </Box>
 
-                  <VStack className='flex-1' space='xs'>
-                    <ThemedText variant='body' color='primary' weight='semibold'>
-                      {item.product.name}
-                    </ThemedText>
-                    <ThemedText variant='caption' color='muted'>
-                      {item.product.sku && `SKU: ${item.product.sku} • `}
-                      {item.product.category?.name}
-                    </ThemedText>
-                    <ThemedText variant='caption' color='primary' style={{ color: '#8B5CF6' }}>
-                      Supplier: {item.supplier.name}
-                    </ThemedText>
-                  </VStack>
+                      <VStack className='flex-1' space='xs'>
+                        <ThemedText
+                          variant='body'
+                          color='primary'
+                          weight='semibold'
+                        >
+                          {item.product.name}
+                        </ThemedText>
+                        <ThemedText variant='caption' color='muted'>
+                          {item.product.sku && `SKU: ${item.product.sku} • `}
+                          {item.product.category?.name}
+                        </ThemedText>
+                        <ThemedText
+                          variant='caption'
+                          color='primary'
+                          style={{ color: '#8B5CF6' }}
+                        >
+                          Supplier: {item.supplier.name}
+                        </ThemedText>
+                      </VStack>
 
-                  <Pressable
-                    onPress={() => removeOrderItem(index)}
-                    className='p-2'
-                  >
-                    <Ionicons
-                      name='trash-outline'
-                      size={20}
-                      color='#EF4444'
-                    />
-                  </Pressable>
-                </HStack>
-
-                {/* Quantity and Cost Controls */}
-                <HStack
-                  className='items-center justify-between mt-4'
-                  space='md'
-                >
-                  <VStack space='xs'>
-                    <ThemedText variant='caption' color='muted' weight='medium'>
-                      Quantity
-                    </ThemedText>
-                    <HStack className='items-center border border-gray-300 rounded-lg'>
                       <Pressable
-                        onPress={() =>
-                          updateOrderItem(
-                            index,
-                            'quantityOrdered',
-                            Math.max(1, item.quantityOrdered - 1)
-                          )
-                        }
-                        className='p-3'
+                        onPress={() => removeOrderItem(index)}
+                        className='p-2'
                       >
                         <Ionicons
-                          name='remove'
-                          size={16}
-                          color='#8B5CF6'
+                          name='trash-outline'
+                          size={20}
+                          color='#EF4444'
                         />
                       </Pressable>
-                      <ThemedText variant='body' color='primary' weight='medium' className='px-4'>
-                        {item.quantityOrdered}
-                      </ThemedText>
-                      <Pressable
-                        onPress={() =>
-                          updateOrderItem(
-                            index,
-                            'quantityOrdered',
-                            item.quantityOrdered + 1
-                          )
-                        }
-                        className='p-3'
-                      >
-                        <Ionicons name='add' size={16} color='#8B5CF6' />
-                      </Pressable>
                     </HStack>
-                  </VStack>
 
-                  <VStack space='xs'>
-                    <ThemedText variant='caption' color='muted' weight='medium'>
-                      Unit Cost
-                    </ThemedText>
-                    <ThemedInput
-                      variant='default'
-                      size='sm'
-                      fieldProps={{
-                        value: item.unitCost.toString(),
-                        onChangeText: (text: string) => {
-                          const cost = parseFloat(text) || 0
-                          updateOrderItem(index, 'unitCost', cost)
-                        },
-                        keyboardType: 'numeric',
-                        returnKeyType: 'done',
-                      }}
-                      className='w-24 text-center'
-                    />
-                  </VStack>
+                    {/* Quantity and Cost Controls */}
+                    <HStack
+                      className='items-center justify-between mt-4'
+                      space='md'
+                    >
+                      <VStack space='xs'>
+                        <ThemedText
+                          variant='caption'
+                          color='muted'
+                          weight='medium'
+                        >
+                          Quantity
+                        </ThemedText>
+                        <HStack className='items-center border border-gray-300 rounded-lg'>
+                          <Pressable
+                            onPress={() =>
+                              updateOrderItem(
+                                index,
+                                'quantityOrdered',
+                                Math.max(1, item.quantityOrdered - 1)
+                              )
+                            }
+                            className='p-3'
+                          >
+                            <Ionicons name='remove' size={16} color='#8B5CF6' />
+                          </Pressable>
+                          <ThemedText
+                            variant='body'
+                            color='primary'
+                            weight='medium'
+                            className='px-4'
+                          >
+                            {item.quantityOrdered}
+                          </ThemedText>
+                          <Pressable
+                            onPress={() =>
+                              updateOrderItem(
+                                index,
+                                'quantityOrdered',
+                                item.quantityOrdered + 1
+                              )
+                            }
+                            className='p-3'
+                          >
+                            <Ionicons name='add' size={16} color='#8B5CF6' />
+                          </Pressable>
+                        </HStack>
+                      </VStack>
 
-                  <VStack space='xs' className='items-end'>
-                    <ThemedText variant='caption' color='muted' weight='medium'>
-                      Total
-                    </ThemedText>
-                    <ThemedText variant='body' color='primary' weight='semibold'>
-                      ${(item.quantityOrdered * item.unitCost).toFixed(2)}
-                    </ThemedText>
-                  </VStack>
-                </HStack>
+                      <VStack space='xs'>
+                        <ThemedText
+                          variant='caption'
+                          color='muted'
+                          weight='medium'
+                        >
+                          Unit Cost
+                        </ThemedText>
+                        <ThemedInput
+                          variant='default'
+                          size='sm'
+                          fieldProps={{
+                            value: item.unitCost.toString(),
+                            onChangeText: (text: string) => {
+                              const cost = parseFloat(text) || 0
+                              updateOrderItem(index, 'unitCost', cost)
+                            },
+                            keyboardType: 'numeric',
+                            returnKeyType: 'done',
+                          }}
+                          className='w-24 text-center'
+                        />
+                      </VStack>
+
+                      <VStack space='xs' className='items-end'>
+                        <ThemedText
+                          variant='caption'
+                          color='muted'
+                          weight='medium'
+                        >
+                          Total
+                        </ThemedText>
+                        <ThemedText
+                          variant='body'
+                          color='primary'
+                          weight='semibold'
+                        >
+                          ${(item.quantityOrdered * item.unitCost).toFixed(2)}
+                        </ThemedText>
+                      </VStack>
+                    </HStack>
                   </ThemedCard>
                 ))}
               </VStack>
@@ -503,13 +542,19 @@ export function EditOrderScreen() {
               fullWidth
               className={cn(
                 'rounded-lg border border-white/30 h-12',
-                isUpdating ? 'bg-gray-400 dark:bg-gray-600' : 'bg-green-600 dark:bg-green-700'
+                isUpdating
+                  ? 'bg-gray-400 dark:bg-gray-600'
+                  : 'bg-green-600 dark:bg-green-700'
               )}
             >
               {isUpdating ? (
                 <HStack className='items-center justify-center' space='sm'>
                   <ActivityIndicator size='small' color='white' />
-                  <ThemedText variant='body' color='onGradient' weight='semibold'>
+                  <ThemedText
+                    variant='body'
+                    color='onGradient'
+                    weight='semibold'
+                  >
                     Updating Order...
                   </ThemedText>
                 </HStack>
@@ -566,7 +611,11 @@ export function EditOrderScreen() {
                     </Box>
 
                     <VStack className='flex-1' space='xs'>
-                      <ThemedText variant='body' color='primary' weight='medium'>
+                      <ThemedText
+                        variant='body'
+                        color='primary'
+                        weight='medium'
+                      >
                         {product.name}
                       </ThemedText>
                       <ThemedText variant='caption' color='muted'>
@@ -625,7 +674,11 @@ export function EditOrderScreen() {
                     className={cn('p-4 rounded-lg', themeClasses.card.primary)}
                   >
                     <VStack space='xs'>
-                      <ThemedText variant='body' color='primary' weight='medium'>
+                      <ThemedText
+                        variant='body'
+                        color='primary'
+                        weight='medium'
+                      >
                         {supplier.name}
                       </ThemedText>
                       {supplier.contactEmail && (

@@ -548,11 +548,11 @@ export function HomeScreen() {
         <VStack space='md'>
           {completedCounts.map((count) => (
             <ThemedCard key={count.id} variant='primary' size='md'>
-              <HStack className='justify-between items-start'>
+              <ThemedText variant='body' weight='bold' color='primary'>
+                {count.name}
+              </ThemedText>
+              <HStack className='justify-between items-end'>
                 <VStack className='flex-1 mr-4' space='xs'>
-                  <ThemedText variant='body' weight='bold' color='primary'>
-                    {count.name}
-                  </ThemedText>
                   <ThemedText variant='caption' color='secondary'>
                     {count.type} • {count.location.name}
                   </ThemedText>

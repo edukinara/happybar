@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useColorScheme } from 'nativewind'
 import React from 'react'
-import { Platform, View } from 'react-native'
+import { View } from 'react-native'
 import { BorderRadius, Colors, Shadows } from '../constants/theme'
 import { HomeScreen } from '../screens/HomeScreen'
 import { InsightsScreen } from '../screens/InsightsScreen'
@@ -55,7 +55,7 @@ export function MainNavigator() {
                   height: 60,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: Platform.OS === 'ios' ? -10 : 10,
+                  marginBottom: 10,
                   shadowColor: Colors.primary,
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: isDark ? 0.5 : 0.35,
@@ -78,15 +78,15 @@ export function MainNavigator() {
           backgroundColor: isDark ? Colors.tabDark : Colors.white,
           backdropFilter: 'blur(20px)',
           ...Shadows.lg,
-          height: Platform.OS === 'ios' ? 90 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 32 : 14,
+          height: 70,
+          paddingBottom: 14,
           paddingTop: 10,
           paddingHorizontal: 16,
           borderRadius: 28,
           position: 'absolute',
           left: 8,
           right: 8,
-          bottom: Platform.OS === 'ios' ? 0 : 32,
+          bottom: 32,
           marginHorizontal: 8,
           borderWidth: isDark ? 1 : 0,
           borderColor: isDark ? Colors.gray[700] : 'transparent',

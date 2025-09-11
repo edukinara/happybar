@@ -1,9 +1,4 @@
-import {
-  Button,
-  ButtonIcon,
-  ButtonSpinner,
-  ButtonText,
-} from '@/components/ui/button'
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button'
 import React from 'react'
 import { cn } from '../../constants/themeClasses'
 
@@ -89,15 +84,11 @@ export function ThemedButton({
     >
       {loading && <ButtonSpinner />}
 
-      {icon && iconPosition === 'left' && !loading && (
-        <ButtonIcon>{icon}</ButtonIcon>
-      )}
+      {icon && iconPosition === 'left' && !loading && <>{icon}</>}
 
       <ButtonText>{children}</ButtonText>
 
-      {icon && iconPosition === 'right' && !loading && (
-        <ButtonIcon>{icon}</ButtonIcon>
-      )}
+      {icon && iconPosition === 'right' && !loading && <>{icon}</>}
     </Button>
   )
 }

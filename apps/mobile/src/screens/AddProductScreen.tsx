@@ -29,6 +29,7 @@ import {
   useCreateProduct,
   useSuppliers,
 } from '../hooks/useInventoryData'
+import { pos } from '../utils/pos'
 
 // Product supplier interface for mobile
 interface ProductSupplier {
@@ -303,7 +304,7 @@ export function AddProductScreen() {
       {/* Header */}
       <Box
         className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
-        style={{ paddingTop: insets.top + 4 }}
+        style={{ paddingTop: pos(8, insets.top + 4) }}
       >
         <HStack className='justify-between items-center p-2'>
           <HStack className='items-center gap-4'>

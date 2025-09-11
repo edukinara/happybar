@@ -29,6 +29,7 @@ import {
 import { useLocations } from '../hooks/useInventoryData'
 import type { RootStackParamList } from '../navigation/RootNavigator'
 import { useCountStore } from '../stores/countStore'
+import { pos } from '../utils/pos'
 
 // interface StorageArea {
 //   id: string
@@ -695,7 +696,7 @@ export default function CountSetupScreen() {
       <Box className='p-0 flex flex-1 overflow-hidden'>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+          style={{ flex: 1, marginBottom: pos(100, 0) }}
         >
           <Box
             className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
