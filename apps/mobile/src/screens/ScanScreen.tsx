@@ -3,9 +3,16 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { useQueryClient } from '@tanstack/react-query'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {
+  Profiler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { Alert, BackHandler, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { CameraErrorBoundary } from '../components/CameraErrorBoundary'
 
 import { Box } from '@/components/ui/box'
 import { Center } from '@/components/ui/center'
@@ -31,7 +38,7 @@ import { pluralize } from '../utils/pluralize'
 
 // Removed unused Dimensions import
 
-export function ScanScreen() {
+function ScanScreenComponent() {
   const [permission, requestPermission] = useCameraPermissions()
   const [isScanning, setIsScanning] = useState(true)
   const [isCameraReady, setIsCameraReady] = useState(false)
@@ -52,6 +59,11 @@ export function ScanScreen() {
   const [scannedUPC, setScannedUPC] = useState<string | null>(null)
   const [flashOn, setFlashOn] = useState(false)
   const [isCompletingArea, setIsCompletingArea] = useState(false)
+  const [isCameraActive, setIsCameraActive] = useState(false)
+  const [isFlashChanging, setIsFlashChanging] = useState(false)
+  const [flashDebounceTimer, setFlashDebounceTimer] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null)
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const queryClient = useQueryClient()
@@ -70,12 +82,20 @@ export function ScanScreen() {
   } = useCountStore()
   const recentScans = getRecentCountItems(1)
   const activeSession = getActiveSession()
-  const currentArea = activeSession?.areas?.find(
-    (area) => area.id === activeSession.currentAreaId
+  const currentArea = useMemo(
+    () =>
+      activeSession?.areas?.find(
+        (area) => area.id === activeSession.currentAreaId
+      ),
+    [activeSession]
   )
-  const areaProgress = activeSession
-    ? getAreaProgress(activeSession.id)
-    : { completed: 0, total: 0 }
+  const areaProgress = useMemo(
+    () =>
+      activeSession
+        ? getAreaProgress(activeSession.id)
+        : { completed: 0, total: 0 },
+    [activeSession, getAreaProgress]
+  )
 
   // Handle hardware back button press
   useFocusEffect(
@@ -101,18 +121,21 @@ export function ScanScreen() {
     isError: lookupError,
   } = useProductByUPC(scannedUPC || '')
 
-  const handleBarCodeScanned = ({ data }: any) => {
-    if (!isScanning) return
+  const handleBarCodeScanned = useCallback(
+    ({ data }: any) => {
+      if (!isScanning) return
 
-    setIsScanning(false)
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+      setIsScanning(false)
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
 
-    // Set the scanned UPC to trigger the lookup
-    setScannedUPC(data)
-  }
+      // Set the scanned UPC to trigger the lookup
+      setScannedUPC(data)
+    },
+    [isScanning]
+  )
 
-  // Handle the result of the UPC lookup
-  useEffect(() => {
+  // Handle the result of the UPC lookup - memoized to prevent excessive re-renders
+  const handleUPCLookupResult = useCallback(() => {
     if (scannedUPC && !isLookingUp) {
       if (productData && !lookupError) {
         // Product found in inventory
@@ -162,6 +185,19 @@ export function ScanScreen() {
     }
   }, [productData, isLookingUp, lookupError, scannedUPC, navigation])
 
+  // Use effect to handle UPC lookup results
+  useEffect(() => {
+    handleUPCLookupResult()
+  }, [handleUPCLookupResult])
+
+  // Memoized camera ready callback
+  const onCameraReady = useCallback(() => {
+    // Camera hardware is ready, ensure we're in ready state
+    if (!isCameraReady) {
+      setIsCameraReady(true)
+    }
+  }, [isCameraReady])
+
   // Reset scanning state when screen gains focus
   useFocusEffect(
     useCallback(() => {
@@ -173,15 +209,20 @@ export function ScanScreen() {
       setShowModal(false)
       setIsCameraReady(false)
       setFlashOn(false)
+      setIsCameraActive(true) // Activate camera when screen gains focus
 
       // Initialize camera when screen gains focus
       const initializeCamera = async () => {
         if (!permission?.granted) {
           try {
             const result = await requestPermission()
-            if (!result.granted) return
+            if (!result.granted) {
+              setIsCameraActive(false)
+              return
+            }
           } catch (error) {
             console.error('Failed to request camera permission:', error)
+            setIsCameraActive(false)
             return
           }
         }
@@ -189,20 +230,30 @@ export function ScanScreen() {
         // Camera initialization with platform-specific timing
         const delay = Platform.OS === 'ios' ? 300 : 100
         setTimeout(() => {
-          setIsCameraReady(true)
+          if (isCameraActive) {
+            // Only set ready if camera should still be active
+            setIsCameraReady(true)
+          }
         }, delay)
       }
 
       initializeCamera()
 
       return () => {
-        // Cleanup when screen loses focus
+        // Cleanup when screen loses focus - CRITICAL for preventing heat issues
         setIsScanning(false)
         setScannedProduct(null)
         setScannedUPC(null)
         setShowModal(false)
         setIsCameraReady(false)
         setFlashOn(false)
+        setIsCameraActive(false) // Deactivate camera to free resources
+        setIsFlashChanging(false)
+        // Clean up any pending flash timer
+        if (flashDebounceTimer) {
+          clearTimeout(flashDebounceTimer)
+          setFlashDebounceTimer(null)
+        }
       }
     }, [permission?.granted, requestPermission])
   )
@@ -440,40 +491,41 @@ export function ScanScreen() {
 
   return (
     <Box className='flex-1 bg-black'>
-      {/* Camera View */}
-      <CameraView
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          right: 0,
-          bottom: 0,
-        }}
-        facing='back'
-        enableTorch={flashOn}
-        barcodeScannerSettings={{
-          barcodeTypes: [
-            'qr',
-            'pdf417',
-            'aztec',
-            'ean13',
-            'ean8',
-            'upc_a',
-            'upc_e',
-            'code39',
-            'code93',
-            'code128',
-            'codabar',
-          ],
-        }}
-        onBarcodeScanned={
-          isScanning && isCameraReady ? handleBarCodeScanned : undefined
-        }
-        onCameraReady={() => {
-          // Camera hardware is ready, ensure we're in ready state
-          setIsCameraReady(true)
-        }}
-      />
+      {/* Camera View - Only render when permission granted and camera should be active */}
+      {permission?.granted && isCameraActive && (
+        <CameraView
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+          }}
+          facing='back'
+          enableTorch={flashOn}
+          barcodeScannerSettings={{
+            barcodeTypes: [
+              'qr',
+              'pdf417',
+              'aztec',
+              'ean13',
+              'ean8',
+              'upc_a',
+              'upc_e',
+              'code39',
+              'code93',
+              'code128',
+              'codabar',
+            ],
+          }}
+          onBarcodeScanned={
+            isScanning && isCameraReady ? handleBarCodeScanned : undefined
+          }
+          onCameraReady={onCameraReady}
+          // Additional performance settings
+          ratio='4:3' // Use 4:3 ratio instead of full screen for better performance
+        />
+      )}
 
       {/* Camera Loading Overlay */}
       {!isCameraReady && (
@@ -502,20 +554,51 @@ export function ScanScreen() {
               <Ionicons name='arrow-back' size={20} color='white' />
             </Pressable>
 
-            {/* Flash Button */}
+            {/* Flash Button with Debouncing */}
             <Pressable
               className={`w-10 h-10 rounded-full justify-center items-center ${
                 flashOn ? 'bg-yellow-500' : 'bg-black/30'
-              }`}
+              } ${isFlashChanging ? 'opacity-50' : ''}`}
               onPress={() => {
-                if (isCameraReady) {
+                // Prevent rapid flash toggling that can crash the device
+                if (!isCameraReady || isFlashChanging) return
+
+                setIsFlashChanging(true)
+
+                // Clear any existing timer
+                if (flashDebounceTimer) {
+                  clearTimeout(flashDebounceTimer)
+                }
+
+                try {
+                  // Immediate visual feedback
                   setFlashOn(!flashOn)
                   Haptics.selectionAsync()
+
+                  // Debounce the flash state to prevent hardware overload
+                  const timer = setTimeout(() => {
+                    setIsFlashChanging(false)
+                    setFlashDebounceTimer(null)
+                  }, 500) // 500ms delay to prevent rapid toggling
+
+                  setFlashDebounceTimer(timer)
+                } catch (error) {
+                  console.error('Flash toggle error:', error)
+                  setIsFlashChanging(false)
+                  // Revert flash state on error
+                  setFlashOn(flashOn)
                 }
               }}
+              disabled={isFlashChanging}
             >
               <Ionicons
-                name={flashOn ? 'flash' : 'flash-outline'}
+                name={
+                  isFlashChanging
+                    ? 'flash-off'
+                    : flashOn
+                      ? 'flash'
+                      : 'flash-outline'
+                }
                 size={20}
                 color={flashOn ? 'black' : 'white'}
               />
@@ -677,7 +760,7 @@ export function ScanScreen() {
       {/* Product Scan Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
         <ModalBackdrop className='bg-black/70' />
-        <ModalContent className='m-6 max-w-md bg-white'>
+        <ModalContent className='m-6 max-w-md'>
           <ModalHeader>
             <ThemedText variant='h3' color='primary' weight='bold'>
               Product Scanned
@@ -725,39 +808,44 @@ export function ScanScreen() {
                   <ThemedText color='secondary' weight='medium'>
                     Count Quantity
                   </ThemedText>
-                  <HStack className='justify-center items-center' space='lg'>
-                    <Pressable
-                      className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
+                  <HStack space='sm' className='items-center w-full flex-1'>
+                    <ThemedButton
+                      variant='secondary'
+                      size='md'
                       onPress={() =>
                         setQuantity(
                           String(Math.max(0, parseFloat(quantity) - 1))
                         )
                       }
+                      className='size-12 p-0'
                     >
                       <Ionicons name='remove' size={24} color='#8B5CF6' />
-                    </Pressable>
+                    </ThemedButton>
+                    <Box className='items-center w-24'>
+                      <ThemedInput
+                        variant='default'
+                        size='md'
+                        fieldProps={{
+                          value: quantity,
+                          onChangeText: setQuantity,
+                          keyboardType: 'decimal-pad',
+                          style: {
+                            fontWeight: 'bold',
+                          },
+                        }}
+                      />
+                    </Box>
 
-                    <ThemedInput
-                      variant='default'
+                    <ThemedButton
+                      variant='secondary'
                       size='md'
-                      className='w-20'
-                      fieldProps={{
-                        value: quantity,
-                        onChangeText: setQuantity,
-                        keyboardType: 'decimal-pad',
-                        selectTextOnFocus: true,
-                        className: 'text-center text-2xl font-bold',
-                      }}
-                    />
-
-                    <Pressable
-                      className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
                       onPress={() =>
                         setQuantity(String(parseFloat(quantity) + 1))
                       }
+                      className='size-12 p-0'
                     >
                       <Ionicons name='add' size={24} color='#8B5CF6' />
-                    </Pressable>
+                    </ThemedButton>
                   </HStack>
                 </VStack>
               </VStack>
@@ -786,7 +874,7 @@ export function ScanScreen() {
                 className='flex-1'
                 onPress={handleSaveCount}
               >
-                Save Count
+                <ThemedText color='onGradient'>Save Count</ThemedText>
               </ThemedButton>
             </HStack>
           </ModalFooter>
@@ -805,5 +893,30 @@ export function ScanScreen() {
         </Box>
       )}
     </Box>
+  )
+}
+
+export function ScanScreen() {
+  const onRender = (
+    id: string,
+    phase: 'mount' | 'update' | 'nested-update',
+    actualDuration: number
+  ) => {
+    if (actualDuration > 16) {
+      // Longer than 1 frame at 60fps
+      console.log(`🔄 ScanScreen ${phase}: ${actualDuration.toFixed(2)}ms`)
+    }
+  }
+
+  return (
+    <CameraErrorBoundary
+      onReset={() => {
+        // Reset any camera-related state if needed
+      }}
+    >
+      <Profiler id='ScanScreen' onRender={onRender}>
+        <ScanScreenComponent />
+      </Profiler>
+    </CameraErrorBoundary>
   )
 }

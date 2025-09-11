@@ -727,7 +727,6 @@ export function CountScreen() {
                         variant='default'
                         size='md'
                         fieldProps={{
-                          placeholder: 'YYYY-MM-DD',
                           value: quantity,
                           onChangeText: setQuantity,
                           keyboardType: 'decimal-pad',
