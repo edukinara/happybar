@@ -40,7 +40,10 @@
     },
     "plugins": [
       "expo-dev-client",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-router",
+      "expo-camera",
+      "expo-font"
     ],
     "extra": {
       "eas": {
