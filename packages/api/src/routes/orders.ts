@@ -147,6 +147,7 @@ export const ordersRoutes: FastifyPluginAsync = async function (
                 select: {
                   id: true,
                   name: true,
+                  image: true,
                   sku: true,
                   caseSize: true,
                   category: true,

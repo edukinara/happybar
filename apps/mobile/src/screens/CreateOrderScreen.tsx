@@ -1,7 +1,5 @@
 import { Box } from '@/components/ui/box'
-import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
@@ -13,11 +11,17 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  TextInput,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import { cn, themeClasses } from '../constants/themeClasses'
 import { useProducts, useSuppliers } from '../hooks/useInventoryData'
 import { api } from '../lib/api'
@@ -208,9 +212,14 @@ export function CreateOrderScreen() {
         <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
           <ActivityIndicator size='large' color='white' />
-          <Text className='text-white text-lg mt-4'>
+          <ThemedText
+            variant='body'
+            color='onGradient'
+            weight='medium'
+            style={{ marginTop: 16 }}
+          >
             Loading products and suppliers...
-          </Text>
+          </ThemedText>
         </Box>
       </PageGradient>
     )
@@ -222,259 +231,317 @@ export function CreateOrderScreen() {
 
       {/* Header */}
       <Box
-        className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
         style={{ paddingTop: insets.top + 4 }}
       >
-        <HStack className='justify-between items-center'>
+        <HStack className='justify-between items-center p-2'>
           <HStack space='md' className='items-center'>
             <Pressable className='mr-4' onPress={() => navigation.goBack()}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
-            <Text className='text-white dark:text-typography-600 text-xl font-bold'>
+            <ThemedHeading variant='h2' color='onGradient' weight='bold'>
               Create Order
-            </Text>
+            </ThemedHeading>
           </HStack>
         </HStack>
       </Box>
 
-      {/* Order Details */}
-      <VStack className='px-6 py-4' space='md'>
-        <VStack space='sm'>
-          <Text className='font-medium text-white/90 dark:text-typography-600'>
-            Expected Delivery (Optional)
-          </Text>
-          <TextInput
-            className={cn('p-3 rounded-lg', themeClasses.input.base)}
-            placeholder='YYYY-MM-DD'
-            value={expectedDate}
-            onChangeText={setExpectedDate}
-          />
-        </VStack>
+      {/* Content ScrollView */}
+      <ScrollView
+        className='flex-1'
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        {/* Order Details */}
+        <VStack space='xl' className='pt-4'>
+          <VStack className='px-6' space='lg'>
+            <VStack space='sm'>
+              <ThemedText
+                variant='body'
+                color='onGradientMuted'
+                weight='medium'
+              >
+                Expected Delivery (Optional)
+              </ThemedText>
+              <ThemedInput
+                variant='default'
+                size='md'
+                fieldProps={{
+                  placeholder: 'YYYY-MM-DD',
+                  value: expectedDate,
+                  onChangeText: setExpectedDate,
+                }}
+              />
+            </VStack>
 
-        <VStack space='sm'>
-          <Text className='font-medium text-white/90 dark:text-typography-600'>
-            Notes (Optional)
-          </Text>
-          <TextInput
-            className={cn('p-3 rounded-lg', themeClasses.input.base)}
-            placeholder='Add notes for this order...'
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            numberOfLines={3}
-            textAlignVertical='top'
-          />
-        </VStack>
-      </VStack>
-
-      {/* Add Item Button */}
-      <Box className='px-6 pb-4'>
-        <Pressable
-          onPress={() => setShowProductPicker(true)}
-          className='p-4 bg-indigo-500 rounded-lg flex-row items-center justify-center'
-        >
-          <Ionicons name='add' size={20} color='white' />
-          <Text className='text-white dark:text-white font-medium ml-2'>
-            Add Product
-          </Text>
-        </Pressable>
-      </Box>
-
-      {/* Order Items */}
-      <ScrollView className='flex-1 px-6' showsVerticalScrollIndicator={false}>
-        {orderItems.length === 0 ? (
-          <VStack
-            className='flex-1 justify-center items-center py-12'
-            space='lg'
-          >
-            <Box className='size-16 bg-gray-100 rounded-full justify-center items-center'>
-              <Ionicons name='basket-outline' size={32} color='#8B5CF6' />
-            </Box>
-            <VStack className='items-center' space='sm'>
-              <Heading className='text-lg font-semibold text-white'>
-                No Items Added
-              </Heading>
-              <Text className='text-white/60 dark:text-white/60 text-center'>
-                Add products to create your order
-              </Text>
+            <VStack space='sm'>
+              <ThemedText
+                variant='body'
+                color='onGradientMuted'
+                weight='medium'
+              >
+                Notes (Optional)
+              </ThemedText>
+              <ThemedInput
+                variant='default'
+                size='md'
+                fieldProps={{
+                  placeholder: 'Add notes for this order...',
+                  value: notes,
+                  onChangeText: setNotes,
+                  multiline: true,
+                  numberOfLines: 3,
+                  textAlignVertical: 'top',
+                  style: {
+                    textAlignVertical: 'top',
+                    paddingTop: 12,
+                    minHeight: 100,
+                  },
+                }}
+              />
             </VStack>
           </VStack>
-        ) : (
-          <VStack space='md'>
-            {orderItems.map((item, index) => (
-              <Box
-                key={`${item.productId}-${item.supplierId}-${index}`}
-                className={cn('rounded-xl p-4', themeClasses.card.solid)}
+
+          {/* Add Item Button */}
+          <Box className='px-6'>
+            <ThemedButton
+              onPress={() => setShowProductPicker(true)}
+              variant='primary'
+              size='lg'
+              fullWidth
+              className='rounded-lg elevation-sm border border-white/30 h-12'
+            >
+              <HStack className='items-center justify-center' space='sm'>
+                <Ionicons name='add' size={20} color='white' />
+                <ThemedText variant='body' color='onGradient' weight='medium'>
+                  Add Product
+                </ThemedText>
+              </HStack>
+            </ThemedButton>
+          </Box>
+
+          {/* Order Items */}
+          <Box className='px-6'>
+            {orderItems.length === 0 ? (
+              <VStack
+                className='flex-1 justify-center items-center py-12'
+                space='lg'
               >
-                {/* Product & Supplier Info */}
-                <HStack className='items-start' space='sm'>
-                  <Box>
-                    <ProductImage
-                      uri={item.product.image}
-                      {...ProductImageVariants.small}
-                    />
-                  </Box>
-
-                  <VStack className='flex-1' space='xs'>
-                    <Text
-                      className={cn('font-semibold', themeClasses.text.primary)}
-                    >
-                      {item.product.name}
-                    </Text>
-                    <Text className={cn('text-sm', themeClasses.text.muted)}>
-                      {item.product.sku && `SKU: ${item.product.sku} • `}
-                      {item.product.category?.name}
-                    </Text>
-                    <Text className='text-sm text-indigo-600'>
-                      Supplier: {item.supplier.name}
-                    </Text>
-                  </VStack>
-
-                  <Pressable
-                    onPress={() => removeOrderItem(index)}
-                    className='p-2'
+                <Box className='size-16 bg-white/20 dark:bg-white/20 rounded-full justify-center items-center'>
+                  <Ionicons name='basket-outline' size={32} color='white' />
+                </Box>
+                <VStack className='items-center' space='sm'>
+                  <ThemedHeading
+                    variant='h3'
+                    color='onGradient'
+                    weight='semibold'
                   >
-                    <Ionicons name='trash-outline' size={20} color='#EF4444' />
-                  </Pressable>
-                </HStack>
+                    No Items Added
+                  </ThemedHeading>
+                  <ThemedText
+                    variant='body'
+                    color='onGradientMuted'
+                    align='center'
+                  >
+                    Add products to create your order
+                  </ThemedText>
+                </VStack>
+              </VStack>
+            ) : (
+              <VStack space='md'>
+                {orderItems.map((item, index) => (
+                  <ThemedCard
+                    key={`${item.productId}-${item.supplierId}-${index}`}
+                    variant='primary'
+                    size='md'
+                  >
+                    {/* Product & Supplier Info */}
+                    <HStack className='items-start' space='sm'>
+                      <Box>
+                        <ProductImage
+                          uri={item.product.image}
+                          {...ProductImageVariants.small}
+                        />
+                      </Box>
 
-                {/* Quantity and Cost Controls */}
-                <HStack
-                  className='items-center justify-between mt-4'
-                  space='md'
-                >
-                  <VStack space='xs'>
-                    <Text
-                      className={cn(
-                        'text-xs font-medium',
-                        themeClasses.text.muted
-                      )}
-                    >
-                      Quantity
-                    </Text>
-                    <HStack className='items-center border border-gray-300 rounded-lg'>
+                      <VStack className='flex-1' space='xs'>
+                        <ThemedText
+                          variant='body'
+                          color='primary'
+                          weight='semibold'
+                        >
+                          {item.product.name}
+                        </ThemedText>
+                        <ThemedText variant='caption' color='muted'>
+                          {item.product.sku && `SKU: ${item.product.sku} • `}
+                          {item.product.category?.name}
+                        </ThemedText>
+                        <ThemedText
+                          variant='caption'
+                          color='primary'
+                          style={{ color: '#8B5CF6' }}
+                        >
+                          Supplier: {item.supplier.name}
+                        </ThemedText>
+                      </VStack>
+
                       <Pressable
-                        onPress={() =>
-                          updateOrderItem(
-                            index,
-                            'quantityOrdered',
-                            Math.max(1, item.quantityOrdered - 1)
-                          )
-                        }
-                        className='p-3'
+                        onPress={() => removeOrderItem(index)}
+                        className='p-2'
                       >
-                        <Ionicons name='remove' size={16} color='#8B5CF6' />
-                      </Pressable>
-                      <Text className='px-4 font-medium dark:text-typography-600'>
-                        {item.quantityOrdered}
-                      </Text>
-                      <Pressable
-                        onPress={() =>
-                          updateOrderItem(
-                            index,
-                            'quantityOrdered',
-                            item.quantityOrdered + 1
-                          )
-                        }
-                        className='p-3'
-                      >
-                        <Ionicons name='add' size={16} color='#8B5CF6' />
+                        <Ionicons
+                          name='trash-outline'
+                          size={20}
+                          color='#EF4444'
+                        />
                       </Pressable>
                     </HStack>
-                  </VStack>
 
-                  <VStack space='xs'>
-                    <Text
-                      className={cn(
-                        'text-xs font-medium',
-                        themeClasses.text.muted
-                      )}
+                    {/* Quantity and Cost Controls */}
+                    <HStack
+                      className='items-center justify-between mt-4'
+                      space='md'
                     >
-                      Unit Cost
-                    </Text>
-                    <TextInput
-                      className='w-20 p-2 border border-gray-300 rounded-lg text-center dark:text-typography-600'
-                      value={item.unitCost.toString()}
-                      onChangeText={(text) => {
-                        const cost = parseFloat(text) || 0
-                        updateOrderItem(index, 'unitCost', cost)
-                      }}
-                      keyboardType='numeric'
-                      returnKeyType='done'
-                    />
-                  </VStack>
+                      <VStack space='xs'>
+                        <ThemedText
+                          variant='caption'
+                          color='muted'
+                          weight='medium'
+                        >
+                          Quantity
+                        </ThemedText>
+                        <HStack className='items-center border border-gray-300 rounded-lg'>
+                          <Pressable
+                            onPress={() =>
+                              updateOrderItem(
+                                index,
+                                'quantityOrdered',
+                                Math.max(1, item.quantityOrdered - 1)
+                              )
+                            }
+                            className='p-3'
+                          >
+                            <Ionicons name='remove' size={16} color='#8B5CF6' />
+                          </Pressable>
+                          <ThemedText
+                            variant='body'
+                            color='primary'
+                            weight='medium'
+                            className='px-4'
+                          >
+                            {item.quantityOrdered}
+                          </ThemedText>
+                          <Pressable
+                            onPress={() =>
+                              updateOrderItem(
+                                index,
+                                'quantityOrdered',
+                                item.quantityOrdered + 1
+                              )
+                            }
+                            className='p-3'
+                          >
+                            <Ionicons name='add' size={16} color='#8B5CF6' />
+                          </Pressable>
+                        </HStack>
+                      </VStack>
 
-                  <VStack space='xs' className='items-end'>
-                    <Text
-                      className={cn(
-                        'text-xs font-medium',
-                        themeClasses.text.muted
-                      )}
-                    >
-                      Total
-                    </Text>
-                    <Text
-                      className={cn('font-semibold', themeClasses.text.primary)}
-                    >
-                      ${(item.quantityOrdered * item.unitCost).toFixed(2)}
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Box>
-            ))}
-          </VStack>
-        )}
+                      <VStack space='xs'>
+                        <ThemedText
+                          variant='caption'
+                          color='muted'
+                          weight='medium'
+                        >
+                          Unit Cost
+                        </ThemedText>
+                        <ThemedInput
+                          variant='default'
+                          size='sm'
+                          fieldProps={{
+                            value: item.unitCost.toString(),
+                            onChangeText: (text: string) => {
+                              const cost = parseFloat(text) || 0
+                              updateOrderItem(index, 'unitCost', cost)
+                            },
+                            keyboardType: 'numeric',
+                            returnKeyType: 'done',
+                          }}
+                          className='w-24 text-center'
+                        />
+                      </VStack>
+
+                      <VStack space='xs' className='items-end'>
+                        <ThemedText
+                          variant='caption'
+                          color='muted'
+                          weight='medium'
+                        >
+                          Total
+                        </ThemedText>
+                        <ThemedText
+                          variant='body'
+                          color='primary'
+                          weight='semibold'
+                        >
+                          ${(item.quantityOrdered * item.unitCost).toFixed(2)}
+                        </ThemedText>
+                      </VStack>
+                    </HStack>
+                  </ThemedCard>
+                ))}
+              </VStack>
+            )}
+          </Box>
+        </VStack>
       </ScrollView>
 
       {/* Bottom Actions */}
       {orderItems.length > 0 && (
-        <Box
-          className={cn(
-            'p-6 pt-4 pb-16 border-t border-gray-200 dark:border-gray-700',
-            themeClasses.bg.card
-          )}
+        <ThemedCard
+          variant='primary'
+          size='lg'
+          className='rounded-t-2xl rounded-b-none border-t border-white/20 pb-16'
         >
-          <VStack space='sm'>
+          <VStack space='md'>
             <HStack className='items-center justify-between'>
-              <Text className={cn(themeClasses.text.muted)}>
+              <ThemedText variant='body' color='muted'>
                 {orderItems.length} item{orderItems.length === 1 ? '' : 's'}
-              </Text>
-              <Text
-                className={cn(
-                  'font-semibold text-lg',
-                  themeClasses.text.primary
-                )}
-              >
+              </ThemedText>
+              <ThemedText variant='h3' color='primary' weight='semibold'>
                 Total: ${calculateTotal().toFixed(2)}
-              </Text>
+              </ThemedText>
             </HStack>
 
-            <Pressable
+            <ThemedButton
               onPress={createOrder}
               disabled={isCreating}
-              className={`py-4 rounded-xl items-center ${
-                isCreating ? 'bg-gray-300' : 'bg-indigo-500'
-              }`}
+              variant='primary'
+              size='lg'
+              fullWidth
+              className={cn(
+                'rounded-lg border border-white/30 h-12',
+                isCreating ? 'bg-gray-400 dark:bg-gray-600' : ''
+              )}
             >
               {isCreating ? (
-                <HStack className='items-center' space='sm'>
+                <HStack className='items-center justify-center' space='sm'>
                   <ActivityIndicator size='small' color='white' />
-                  <Text
-                    className={cn('font-semibold', themeClasses.text.primary)}
+                  <ThemedText
+                    variant='body'
+                    color='onGradient'
+                    weight='semibold'
                   >
                     Creating Order...
-                  </Text>
+                  </ThemedText>
                 </HStack>
               ) : (
-                <Text
-                  className={cn('font-semibold', themeClasses.text.primary)}
-                >
+                <ThemedText variant='body' color='onGradient' weight='semibold'>
                   Create Order{orderItems.length > 1 ? 's' : ''}
-                </Text>
+                </ThemedText>
               )}
-            </Pressable>
+            </ThemedButton>
           </VStack>
-        </Box>
+        </ThemedCard>
       )}
 
       {/* Product Picker Modal */}
@@ -485,20 +552,15 @@ export function CreateOrderScreen() {
       >
         <SafeAreaView className={cn('flex-1', themeClasses.bg.modal)}>
           <VStack className='flex-1'>
-            <HStack className='items-center justify-between p-6 pb-4 border-b border-gray-200'>
+            <HStack className='items-center justify-between p-6 pb-4 border-b border-white/20 dark:border-white/10'>
               <Pressable onPress={() => setShowProductPicker(false)}>
-                <Text className='text-amber-500 dark:text-amber-500 font-medium'>
+                <ThemedText variant='body' color='warning' weight='medium'>
                   Cancel
-                </Text>
+                </ThemedText>
               </Pressable>
-              <Heading
-                className={cn(
-                  'text-lg font-semibold',
-                  themeClasses.text.primary
-                )}
-              >
+              <ThemedHeading variant='h3' color='primary' weight='semibold'>
                 Select Product
-              </Heading>
+              </ThemedHeading>
               <Box className='w-16' />
             </HStack>
 
@@ -525,16 +587,18 @@ export function CreateOrderScreen() {
                     </Box>
 
                     <VStack className='flex-1' space='xs'>
-                      <Text
-                        className={cn('font-medium', themeClasses.text.primary)}
+                      <ThemedText
+                        variant='body'
+                        color='primary'
+                        weight='medium'
                       >
                         {product.name}
-                      </Text>
-                      <Text className={cn('text-sm', themeClasses.text.muted)}>
+                      </ThemedText>
+                      <ThemedText variant='caption' color='muted'>
                         {product.sku && `SKU: ${product.sku} • `}$
                         {product.costPerUnit.toFixed(2)}/{product.unit}
                         {product.category && ` • ${product.category.name}`}
-                      </Text>
+                      </ThemedText>
                     </VStack>
 
                     <Ionicons
@@ -558,20 +622,15 @@ export function CreateOrderScreen() {
       >
         <SafeAreaView className={cn('flex-1', themeClasses.bg.modal)}>
           <VStack className='flex-1'>
-            <HStack className='items-center justify-between p-6 pb-4 border-b border-gray-200'>
+            <HStack className='items-center justify-between p-6 pb-4 border-b border-white/20 dark:border-white/10'>
               <Pressable onPress={() => setShowSupplierPicker(false)}>
-                <Text className='text-amber-500 dark:text-amber-500 font-medium'>
+                <ThemedText variant='body' color='warning' weight='medium'>
                   Back
-                </Text>
+                </ThemedText>
               </Pressable>
-              <Heading
-                className={cn(
-                  'text-lg font-semibold',
-                  themeClasses.text.primary
-                )}
-              >
+              <ThemedHeading variant='h3' color='primary' weight='semibold'>
                 Select Supplier
-              </Heading>
+              </ThemedHeading>
               <Box className='w-16' />
             </HStack>
 
@@ -591,23 +650,18 @@ export function CreateOrderScreen() {
                     className={cn('p-4 rounded-lg', themeClasses.card.primary)}
                   >
                     <VStack space='xs'>
-                      <Text
-                        className={cn('font-medium', themeClasses.text.primary)}
+                      <ThemedText
+                        variant='body'
+                        color='primary'
+                        weight='medium'
                       >
                         {supplier.name}
-                      </Text>
+                      </ThemedText>
                       {supplier.contactEmail && (
-                        <Text
-                          className={cn('text-sm', themeClasses.text.muted)}
-                        >
+                        <ThemedText variant='caption' color='muted'>
                           Contact: {supplier.contactEmail}
-                        </Text>
+                        </ThemedText>
                       )}
-                      {/* {supplier.email && (
-                        <Text className={cn('text-sm', themeClasses.text.muted)}>
-                          {supplier.email}
-                        </Text>
-                      )} */}
                     </VStack>
                   </Pressable>
                 ))}

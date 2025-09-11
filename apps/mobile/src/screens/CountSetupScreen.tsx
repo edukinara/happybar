@@ -1,34 +1,24 @@
 import { Box } from '@/components/ui/box'
 import { HStack } from '@/components/ui/hstack'
-import { Text } from '@/components/ui/text'
+import { Pressable } from '@/components/ui/pressable'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import React, { useEffect, useRef, useState } from 'react'
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Pressable,
-  ScrollView,
-  TextInput,
-} from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-// import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context' // useSafeAreaInsets not used
+import React, { useEffect, useState } from 'react'
+import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PageGradient } from '../components/PageGradient'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import { useLocations } from '../hooks/useInventoryData'
 import type { RootStackParamList } from '../navigation/RootNavigator'
 import { useCountStore } from '../stores/countStore'
-
-// Design system colors - matching web app theme
-const colors = {
-  primary: '#6366F1', // Primary indigo
-  accent: '#8B5CF6', // Accent purple
-  success: '#10B981', // Success green
-  primaryLight: '#EEF2FF',
-  accentLight: '#F3E8FF',
-  successLight: '#ECFDF5',
-}
 
 // interface StorageArea {
 //   id: string
@@ -58,7 +48,7 @@ export default function CountSetupScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const route = useRoute()
-  // const insets = useSafeAreaInsets() // Not currently used
+  const insets = useSafeAreaInsets()
 
   // Get route params for quick count
   const routeParams = route.params as
@@ -85,13 +75,8 @@ export default function CountSetupScreen() {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([])
   const [customAreas, setCustomAreas] = useState<string[]>([])
   const [newAreaName, setNewAreaName] = useState('')
-  const [showLocationModal] = useState(false)
   // const [showLocationModal, setShowLocationModal] = useState(false) // setShowLocationModal not used
   const [isCreating, setIsCreating] = useState(false)
-
-  // Refs for input focus management
-  const countNameInputRef = useRef<TextInput>(null)
-  const customAreaInputRef = useRef<TextInput>(null)
 
   // Initialize with default name and auto-select location
   useEffect(() => {
@@ -129,17 +114,6 @@ export default function CountSetupScreen() {
       setCurrentStep(steps[currentIndex + 1])
     }
   }
-
-  // Focus management for inputs
-  useEffect(() => {
-    if (currentStep === 'name') {
-      // Small delay to ensure component is fully mounted
-      const timer = setTimeout(() => {
-        countNameInputRef.current?.focus()
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [currentStep])
 
   const goToPreviousStep = () => {
     const steps: SetupStep[] = isQuickCount
@@ -275,7 +249,7 @@ export default function CountSetupScreen() {
 
     // Create count session with API integration
     const { createCountSessionWithAPI } = useCountStore.getState()
-    const sessionId = await createCountSessionWithAPI({
+    await createCountSessionWithAPI({
       name: countName,
       type: countType,
       status: 'IN_PROGRESS',
@@ -326,43 +300,48 @@ export default function CountSetupScreen() {
           <Box className='size-20 bg-white/20 rounded-full justify-center items-center mb-4'>
             <Ionicons name='clipboard' size={40} color='white' />
           </Box>
-          <Text className='text-white text-2xl font-bold text-center'>
+          <ThemedHeading
+            variant='h2'
+            color='onGradient'
+            weight='bold'
+            align='center'
+          >
             Name Your Count
-          </Text>
-          <Text className='text-white/80 text-center text-base leading-relaxed'>
+          </ThemedHeading>
+          <ThemedText
+            variant='body'
+            color='onGradientMuted'
+            align='center'
+            style={{ lineHeight: 24 }}
+          >
             Give your inventory count a descriptive name to help identify it
             later
-          </Text>
+          </ThemedText>
         </VStack>
 
         <VStack space='md'>
-          <Text className='text-white font-semibold'>Count Name</Text>
-          <TextInput
-            ref={countNameInputRef}
-            value={countName}
-            onChangeText={setCountName}
-            placeholder='Enter count name'
-            placeholderTextColor='rgba(255, 255, 255, 0.5)'
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              borderRadius: 12,
-              padding: 16,
-              color: 'white',
-              fontSize: 16,
-              borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.2)',
+          <ThemedText variant='body' color='onGradient' weight='semibold'>
+            Count Name
+          </ThemedText>
+          <ThemedInput
+            variant='filled'
+            size='lg'
+            fieldProps={{
+              value: countName,
+              onChangeText: setCountName,
+              placeholder: 'Enter count name',
+              returnKeyType: 'next',
+              onSubmitEditing: () => {
+                if (canProceedFromStep()) {
+                  goToNextStep()
+                }
+              },
+              selectTextOnFocus: true,
+              clearButtonMode: 'while-editing',
+              autoCapitalize: 'words',
+              autoCorrect: true,
+              autoFocus: true,
             }}
-            returnKeyType='next'
-            // blurOnSubmit={false} // Deprecated
-            onSubmitEditing={() => {
-              if (canProceedFromStep()) {
-                goToNextStep()
-              }
-            }}
-            selectTextOnFocus
-            clearButtonMode='while-editing'
-            autoCapitalize='words'
-            autoCorrect={true}
           />
         </VStack>
       </VStack>
@@ -385,43 +364,56 @@ export default function CountSetupScreen() {
           <Box className='size-20 bg-white/20 rounded-full justify-center items-center mb-4'>
             <Ionicons name='location' size={40} color='white' />
           </Box>
-          <Text className='text-white text-2xl font-bold text-center'>
+          <ThemedHeading
+            variant='h2'
+            color='onGradient'
+            weight='bold'
+            align='center'
+          >
             Select Location
-          </Text>
-          <Text className='text-white/80 text-center text-base leading-relaxed'>
+          </ThemedHeading>
+          <ThemedText
+            variant='body'
+            color='onGradientMuted'
+            align='center'
+            style={{ lineHeight: 24 }}
+          >
             Choose the location where you'll be conducting the inventory count
-          </Text>
+          </ThemedText>
         </VStack>
 
         <VStack space='md'>
           {locations?.map((location) => (
-            <Pressable
+            <ThemedCard
               key={location.id}
-              onPress={() => setSelectedLocationId(location.id)}
-              className={`p-4 rounded-2xl border-2 ${
+              variant='primary'
+              size='md'
+              className={
                 selectedLocationId === location.id
-                  ? 'bg-white/30 border-white'
-                  : 'bg-white/10 border-white/20'
-              }`}
+                  ? 'border-2 border-white/80'
+                  : ''
+              }
             >
-              <HStack className='items-center justify-between'>
-                <VStack space='xs'>
-                  <Text className='text-white font-semibold text-lg'>
-                    {location.name}
-                  </Text>
-                  {(location as any).code && (
-                    <Text className='text-white/70 text-sm'>
-                      Code: {(location as any).code}
-                    </Text>
+              <Pressable onPress={() => setSelectedLocationId(location.id)}>
+                <HStack className='items-center justify-between'>
+                  <VStack space='xs'>
+                    <ThemedText variant='h4' color='primary' weight='semibold'>
+                      {location.name}
+                    </ThemedText>
+                    {(location as any).code && (
+                      <ThemedText variant='caption' color='muted'>
+                        Code: {(location as any).code}
+                      </ThemedText>
+                    )}
+                  </VStack>
+                  {selectedLocationId === location.id && (
+                    <Box className='size-6 bg-purple-500 rounded-full justify-center items-center'>
+                      <Ionicons name='checkmark' size={16} color='white' />
+                    </Box>
                   )}
-                </VStack>
-                {selectedLocationId === location.id && (
-                  <Box className='size-6 bg-white rounded-full justify-center items-center'>
-                    <Ionicons name='checkmark' size={16} color='#6366F1' />
-                  </Box>
-                )}
-              </HStack>
-            </Pressable>
+                </HStack>
+              </Pressable>
+            </ThemedCard>
           ))}
         </VStack>
       </VStack>
@@ -444,64 +436,74 @@ export default function CountSetupScreen() {
           <Box className='size-20 bg-white/20 rounded-full justify-center items-center mb-4'>
             <Ionicons name='list' size={40} color='white' />
           </Box>
-          <Text className='text-white text-2xl font-bold text-center'>
+          <ThemedHeading
+            variant='h2'
+            color='onGradient'
+            weight='bold'
+            align='center'
+          >
             Count Type
-          </Text>
-          <Text className='text-white/80 text-center text-base leading-relaxed'>
+          </ThemedHeading>
+          <ThemedText
+            variant='body'
+            color='onGradientMuted'
+            align='center'
+            style={{ lineHeight: 24 }}
+          >
             Choose the type of inventory count you want to perform
-          </Text>
+          </ThemedText>
         </VStack>
 
         <VStack space='md'>
-          <Pressable
-            onPress={() => setCountType('FULL')}
-            className={`p-6 rounded-2xl border-2 ${
-              countType === 'FULL'
-                ? 'bg-white/30 border-white'
-                : 'bg-white/10 border-white/20'
-            }`}
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className={countType === 'FULL' ? 'border-2 border-white/80' : ''}
           >
-            <HStack className='items-center justify-between'>
-              <VStack className='flex-1' space='xs'>
-                <Text className='text-white font-bold text-lg'>Full Count</Text>
-                <Text className='text-white/70 text-sm'>
-                  Count all items in selected areas for complete inventory
-                  accuracy
-                </Text>
-              </VStack>
-              {countType === 'FULL' && (
-                <Box className='size-6 bg-white rounded-full justify-center items-center ml-4'>
-                  <Ionicons name='checkmark' size={16} color='#6366F1' />
-                </Box>
-              )}
-            </HStack>
-          </Pressable>
+            <Pressable onPress={() => setCountType('FULL')}>
+              <HStack className='items-center justify-between'>
+                <VStack className='flex-1' space='xs'>
+                  <ThemedText variant='h4' color='primary' weight='bold'>
+                    Full Count
+                  </ThemedText>
+                  <ThemedText variant='caption' color='muted'>
+                    Count all items in selected areas for complete inventory
+                    accuracy
+                  </ThemedText>
+                </VStack>
+                {countType === 'FULL' && (
+                  <Box className='size-6 bg-purple-500 rounded-full justify-center items-center ml-4'>
+                    <Ionicons name='checkmark' size={16} color='white' />
+                  </Box>
+                )}
+              </HStack>
+            </Pressable>
+          </ThemedCard>
 
-          <Pressable
-            onPress={() => setCountType('CYCLE')}
-            className={`p-6 rounded-2xl border-2 ${
-              countType === 'CYCLE'
-                ? 'bg-white/30 border-white'
-                : 'bg-white/10 border-white/20'
-            }`}
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className={countType === 'CYCLE' ? 'border-2 border-white/80' : ''}
           >
-            <HStack className='items-center justify-between'>
-              <VStack className='flex-1' space='xs'>
-                <Text className='text-white font-bold text-lg'>
-                  Cycle Count
-                </Text>
-                <Text className='text-white/70 text-sm'>
-                  Count specific high-value or frequently used items on a
-                  regular schedule
-                </Text>
-              </VStack>
-              {countType === 'CYCLE' && (
-                <Box className='size-6 bg-white rounded-full justify-center items-center ml-4'>
-                  <Ionicons name='checkmark' size={16} color='#6366F1' />
-                </Box>
-              )}
-            </HStack>
-          </Pressable>
+            <Pressable onPress={() => setCountType('CYCLE')}>
+              <HStack className='items-center justify-between'>
+                <VStack className='flex-1' space='xs'>
+                  <ThemedText variant='h4' color='primary' weight='bold'>
+                    Cycle Count
+                  </ThemedText>
+                  <ThemedText variant='caption' color='muted'>
+                    Count specific high-value or frequently used items on a
+                    regular schedule
+                  </ThemedText>
+                </VStack>
+                {countType === 'CYCLE' && (
+                  <Box className='size-6 bg-purple-500 rounded-full justify-center items-center ml-4'>
+                    <Ionicons name='checkmark' size={16} color='white' />
+                  </Box>
+                )}
+              </HStack>
+            </Pressable>
+          </ThemedCard>
         </VStack>
       </VStack>
     </ScrollView>
@@ -510,7 +512,7 @@ export default function CountSetupScreen() {
   const renderAreasStep = () => (
     <ScrollView
       contentContainerStyle={{
-        paddingHorizontal: 24,
+        paddingHorizontal: 12,
         paddingVertical: 32,
         paddingBottom: 40,
       }}
@@ -522,103 +524,120 @@ export default function CountSetupScreen() {
           <Box className='size-20 bg-white/20 rounded-full justify-center items-center mb-4'>
             <Ionicons name='business' size={40} color='white' />
           </Box>
-          <Text className='text-white text-2xl font-bold text-center'>
+          <ThemedHeading
+            variant='h2'
+            color='onGradient'
+            weight='bold'
+            align='center'
+          >
             Select Areas
-          </Text>
-          <Text className='text-white/80 text-center text-base leading-relaxed'>
+          </ThemedHeading>
+          <ThemedText
+            variant='body'
+            color='onGradientMuted'
+            align='center'
+            style={{ lineHeight: 24 }}
+          >
             Choose the storage areas you want to include in your count
-          </Text>
+          </ThemedText>
         </VStack>
         <VStack space='md'>
           {/* Predefined Areas */}
-          <Text className='text-white font-semibold'>Common Areas</Text>
+          <ThemedText variant='body' color='onGradient' weight='semibold'>
+            Common Areas
+          </ThemedText>
           <VStack space='xs'>
             {PREDEFINED_AREAS.map((area) => (
-              <Pressable
+              <ThemedCard
                 key={area.name}
-                onPress={() => togglePredefinedArea(area.name)}
-                className={`p-4 rounded-xl border ${
+                variant='primary'
+                size='sm'
+                className={
                   selectedAreas.includes(area.name)
-                    ? 'bg-white/30 border-white'
-                    : 'bg-white/10 border-white/20'
-                }`}
+                    ? 'border-2 border-white/80'
+                    : ''
+                }
               >
-                <HStack className='items-center justify-between'>
-                  <Text className='text-white font-medium'>{area.name}</Text>
-                  {selectedAreas.includes(area.name) && (
-                    <Box className='size-5 bg-white rounded-full justify-center items-center'>
-                      <Ionicons name='checkmark' size={12} color='#6366F1' />
-                    </Box>
-                  )}
-                </HStack>
-              </Pressable>
+                <Pressable onPress={() => togglePredefinedArea(area.name)}>
+                  <HStack className='items-center justify-between'>
+                    <ThemedText variant='body' color='primary' weight='medium'>
+                      {area.name}
+                    </ThemedText>
+                    {selectedAreas.includes(area.name) && (
+                      <Box className='size-5 bg-purple-500 rounded-full justify-center items-center'>
+                        <Ionicons name='checkmark' size={12} color='white' />
+                      </Box>
+                    )}
+                  </HStack>
+                </Pressable>
+              </ThemedCard>
             ))}
           </VStack>
 
           {/* Custom Areas */}
-          <Text className='text-white font-semibold mt-4'>Custom Areas</Text>
-          <HStack space='sm'>
-            <TextInput
-              ref={customAreaInputRef}
-              value={newAreaName}
-              onChangeText={setNewAreaName}
-              placeholder='Add custom area'
-              placeholderTextColor='rgba(255, 255, 255, 0.5)'
-              style={{
-                flex: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                borderRadius: 8,
-                padding: 12,
-                color: 'white',
-                fontSize: 14,
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-              }}
-              returnKeyType='done'
-              onSubmitEditing={() => {
-                if (newAreaName.trim()) {
-                  addCustomArea()
-                  // Small delay to refocus after state update
-                  setTimeout(() => {
-                    customAreaInputRef.current?.focus()
-                  }, 50)
-                }
-              }}
-              clearButtonMode='while-editing'
-              autoCapitalize='words'
-              autoCorrect={false}
-            />
-            <Pressable
+          <ThemedText
+            variant='body'
+            color='onGradient'
+            weight='semibold'
+            style={{ marginTop: 16 }}
+          >
+            Custom Areas
+          </ThemedText>
+          <HStack space='sm' className='items-center'>
+            <Box className='flex flex-1 items-center'>
+              <ThemedInput
+                variant='filled'
+                size='md'
+                fieldProps={{
+                  value: newAreaName,
+                  onChangeText: setNewAreaName,
+                  placeholder: 'Add custom area',
+                  returnKeyType: 'done',
+                  onSubmitEditing: () => {
+                    if (newAreaName.trim()) {
+                      addCustomArea()
+                    }
+                  },
+                  clearButtonMode: 'while-editing',
+                  autoCapitalize: 'words',
+                  autoCorrect: false,
+                }}
+              />
+            </Box>
+            <ThemedButton
+              variant='primary'
+              size='md'
               onPress={() => {
                 if (newAreaName.trim()) {
                   addCustomArea()
-                  setTimeout(() => {
-                    customAreaInputRef.current?.focus()
-                  }, 50)
                 }
               }}
-              className='px-4 py-3 bg-white/20 rounded-lg justify-center items-center'
+              className='bg-white/20 dark:bg-white/20 px-4 min-w-16'
             >
               <Ionicons name='add' size={16} color='white' />
-            </Pressable>
+            </ThemedButton>
           </HStack>
 
           {/* Custom Areas List */}
           {customAreas.map((areaName) => (
-            <Pressable
+            <ThemedCard
               key={areaName}
-              className='p-4 rounded-xl bg-white/20 border border-white/30'
+              variant='primary'
+              size='sm'
+              className='border-white/30'
             >
               <HStack className='items-center justify-between'>
-                <Text className='text-white font-medium'>{areaName}</Text>
+                <ThemedText variant='body' color='primary' weight='medium'>
+                  {areaName}
+                </ThemedText>
                 <Pressable
                   onPress={() => removeCustomArea(areaName)}
                   className='p-1'
                 >
-                  <Ionicons name='close' size={16} color='white' />
+                  <Ionicons name='close' size={16} color='#9CA3AF' />
                 </Pressable>
               </HStack>
-            </Pressable>
+            </ThemedCard>
           ))}
         </VStack>
       </VStack>
@@ -643,51 +662,48 @@ export default function CountSetupScreen() {
     (selectedAreas.length > 0 || customAreas.length > 0)
 
   return (
-    <Box style={{ height: '100%' }}>
-      <KeyboardAvoidingView
-        behavior={'height'}
-        style={{ flex: 1, height: '100%' }}
-        keyboardVerticalOffset={0}
-      >
-        <PageGradient>
-          {/* Header */}
-          <SafeAreaView edges={['top']}>
-            <HStack className='items-center justify-between p-4'>
-              <Pressable
-                onPress={goToPreviousStep}
-                className='p-3 rounded-xl active:opacity-70'
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                }}
-              >
-                <Ionicons name='arrow-back' size={24} color='white' />
-              </Pressable>
-              <VStack className='items-center' space='xs'>
-                <Text className='text-white font-bold text-lg'>
-                  {isQuickCount ? 'Quick Count Setup' : 'Setup Count'}
-                </Text>
-                <Text className='text-white/70 text-sm'>
-                  Step{' '}
-                  {isQuickCount
-                    ? Math.max(
-                        ['name', 'location', 'areas'].indexOf(currentStep) + 1,
-                        1
-                      )
-                    : Math.max(
-                        ['name', 'location', 'type', 'areas'].indexOf(
-                          currentStep
-                        ) + 1,
-                        1
-                      )}{' '}
-                  of {isQuickCount ? 3 : 4}
-                </Text>
-              </VStack>
-              <Box className='w-12' />
+    <PageGradient>
+      {/* Header */}
+      <Box className='p-0 flex flex-1 overflow-hidden'>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <Box
+            className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+            style={{ paddingTop: insets.top + 4 }}
+          >
+            <HStack className='justify-between items-center p-2'>
+              <HStack space='md' className='items-center'>
+                <Pressable className='mr-4' onPress={goToPreviousStep}>
+                  <Ionicons name='arrow-back' size={24} color='white' />
+                </Pressable>
+                <VStack>
+                  <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+                    {isQuickCount ? 'Quick Count Setup' : 'Setup Count'}
+                  </ThemedHeading>
+                  <ThemedText variant='caption' color='onGradientMuted'>
+                    Step{' '}
+                    {isQuickCount
+                      ? Math.max(
+                          ['name', 'location', 'areas'].indexOf(currentStep) +
+                            1,
+                          1
+                        )
+                      : Math.max(
+                          ['name', 'location', 'type', 'areas'].indexOf(
+                            currentStep
+                          ) + 1,
+                          1
+                        )}{' '}
+                    of {isQuickCount ? 3 : 4}
+                  </ThemedText>
+                </VStack>
+              </HStack>
             </HStack>
 
             {/* Progress Bar */}
-            <Box className='mx-4 mb-4'>
+            <Box className='mx-4 mt-2'>
               <Box className='h-2 bg-white/20 rounded-full overflow-hidden'>
                 <Box
                   className='h-full bg-white rounded-full'
@@ -695,7 +711,7 @@ export default function CountSetupScreen() {
                 />
               </Box>
             </Box>
-          </SafeAreaView>
+          </Box>
 
           {/* Step Content */}
           <Box className='flex-1'>{renderStepContent()}</Box>
@@ -704,15 +720,25 @@ export default function CountSetupScreen() {
           <Box className='py-2 px-6 pb-6'>
             <HStack space='md'>
               {currentStep !== 'name' && (
-                <Pressable
+                <ThemedButton
+                  variant='outline'
+                  size='lg'
                   onPress={goToPreviousStep}
-                  className='flex-1 py-4 px-6 bg-white/20 rounded-2xl justify-center items-center'
+                  className='flex-1 bg-white/20 dark:bg-white/20 border-transparent'
                 >
-                  <Text className='text-white font-semibold'>Previous</Text>
-                </Pressable>
+                  <ThemedText
+                    variant='body'
+                    color='onGradient'
+                    weight='semibold'
+                  >
+                    Previous
+                  </ThemedText>
+                </ThemedButton>
               )}
 
-              <Pressable
+              <ThemedButton
+                variant='warning'
+                size='lg'
                 onPress={
                   currentStep === 'areas' ? handleCreateCount : goToNextStep
                 }
@@ -721,33 +747,40 @@ export default function CountSetupScreen() {
                   isCreating ||
                   (currentStep === 'areas' && !canCreateCount)
                 }
-                className={`flex-1 py-4 px-6 rounded-2xl justify-center items-center ${
+                className={`flex-1 ${
                   canProceedFromStep() && !isCreating
-                    ? 'bg-white'
-                    : 'bg-white/30'
+                    ? ''
+                    : 'opacity-40 border-transparent'
                 }`}
               >
                 {isCreating ? (
-                  <Text className='text-purple-600 font-semibold'>
+                  <ThemedText
+                    variant='body'
+                    color='onGradient'
+                    weight='semibold'
+                  >
                     Creating...
-                  </Text>
+                  </ThemedText>
                 ) : (
-                  <Text
-                    className={`font-semibold ${canProceedFromStep() ? 'text-purple-600' : 'text-white/70'}`}
+                  <ThemedText
+                    variant='body'
+                    color={
+                      canProceedFromStep() ? 'onGradient' : 'onGradientMuted'
+                    }
+                    weight='semibold'
                   >
                     {currentStep === 'areas'
                       ? isQuickCount
                         ? 'Start Quick Count'
                         : 'Start Count'
                       : 'Next'}
-                  </Text>
+                  </ThemedText>
                 )}
-              </Pressable>
+              </ThemedButton>
             </HStack>
           </Box>
-        </PageGradient>
-      </KeyboardAvoidingView>
-      <SafeAreaView edges={['bottom']} className='pb-20' />
-    </Box>
+        </KeyboardAvoidingView>
+      </Box>
+    </PageGradient>
   )
 }

@@ -243,14 +243,14 @@ export function InventoryScreen() {
                   className={cn(
                     'h-10 px-4',
                     filterType === button.key
-                      ? 'bg-white dark:bg-white/25 border-transparent dark:border dark:border-white/80'
-                      : 'bg-white/20 dark:bg-white/10 border-white/40 dark:border-transparent'
+                      ? 'border border-white/80 dark:border-white/80'
+                      : 'bg-white/20 dark:bg-white/10 border-transparent dark:border-transparent'
                   )}
                 >
                   <ThemedText
                     variant='caption'
                     weight='semibold'
-                    color={filterType === button.key ? 'primary' : 'onGradient'}
+                    color='onGradient'
                   >
                     {button.label}
                   </ThemedText>

@@ -5,26 +5,23 @@ import { Alert, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import { Pressable } from '@/components/ui/pressable'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
 import { PageGradient } from '../components/PageGradient'
-import { cn, themeClasses } from '../constants/themeClasses'
+import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import {
+  ThemedBadge,
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import { api } from '../lib/api'
 import { pluralize } from '../utils/pluralize'
 import type { Order } from './OrdersScreen'
-
-const ORDER_STATUS_COLORS = {
-  DRAFT: 'bg-blue-100',
-  SENT: 'bg-blue-600',
-  PARTIALLY_RECEIVED: 'bg-amber-600',
-  RECEIVED: 'bg-green-600',
-  CANCELLED: 'bg-red-600',
-}
 
 const ORDER_STATUS_LABELS = {
   DRAFT: 'Draft',
@@ -165,6 +162,23 @@ export default function OrderDetailScreen({
     }))
   }
 
+  const getStatusVariant = (status: Order['status']) => {
+    switch (status) {
+      case 'DRAFT':
+        return 'default'
+      case 'SENT':
+        return 'info'
+      case 'PARTIALLY_RECEIVED':
+        return 'warning'
+      case 'RECEIVED':
+        return 'success'
+      case 'CANCELLED':
+        return 'danger'
+      default:
+        return 'default'
+    }
+  }
+
   const canReceiveItems =
     order?.status === 'SENT' || order?.status === 'PARTIALLY_RECEIVED'
   const canSendOrder = order?.status === 'DRAFT'
@@ -173,8 +187,16 @@ export default function OrderDetailScreen({
   if (loading) {
     return (
       <PageGradient>
+        <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
-          <Text className='text-white text-lg'>Loading order details...</Text>
+          <ThemedText
+            variant='body'
+            color='onGradient'
+            weight='medium'
+            align='center'
+          >
+            Loading order details...
+          </ThemedText>
         </Box>
       </PageGradient>
     )
@@ -183,8 +205,16 @@ export default function OrderDetailScreen({
   if (!order) {
     return (
       <PageGradient>
+        <StatusBar style='light' />
         <Box className='flex-1 justify-center items-center'>
-          <Text className='text-white text-lg'>Order not found</Text>
+          <ThemedText
+            variant='body'
+            color='onGradient'
+            weight='medium'
+            align='center'
+          >
+            Order not found
+          </ThemedText>
         </Box>
       </PageGradient>
     )
@@ -199,150 +229,133 @@ export default function OrderDetailScreen({
         className='px-5 pb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
         style={{ paddingTop: insets.top + 4 }}
       >
-        <HStack className='justify-between items-center'>
+        <HStack className='justify-between items-center p-2'>
           <HStack space='md' className='items-center'>
             <Pressable className='mr-4' onPress={() => navigation.goBack()}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </Pressable>
-            <Text className='text-white text-xl font-bold'>Order Details</Text>
+            <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+              Order Details
+            </ThemedHeading>
           </HStack>
         </HStack>
       </Box>
 
-      <ScrollView
-        className='flex-1'
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Order Info Section */}
-        <Card className='m-4 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'>
-          <VStack space='md'>
-            <HStack className='justify-between items-start'>
-              <VStack space='xs'>
-                <Text
-                  className={cn('text-xl font-bold', themeClasses.text.primary)}
-                >
-                  {order.orderNumber}
-                </Text>
-                <Text className={cn('text-lg', themeClasses.text.muted)}>
-                  {order.supplier.name}
-                </Text>
-              </VStack>
-              <Box
-                className={`px-3 py-1 rounded-full ${ORDER_STATUS_COLORS[order.status]}`}
-              >
-                <Text className='text-sm font-medium text-white'>
-                  {ORDER_STATUS_LABELS[order.status]}
-                </Text>
-              </Box>
+      {/* Order Summary (not in card) */}
+      <Box className='px-4 pt-4 pb-4 bg-black/20 dark:bg-white/5'>
+        <VStack space='md'>
+          <HStack className='justify-between items-start'>
+            <VStack space='xs'>
+              <ThemedHeading variant='h2' color='onGradient' weight='bold'>
+                {order.orderNumber}
+              </ThemedHeading>
+              <ThemedText variant='h4' color='onGradientMuted'>
+                {order.supplier.name}
+              </ThemedText>
+            </VStack>
+            <ThemedBadge variant={getStatusVariant(order.status)} size='md'>
+              {ORDER_STATUS_LABELS[order.status]}
+            </ThemedBadge>
+          </HStack>
+
+          {/* Order Details Grid */}
+          <VStack space='xs'>
+            <HStack className='justify-between'>
+              <ThemedText variant='body' color='onGradientMuted'>
+                Order Date:
+              </ThemedText>
+              <ThemedText variant='body' color='onGradient' weight='medium'>
+                {new Date(order.orderDate).toLocaleDateString()}
+              </ThemedText>
             </HStack>
 
-            {/* Order Details Grid */}
-            <VStack space='sm'>
+            {order.expectedDate && (
               <HStack className='justify-between'>
-                <Text className={cn('text-sm', themeClasses.text.muted)}>
-                  Order Date:
-                </Text>
-                <Text
-                  className={cn(
-                    'text-sm font-medium',
-                    themeClasses.text.primary
-                  )}
-                >
-                  {new Date(order.orderDate).toLocaleDateString()}
-                </Text>
+                <ThemedText variant='body' color='onGradientMuted'>
+                  Expected Date:
+                </ThemedText>
+                <ThemedText variant='body' color='onGradient' weight='medium'>
+                  {new Date(order.expectedDate).toLocaleDateString()}
+                </ThemedText>
               </HStack>
+            )}
 
-              {order.expectedDate && (
-                <HStack className='justify-between'>
-                  <Text className={cn('text-sm', themeClasses.text.muted)}>
-                    Expected Date:
-                  </Text>
-                  <Text
-                    className={cn(
-                      'text-sm font-medium',
-                      themeClasses.text.primary
-                    )}
-                  >
-                    {new Date(order.expectedDate).toLocaleDateString()}
-                  </Text>
-                </HStack>
-              )}
-
-              {order.receivedDate && (
-                <HStack className='justify-between'>
-                  <Text className={cn('text-sm', themeClasses.text.muted)}>
-                    Received Date:
-                  </Text>
-                  <Text
-                    className={cn(
-                      'text-sm font-medium',
-                      themeClasses.text.primary
-                    )}
-                  >
-                    {new Date(order.receivedDate).toLocaleDateString()}
-                  </Text>
-                </HStack>
-              )}
-
+            {order.receivedDate && (
               <HStack className='justify-between'>
-                <Text className={cn('text-sm', themeClasses.text.muted)}>
-                  Total Amount:
-                </Text>
-                <Text className='text-lg font-bold text-green-600'>
-                  ${order.totalAmount.toFixed(2)}
-                </Text>
+                <ThemedText variant='body' color='onGradientMuted'>
+                  Received Date:
+                </ThemedText>
+                <ThemedText variant='body' color='onGradient' weight='medium'>
+                  {new Date(order.receivedDate).toLocaleDateString()}
+                </ThemedText>
               </HStack>
-            </VStack>
+            )}
+
+            <HStack className='justify-between'>
+              <ThemedText variant='body' color='onGradientMuted'>
+                Total Amount:
+              </ThemedText>
+              <ThemedText variant='h3' color='onGradient' weight='bold'>
+                $
+                {order.totalAmount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </ThemedText>
+            </HStack>
           </VStack>
-        </Card>
+        </VStack>
+      </Box>
 
-        {/* Items Section */}
+      {/* Content */}
+      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
+        {/* Items Section Header */}
+        <Box className='p-4 pb-3'>
+          <ThemedHeading variant='h3' color='onGradient' weight='bold'>
+            Items ({order.items.length})
+          </ThemedHeading>
+        </Box>
+
+        {/* Items List */}
         <VStack space='md' className='px-4'>
-          <Text className='text-white text-xl font-bold'>Items</Text>
-
           {order.items.map((item) => (
-            <Card
-              key={item.id}
-              className='p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'
-            >
-              <VStack space='sm'>
-                <HStack className='justify-between items-start'>
-                  <VStack className='flex-1 mr-4' space='xs'>
-                    <Text
-                      className={cn(
-                        'text-lg font-bold',
-                        themeClasses.text.primary
-                      )}
-                    >
-                      {item.product.name}
-                    </Text>
-                    <Text className={cn('text-sm', themeClasses.text.muted)}>
-                      {item.product.category.name}
-                    </Text>
-                    {item.product.sku && (
-                      <Text className={cn('text-xs', themeClasses.text.muted)}>
-                        SKU: {item.product.sku}
-                      </Text>
-                    )}
+            <ThemedCard key={item.id} variant='primary' size='lg'>
+              <VStack space='md'>
+                <HStack space='sm'>
+                  {/* Product Image */}
+                  <ProductImage
+                    uri={item.product.image}
+                    {...ProductImageVariants.small}
+                  />
+                  <VStack space='md' className='flex-1'>
+                    <HStack className='justify-between items-start'>
+                      <VStack className='flex-1 mr-4' space='xs'>
+                        <ThemedText variant='h4' color='primary' weight='bold'>
+                          {item.product.name}
+                        </ThemedText>
+                        <ThemedText variant='caption' color='muted'>
+                          {item.product.category.name}
+                        </ThemedText>
+                        {item.product.sku && (
+                          <ThemedText variant='caption' color='muted'>
+                            SKU: {item.product.sku}
+                          </ThemedText>
+                        )}
+                      </VStack>
+                      <ThemedText variant='h4' color='success' weight='bold'>
+                        ${item.totalCost.toFixed(2)}
+                      </ThemedText>
+                    </HStack>
                   </VStack>
-                  <Text className='text-lg font-bold text-green-600'>
-                    ${item.totalCost.toFixed(2)}
-                  </Text>
                 </HStack>
 
                 {/* Quantity Information */}
                 <HStack className='justify-between items-center'>
                   <VStack space='xs'>
-                    <Text className={cn('text-sm', themeClasses.text.muted)}>
+                    <ThemedText variant='caption' color='muted'>
                       Ordered
-                    </Text>
-                    <Text
-                      className={cn(
-                        'text-md font-medium',
-                        themeClasses.text.primary
-                      )}
-                    >
+                    </ThemedText>
+                    <ThemedText variant='body' color='primary' weight='medium'>
                       {item.quantityOrdered}{' '}
                       {pluralize(
                         item.quantityOrdered,
@@ -351,155 +364,175 @@ export default function OrderDetailScreen({
                       {item.orderingUnit === 'CASE' &&
                         item.product.caseSize &&
                         ` (${item.quantityOrdered * item.product.caseSize} units)`}
-                    </Text>
+                    </ThemedText>
                   </VStack>
 
                   {canReceiveItems ? (
                     <VStack space='xs' className='ml-4'>
-                      <Text className={cn('text-sm', themeClasses.text.muted)}>
+                      <ThemedText variant='caption' color='muted'>
                         Received
-                      </Text>
-                      <HStack className='items-center bg-white border border-gray-300 rounded-lg'>
-                        <Pressable
-                          className='p-2'
+                      </ThemedText>
+                      <HStack className='items-center' space='sm'>
+                        <ThemedButton
+                          variant='secondary'
+                          size='sm'
                           onPress={() =>
                             updateReceivedQuantity(
                               item.id,
                               (receivedQuantities[item.id] || 0) - 1
                             )
                           }
+                          className='w-8 h-8 p-0'
                         >
-                          <Ionicons name='remove' size={16} color='#2563EB' />
-                        </Pressable>
+                          <Ionicons name='remove' size={16} color='#8B5CF6' />
+                        </ThemedButton>
 
-                        <Input className='w-16 text-center border-0'>
-                          <InputField
-                            value={String(receivedQuantities[item.id] || 0)}
-                            onChangeText={(text) => {
+                        <ThemedInput
+                          variant='default'
+                          size='sm'
+                          className='w-16'
+                          fieldProps={{
+                            value: String(receivedQuantities[item.id] || 0),
+                            onChangeText: (text) => {
                               const num = parseInt(text) || 0
                               updateReceivedQuantity(item.id, num)
-                            }}
-                            keyboardType='numeric'
-                            className={cn(
-                              'text-center',
-                              themeClasses.text.primary
-                            )}
-                          />
-                        </Input>
+                            },
+                            keyboardType: 'numeric',
+                            textAlign: 'center',
+                          }}
+                        />
 
-                        <Pressable
-                          className='p-2'
+                        <ThemedButton
+                          variant='secondary'
+                          size='sm'
                           onPress={() =>
                             updateReceivedQuantity(
                               item.id,
                               (receivedQuantities[item.id] || 0) + 1
                             )
                           }
+                          className='w-8 h-8 p-0'
                         >
-                          <Ionicons name='add' size={16} color='#2563EB' />
-                        </Pressable>
+                          <Ionicons name='add' size={16} color='#8B5CF6' />
+                        </ThemedButton>
                       </HStack>
                     </VStack>
                   ) : (
                     <VStack space='xs'>
-                      <Text className={cn('text-sm', themeClasses.text.muted)}>
+                      <ThemedText variant='caption' color='muted'>
                         Received
-                      </Text>
-                      <Text
-                        className={cn(
-                          'text-md font-medium',
-                          themeClasses.text.primary
-                        )}
+                      </ThemedText>
+                      <ThemedText
+                        variant='body'
+                        color='primary'
+                        weight='medium'
                       >
                         {item.quantityReceived}{' '}
                         {pluralize(
                           item.quantityReceived,
                           item.orderingUnit.toLowerCase()
                         )}
-                      </Text>
+                      </ThemedText>
                     </VStack>
                   )}
                 </HStack>
 
-                <Box className='border-t border-gray-200 pt-2'>
-                  <Text className={cn('text-sm', themeClasses.text.muted)}>
+                <Box className='border-t border-gray-200 pt-3'>
+                  <ThemedText variant='caption' color='muted'>
                     Unit Cost: ${item.unitCost.toFixed(2)} per{' '}
                     {item.orderingUnit.toLowerCase()}
-                  </Text>
+                  </ThemedText>
                 </Box>
               </VStack>
-            </Card>
+            </ThemedCard>
           ))}
         </VStack>
 
         {/* Notes Section */}
-        <Card className='m-4 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50'>
-          <VStack space='sm'>
-            <Text
-              className={cn('text-lg font-bold', themeClasses.text.primary)}
-            >
-              Notes
-            </Text>
-            {canReceiveItems ? (
-              <Input className='bg-gray-50 border border-gray-300 rounded-lg'>
-                <InputField
-                  value={notes}
-                  onChangeText={setNotes}
-                  placeholder='Add notes about this order...'
-                  multiline
-                  numberOfLines={3}
-                  className={themeClasses.text.primary}
-                />
-              </Input>
-            ) : (
-              <Text className={cn('italic', themeClasses.text.secondary)}>
-                {order.notes || 'No notes'}
-              </Text>
-            )}
-          </VStack>
-        </Card>
+        {(canReceiveItems || order.notes) && (
+          <Box className='p-6'>
+            <ThemedCard variant='primary' size='lg'>
+              <VStack space='md'>
+                <ThemedHeading variant='h4' color='primary' weight='bold'>
+                  Notes
+                </ThemedHeading>
+                {canReceiveItems ? (
+                  <ThemedInput
+                    variant='default'
+                    size='lg'
+                    fieldProps={{
+                      value: notes,
+                      onChangeText: setNotes,
+                      placeholder: 'Add notes about this order...',
+                      multiline: true,
+                      numberOfLines: 3,
+                    }}
+                  />
+                ) : (
+                  <ThemedText
+                    variant='body'
+                    color='secondary'
+                    style={{ fontStyle: 'italic' }}
+                  >
+                    {order.notes || 'No notes'}
+                  </ThemedText>
+                )}
+              </VStack>
+            </ThemedCard>
+          </Box>
+        )}
 
         {/* Action Buttons */}
-        <VStack space='md' className='px-4'>
+        <VStack space='md' className='px-6 pb-6'>
           {canSendOrder && (
-            <Pressable
-              className='flex-row items-center justify-center bg-blue-600 py-3 rounded-xl'
+            <ThemedButton
+              variant='primary'
+              size='lg'
               onPress={() => handleStatusChange('SENT')}
+              fullWidth
+              icon={<Ionicons name='send' size={20} color='white' />}
             >
-              <Ionicons name='send' size={20} color='white' />
-              <Text className='text-white font-medium text-lg ml-2'>
+              <ThemedText variant='body' color='onGradient' weight='semibold'>
                 Send Order
-              </Text>
-            </Pressable>
+              </ThemedText>
+            </ThemedButton>
           )}
 
           {canReceiveItems && (
-            <Pressable
-              className='flex-row items-center justify-center bg-green-600 py-3 rounded-xl'
+            <ThemedButton
+              variant='success'
+              size='lg'
               onPress={handleReceiveItems}
+              fullWidth
+              icon={
+                <Ionicons name='checkmark-circle' size={20} color='white' />
+              }
             >
-              <Ionicons name='checkmark-circle' size={20} color='white' />
-              <Text className='text-white font-medium text-lg ml-2'>
+              <ThemedText variant='body' color='onGradient' weight='semibold'>
                 Update Received Items
-              </Text>
-            </Pressable>
+              </ThemedText>
+            </ThemedButton>
           )}
 
           {order.status === 'SENT' && (
-            <Pressable
-              className='flex-row items-center justify-center bg-green-700 py-3 rounded-xl'
+            <ThemedButton
+              variant='success'
+              size='lg'
               onPress={() => handleStatusChange('RECEIVED')}
+              fullWidth
+              icon={<Ionicons name='checkmark-done' size={20} color='white' />}
+              className='bg-green-700 dark:bg-green-700'
             >
-              <Ionicons name='checkmark-done' size={20} color='white' />
-              <Text className='text-white font-medium text-lg ml-2'>
+              <ThemedText variant='body' color='onGradient' weight='semibold'>
                 Mark as Fully Received
-              </Text>
-            </Pressable>
+              </ThemedText>
+            </ThemedButton>
           )}
 
           {canCancelOrder && (
-            <Pressable
-              className='flex-row items-center justify-center bg-red-600 py-3 rounded-xl'
+            <ThemedButton
+              variant='danger'
+              size='lg'
               onPress={() => {
                 Alert.alert(
                   'Cancel Order',
@@ -514,12 +547,13 @@ export default function OrderDetailScreen({
                   ]
                 )
               }}
+              fullWidth
+              icon={<Ionicons name='close-circle' size={20} color='white' />}
             >
-              <Ionicons name='close-circle' size={20} color='white' />
-              <Text className='text-white font-medium text-lg ml-2'>
+              <ThemedText variant='body' color='onGradient' weight='semibold'>
                 Cancel Order
-              </Text>
-            </Pressable>
+              </ThemedText>
+            </ThemedButton>
           )}
         </VStack>
       </ScrollView>

@@ -7,10 +7,8 @@ import { Alert, BackHandler, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box } from '@/components/ui/box'
-import { Button, ButtonText } from '@/components/ui/button'
 import { Center } from '@/components/ui/center'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import {
   Modal,
   ModalBackdrop,
@@ -22,10 +20,14 @@ import {
 } from '@/components/ui/modal'
 import { Pressable } from '@/components/ui/pressable'
 import { Spinner } from '@/components/ui/spinner'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
+import {
+  ThemedButton,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
 import { useProductByUPC } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -144,13 +146,10 @@ export function ScanScreen() {
               text: 'Add Product',
               onPress: () => {
                 // Navigate to add product screen with UPC pre-filled
-                navigation.navigate([
-                  'Inventory',
-                  {
-                    screen: 'AddProduct',
-                    params: { upc: scannedUPC },
-                  },
-                ] as never)
+                navigation.getParent()?.navigate('Inventory', {
+                  screen: 'AddProduct',
+                  params: { upc: scannedUPC },
+                })
                 setScannedUPC(null)
               },
             },
@@ -317,9 +316,9 @@ export function ScanScreen() {
       <PageGradient>
         <Center className='flex-1'>
           <Spinner size='large' color='white' />
-          <Text className='text-white text-lg mt-4'>
+          <ThemedText variant='body' color='onGradient' className='mt-4'>
             Requesting camera permission...
-          </Text>
+          </ThemedText>
         </Center>
       </PageGradient>
     )
@@ -332,21 +331,19 @@ export function ScanScreen() {
           <Box className='w-20 h-20 bg-white/20 rounded-full justify-center items-center mb-6'>
             <Ionicons name='camera-outline' size={40} color='white' />
           </Box>
-          <Text className='text-white text-xl font-bold text-center mb-4'>
+          <ThemedText variant='h3' color='onGradient' weight='bold' align='center' className='mb-4'>
             Camera Permission Required
-          </Text>
-          <Text className='text-white/80 text-base text-center mb-8'>
+          </ThemedText>
+          <ThemedText variant='body' color='onGradientMuted' align='center' className='mb-8'>
             We need camera access to scan barcodes for inventory counting
-          </Text>
-          <Button
+          </ThemedText>
+          <ThemedButton
+            variant='white'
             size='lg'
-            className='bg-white rounded-xl px-8'
             onPress={requestPermission}
           >
-            <ButtonText className='text-purple-600 font-bold'>
-              Grant Permission
-            </ButtonText>
-          </Button>
+            Grant Permission
+          </ThemedButton>
         </Center>
       </PageGradient>
     )
@@ -400,9 +397,9 @@ export function ScanScreen() {
       {!isCameraReady && (
         <Box className='absolute inset-0 bg-black/70 justify-center items-center'>
           <Spinner size='large' color='white' />
-          <Text className='text-white text-lg mt-4'>
+          <ThemedText variant='body' color='onGradient' className='mt-4'>
             Initializing camera...
-          </Text>
+          </ThemedText>
         </Box>
       )}
 
@@ -434,18 +431,18 @@ export function ScanScreen() {
             </Pressable>
           </HStack>
           <VStack className='items-center flex-1'>
-            <Text className='text-white text-lg font-bold'>
+            <ThemedText variant='body' color='onGradient' weight='bold'>
               {activeSession ? activeSession.name : 'Quick Count'}
-            </Text>
+            </ThemedText>
             {activeSession && (
-              <Text className='text-white/70 text-xs'>
+              <ThemedText variant='caption' color='onGradientMuted'>
                 {activeSession.type} • {activeSession.locationName}
-              </Text>
+              </ThemedText>
             )}
             {currentArea && (
-              <Text className='text-white/80 text-sm font-medium'>
+              <ThemedText variant='caption' color='onGradient' weight='medium'>
                 Area: {currentArea.name}
-              </Text>
+              </ThemedText>
             )}
           </VStack>
           <Pressable
@@ -490,13 +487,13 @@ export function ScanScreen() {
           )}
         </Box>
 
-        <Text className='text-white text-lg font-medium mt-8 text-center px-8'>
+        <ThemedText variant='body' color='onGradient' weight='medium' align='center' className='mt-8 px-8'>
           {isScanning
             ? 'Point camera at barcode'
             : isLookingUp
               ? 'Looking up product...'
               : 'Processing scan...'}
-        </Text>
+        </ThemedText>
       </Center>
 
       {/* Bottom Footer */}
@@ -508,62 +505,60 @@ export function ScanScreen() {
           {recentScans.length > 0 && (
             <VStack space='sm'>
               <HStack className='justify-between items-center'>
-                <Text className='text-white text-lg font-bold'>
+                <ThemedText variant='body' color='onGradient' weight='bold'>
                   Last Scanned
-                </Text>
+                </ThemedText>
                 <Pressable
                   onPress={() => navigation.navigate('CountHistory' as never)}
                 >
-                  <Text className='text-purple-400 font-medium'>View All</Text>
+                  <ThemedText color='purple' weight='medium'>View All</ThemedText>
                 </Pressable>
               </HStack>
 
               <HStack className='justify-between items-center py-3 px-4 bg-white/10 rounded-lg backdrop-blur-sm'>
                 <VStack className='flex-1'>
-                  <Text className='text-white font-medium' numberOfLines={1}>
+                  <ThemedText color='onGradient' weight='medium' numberOfLines={1}>
                     {recentScans[0].productName}
-                  </Text>
-                  <Text className='{themeClasses.text.muted} text-sm'>
+                  </ThemedText>
+                  <ThemedText variant='caption' color='onGradientMuted'>
                     {new Date(recentScans[0].timestamp).toLocaleTimeString()}
-                  </Text>
+                  </ThemedText>
                 </VStack>
                 <VStack className='items-end'>
-                  <Text className='text-white font-bold'>
+                  <ThemedText color='onGradient' weight='bold'>
                     {recentScans[0].countedQuantity}{' '}
                     {pluralize(
                       recentScans[0].countedQuantity,
                       recentScans[0].container || 'unit'
                     )}
-                  </Text>
-                  <Text
-                    className={`text-sm font-medium ${
+                  </ThemedText>
+                  <ThemedText
+                    variant='caption'
+                    weight='medium'
+                    color={
                       recentScans[0].variance === 0
-                        ? 'text-green-400'
+                        ? 'success'
                         : recentScans[0].variance > 0
-                          ? 'text-blue-400'
-                          : 'text-orange-400'
-                    }`}
+                          ? 'primary'
+                          : 'warning'
+                    }
                   >
                     {recentScans[0].variance > 0 ? '+' : ''}
                     {recentScans[0].variance}
-                  </Text>
+                  </ThemedText>
                 </VStack>
               </HStack>
             </VStack>
           )}
 
-          <Button
+          <ThemedButton
+            variant='purple'
             size='lg'
-            className='bg-purple-600 rounded-xl'
             onPress={navigateToCount}
+            icon={<Ionicons name='list' size={20} color='white' />}
           >
-            <HStack space='sm' className='items-center'>
-              <Ionicons name='list' size={20} color='white' />
-              <ButtonText className='text-white font-bold'>
-                Select from List
-              </ButtonText>
-            </HStack>
-          </Button>
+            Select from List
+          </ThemedButton>
         </VStack>
       </Box>
 
@@ -572,9 +567,9 @@ export function ScanScreen() {
         <ModalBackdrop className='bg-black/70' />
         <ModalContent className='m-6 max-w-md bg-white'>
           <ModalHeader>
-            <Text className='text-2xl font-bold {themeClasses.text.primary}'>
+            <ThemedText variant='h3' color='primary' weight='bold'>
               Product Scanned
-            </Text>
+            </ThemedText>
             <ModalCloseButton
               onPress={() => {
                 setShowModal(false)
@@ -598,10 +593,10 @@ export function ScanScreen() {
                   />
 
                   <VStack space='sm' className='flex-1'>
-                    <Text className='text-xl font-bold {themeClasses.text.primary}'>
+                    <ThemedText variant='h4' color='primary' weight='bold'>
                       {scannedProduct.name}
-                    </Text>
-                    <Text className='{themeClasses.text.muted}'>
+                    </ThemedText>
+                    <ThemedText color='muted'>
                       {scannedProduct.sku && `SKU: ${scannedProduct.sku} • `}
                       Current: {scannedProduct.currentStock}{' '}
                       {pluralize(
@@ -610,14 +605,14 @@ export function ScanScreen() {
                       )}
                       {scannedProduct.parLevel > 0 &&
                         ` • Par: ${scannedProduct.parLevel}`}
-                    </Text>
+                    </ThemedText>
                   </VStack>
                 </HStack>
 
                 <VStack space='sm'>
-                  <Text className='{themeClasses.text.secondaryfont-medium}'>
+                  <ThemedText color='secondary' weight='medium'>
                     Count Quantity
-                  </Text>
+                  </ThemedText>
                   <HStack className='justify-center items-center' space='lg'>
                     <Pressable
                       className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
@@ -630,15 +625,18 @@ export function ScanScreen() {
                       <Ionicons name='remove' size={24} color='#8B5CF6' />
                     </Pressable>
 
-                    <Input variant='outline' size='md' className='w-20'>
-                      <InputField
-                        value={quantity}
-                        onChangeText={setQuantity}
-                        keyboardType='decimal-pad'
-                        className='text-center text-2xl font-bold'
-                        selectTextOnFocus
-                      />
-                    </Input>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      className='w-20'
+                      fieldProps={{
+                        value: quantity,
+                        onChangeText: setQuantity,
+                        keyboardType: 'decimal-pad',
+                        selectTextOnFocus: true,
+                        className: 'text-center text-2xl font-bold'
+                      }}
+                    />
 
                     <Pressable
                       className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
@@ -656,10 +654,10 @@ export function ScanScreen() {
 
           <ModalFooter>
             <HStack space='md' className='w-full'>
-              <Button
+              <ThemedButton
                 variant='outline'
                 size='lg'
-                className='flex-1 border-gray-300'
+                className='flex-1'
                 onPress={() => {
                   setShowModal(false)
                   setScannedProduct(null)
@@ -667,20 +665,17 @@ export function ScanScreen() {
                   setIsScanning(true)
                 }}
               >
-                <ButtonText className='{themeClasses.text.secondary}'>
-                  Cancel
-                </ButtonText>
-              </Button>
+                Cancel
+              </ThemedButton>
 
-              <Button
+              <ThemedButton
+                variant='purple'
                 size='lg'
-                className='flex-1 bg-purple-600'
+                className='flex-1'
                 onPress={handleSaveCount}
               >
-                <ButtonText className='text-white font-bold'>
-                  Save Count
-                </ButtonText>
-              </Button>
+                Save Count
+              </ThemedButton>
             </HStack>
           </ModalFooter>
         </ModalContent>

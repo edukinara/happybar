@@ -53,7 +53,7 @@ export function ThemedText({
       case 'h2':
         return 'text-2xl font-bold leading-tight'
       case 'h3':
-        return 'text-xl font-semibold leading-snug'
+        return 'text-[1.3rem] font-semibold leading-snug'
       case 'h4':
         return 'text-lg font-semibold leading-snug'
       case 'bodyLarge':

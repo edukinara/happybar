@@ -64,9 +64,9 @@ export function ThemedButton({
   const getThemedClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-purple-600 dark:bg-purple-500'
+        return 'bg-purple-500 dark:bg-purple-700 dark:data-[active=true]:bg-purple-700/60'
       case 'warning':
-        return 'bg-amber-600 dark:bg-amber-500'
+        return 'bg-amber-500 dark:bg-amber-700 dark:data-[active=true]:bg-amber-700/60'
       default:
         return ''
     }
@@ -78,7 +78,12 @@ export function ThemedButton({
     <Button
       {...gluestackProps}
       size={size}
-      className={cn(getThemedClasses(), fullWidth && 'w-full', className)}
+      className={cn(
+        'rounded-lg',
+        getThemedClasses(),
+        fullWidth && 'w-full',
+        className
+      )}
       onPress={onPress}
       {...props}
     >

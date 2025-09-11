@@ -118,6 +118,7 @@ interface CountStore {
   }
   getUnsyncedSessions: () => CountSession[]
   retryFailedSync: (sessionId: string) => Promise<void>
+  rehydrateCurrentSessionItems: () => Promise<void>
 }
 
 export const useCountStore = create<CountStore>()((set, get) => ({
@@ -919,5 +920,63 @@ export const useCountStore = create<CountStore>()((set, get) => ({
       (area) => area.status === 'completed'
     ).length
     return { completed, total: session.areas.length }
+  },
+
+  rehydrateCurrentSessionItems: async () => {
+    try {
+      const activeSession = get().getActiveSession()
+      if (!activeSession || !activeSession.apiId) {
+        console.log('No active session to rehydrate items for')
+        return
+      }
+
+      // Get full count details from API for current session
+      const response: any = await countApi.getCount(activeSession.apiId)
+      const apiCount = response.data
+
+      // Extract count items from API response areas
+      const countItems: CountItem[] = []
+      
+      if (apiCount.areas) {
+        for (const area of apiCount.areas) {
+          if (area.items && Array.isArray(area.items)) {
+            for (const item of area.items) {
+              const countItem: CountItem = {
+                id: item.id || `api-${item.productId}-${area.id}-${Date.now()}`,
+                inventoryItemId: item.inventoryItemId || '',
+                productId: item.productId,
+                productName: item.product?.name || 'Unknown Product',
+                productImage: item.product?.image || null,
+                sku: item.product?.sku || null,
+                barcode: item.barcode || '',
+                unit: item.product?.unit || 'unit',
+                container: item.product?.container || null,
+                currentStock: item.expectedQty || 0,
+                countedQuantity: item.totalQuantity || 0,
+                variance: (item.totalQuantity || 0) - (item.expectedQty || 0),
+                parLevel: item.expectedQty || 0,
+                timestamp: item.countedAt || new Date().toISOString(),
+                countSessionId: activeSession.id,
+                areaId: area.id,
+              }
+              countItems.push(countItem)
+            }
+          }
+        }
+      }
+
+      // Update count items for current session
+      set((state) => ({
+        countItems: [
+          ...countItems,
+          ...state.countItems.filter((item) => item.countSessionId !== activeSession.id),
+        ],
+      }))
+
+      console.log(`Rehydrated ${countItems.length} count items for current session from backend`)
+    } catch (error) {
+      console.error('Failed to rehydrate current session items:', error)
+      // Don't throw - this is a background operation
+    }
   },
 }))

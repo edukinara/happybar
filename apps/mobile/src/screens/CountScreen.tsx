@@ -1,7 +1,5 @@
 import { Box } from '@/components/ui/box'
-import { Button, ButtonText } from '@/components/ui/button'
 import { HStack } from '@/components/ui/hstack'
-import { Input, InputField } from '@/components/ui/input'
 import {
   Modal,
   ModalBackdrop,
@@ -12,20 +10,26 @@ import {
   ModalHeader,
 } from '@/components/ui/modal'
 import { Pressable } from '@/components/ui/pressable'
-import { ScrollView } from '@/components/ui/scroll-view'
 import { Spinner } from '@/components/ui/spinner'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
 import React, { useCallback, useState } from 'react'
-import { Alert, BackHandler, RefreshControl } from 'react-native'
+import { Alert, BackHandler, RefreshControl, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { cn, themeClasses } from '../constants/themeClasses'
+import {
+  ThemedButton,
+  ThemedCard,
+  ThemedHeading,
+  ThemedInput,
+  ThemedText,
+} from '../components/themed'
+import { useCountSync } from '../hooks/useCountSync'
 import { useProducts, type InventoryProduct } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -41,6 +45,9 @@ export function CountScreen() {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
 
+  // Count sync hook
+  const { syncNow } = useCountSync()
+
   // Count store
   const {
     addCountItem,
@@ -52,6 +59,7 @@ export function CountScreen() {
     getAreaProgress,
     updateCountItem,
     getCountItemsBySession,
+    rehydrateCurrentSessionItems,
   } = useCountStore()
 
   const recentScans = getRecentCountItems(5)
@@ -162,9 +170,15 @@ export function CountScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
-    await refetch()
-    setRefreshing(false)
-  }, [refetch])
+    try {
+      // Refresh products and rehydrate current session items
+      await Promise.all([refetch(), rehydrateCurrentSessionItems()])
+    } catch (error) {
+      console.error('Failed to refresh data:', error)
+    } finally {
+      setRefreshing(false)
+    }
+  }, [refetch, rehydrateCurrentSessionItems])
 
   // Reset search when screen gains focus
   useFocusEffect(
@@ -239,11 +253,6 @@ export function CountScreen() {
       } catch (error) {
         console.error('Failed to update count item in API:', error)
       }
-
-      // Alert.alert(
-      //   'Count Updated',
-      //   `Updated ${selectedProduct.name} in ${freshCurrentArea?.name || 'current area'} to ${countedQuantity} ${pluralize(countedQuantity, selectedProduct.container || 'unit')}`
-      // )
     } else {
       // Create count item object
       const countItem = {
@@ -278,11 +287,6 @@ export function CountScreen() {
         console.error('Failed to save count item to API:', error)
         // Item is already saved locally, so we can continue
       }
-
-      // Alert.alert(
-      //   'Count Saved',
-      //   `${countedQuantity} ${pluralize(countedQuantity, selectedProduct.container || 'unit')} of ${selectedProduct.name} in ${freshCurrentArea?.name || 'current area'}`
-      // )
     }
 
     // Reset modal state
@@ -296,65 +300,77 @@ export function CountScreen() {
     // Navigate within the same stack navigator
     ;(navigation as any).navigate('Scan')
   }
+  const { countItems } = useCountStore()
+
+  console.log(countItems)
 
   return (
     <PageGradient>
+      <StatusBar style='light' />
+
       {/* Header */}
-      <Box className='px-6 pb-4' style={{ paddingTop: insets.top + 16 }}>
-        <HStack className='justify-between items-center mb-4'>
-          <HStack className='items-center flex-1' space='md'>
-            <Pressable
-              className='w-10 h-10 rounded-full bg-white/20 justify-center items-center'
-              onPress={() => {
-                // Navigate back to home screen (exit count tab)
-                navigation.getParent()?.navigate('Home' as never)
-              }}
-            >
-              <Ionicons name='arrow-back' size={20} color='white' />
-            </Pressable>
-            <VStack className='flex-1'>
-              <Text className='text-white text-xl font-bold'>
-                {activeSession ? activeSession.name : 'Quick Count'}
-              </Text>
-              {activeSession && (
-                <Text className='text-white/80 text-sm'>
-                  {activeSession.type} • {activeSession.locationName}
-                </Text>
-              )}
-              {currentArea && (
-                <HStack className='items-center' space='sm'>
-                  <Text className='text-white/70 text-xs'>
-                    Area: {currentArea.name}
-                  </Text>
-                  <Text className='text-white/60 text-xs'>
-                    ({areaProgress.completed + 1}/{areaProgress.total})
-                  </Text>
-                </HStack>
-              )}
-            </VStack>
-          </HStack>
+      <Box
+        className='px-5 pb-2 mb-2 bg-white/5 backdrop-blur-xl border-b border-white/10'
+        style={{ paddingTop: insets.top + 4 }}
+      >
+        <HStack space='sm' className='items-start'>
           <Pressable
-            className='w-12 h-12 rounded-full bg-white/20 justify-center items-center'
-            onPress={handleCompleteArea}
+            className='mr-4'
+            onPress={() => {
+              // Navigate back to home screen (exit count tab)
+              navigation.getParent()?.navigate('Home' as never)
+            }}
           >
-            <Ionicons
-              name={currentArea ? 'checkmark' : 'help-circle-outline'}
-              size={24}
-              color='white'
-            />
+            <Ionicons name='arrow-back' size={24} color='white' />
           </Pressable>
+          <VStack className='flex-1'>
+            <ThemedHeading variant='h3' color='onGradient' weight='bold'>
+              {activeSession ? activeSession.name : 'Quick Count'}
+            </ThemedHeading>
+            <HStack space='md' className='w-full justify-between'>
+              <VStack>
+                {activeSession && (
+                  <ThemedText variant='caption' color='onGradientMuted'>
+                    {activeSession.type} • {activeSession.locationName}
+                  </ThemedText>
+                )}
+                {currentArea && (
+                  <HStack className='items-center' space='xs'>
+                    <ThemedText variant='caption' color='onGradientMuted'>
+                      Area: {currentArea.name}
+                    </ThemedText>
+                    <ThemedText variant='caption' color='onGradientMuted'>
+                      ({areaProgress.completed + 1}/{areaProgress.total})
+                    </ThemedText>
+                  </HStack>
+                )}
+              </VStack>
+              <ThemedButton
+                variant='primary'
+                size='md'
+                onPress={handleCompleteArea}
+                className='border-transparent rounded-2xl w-16 p-0'
+              >
+                <Ionicons
+                  name={currentArea ? 'checkmark' : 'help-circle-outline'}
+                  size={24}
+                  color='white'
+                />
+              </ThemedButton>
+            </HStack>
+          </VStack>
         </HStack>
 
         {/* Area Progress Bar */}
         {activeSession?.areas && activeSession.areas.length > 1 && (
-          <Box className='mb-4'>
+          <Box className='mt-2 px-2'>
             <HStack className='justify-between items-center mb-2'>
-              <Text className='text-white/80 text-sm font-medium'>
+              <ThemedText variant='body' color='onGradient' weight='medium'>
                 Area Progress
-              </Text>
-              <Text className='text-white/60 text-xs'>
+              </ThemedText>
+              <ThemedText variant='caption' color='onGradientMuted'>
                 {areaProgress.completed}/{areaProgress.total} completed
-              </Text>
+              </ThemedText>
             </HStack>
             <Box className='h-2 bg-white/20 rounded-full'>
               <Box
@@ -366,13 +382,15 @@ export function CountScreen() {
             </Box>
           </Box>
         )}
+      </Box>
 
-        {/* Prominent Scan Button */}
+      {/* Prominent Scan Button */}
+      <Box className='px-4 pb-4'>
         <LinearGradient
           colors={['#8B5CF6', '#6366F1']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={{ marginBottom: 8 }}
+          style={{ borderRadius: 16 }}
         >
           <Pressable
             className='w-full rounded-2xl border-2 border-white/20 shadow-xl'
@@ -386,12 +404,12 @@ export function CountScreen() {
                 <Ionicons name='scan' size={24} color='white' />
               </Box>
               <VStack className='items-start flex-1'>
-                <Text className='text-white font-bold text-lg'>
+                <ThemedText variant='h4' color='onGradient' weight='bold'>
                   Scan Barcode
-                </Text>
-                <Text className='text-white/80 text-sm'>
+                </ThemedText>
+                <ThemedText variant='caption' color='onGradientMuted'>
                   Point camera at product barcode
-                </Text>
+                </ThemedText>
               </VStack>
               <Ionicons name='chevron-forward' size={20} color='white' />
             </HStack>
@@ -400,101 +418,105 @@ export function CountScreen() {
       </Box>
 
       {/* Content */}
-      <Box className='flex-1 bg-white rounded-t-3xl'>
-        {/* Recent Counts Section */}
-        {recentScans.length > 0 && (
-          <Box className='p-6 pb-3 border-b border-gray-100'>
-            <HStack className='justify-between items-center mb-2'>
-              <Text
-                className={cn('text-lg font-bold', themeClasses.text.primary)}
-              >
-                Recent Counts
-              </Text>
-              <Pressable
-                onPress={() => navigation.navigate('CountHistory' as never)}
-              >
-                <Text className='text-purple-600 font-medium'>View All</Text>
-              </Pressable>
-            </HStack>
+      {/* Recent Counts Section */}
+      {recentScans.length > 0 && (
+        <Box className='px-4 pb-3 mb-3 border-b border-gray-100'>
+          <HStack className='justify-between items-center mb-2'>
+            <ThemedHeading variant='h3' color='onGradient' weight='bold'>
+              Recent Counts
+            </ThemedHeading>
+            <Pressable
+              onPress={() => navigation.navigate('CountHistory' as never)}
+            >
+              <ThemedText variant='body' color='onGradient' weight='medium'>
+                View All
+              </ThemedText>
+            </Pressable>
+          </HStack>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <HStack space='md'>
-                {recentScans.map((item) => (
-                  <Box
-                    key={item.id}
-                    className='bg-gray-50 rounded-xl p-4 min-w-[160px]'
-                  >
-                    <HStack className='justify-between items-center'>
-                      <Text
-                        className={cn(
-                          'font-medium text-sm',
-                          themeClasses.text.primary
-                        )}
-                        numberOfLines={1}
-                      >
-                        {item.productName}
-                      </Text>
-                      <Text className={`text-md font-bold text-blue-600`}>
-                        {item.countedQuantity}
-                      </Text>
-                    </HStack>
-                    <Text
-                      className={cn('text-xs mt-1', themeClasses.text.muted)}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <HStack space='md'>
+              {recentScans.map((item) => (
+                <ThemedCard
+                  key={item.id}
+                  variant='secondary'
+                  size='sm'
+                  className='min-w-[160px]'
+                >
+                  <HStack className='justify-between items-center'>
+                    <ThemedText
+                      variant='body'
+                      color='primary'
+                      weight='medium'
+                      numberOfLines={1}
                     >
-                      {new Date(item.timestamp).toLocaleTimeString()}
-                    </Text>
-                  </Box>
-                ))}
-              </HStack>
-            </ScrollView>
-          </Box>
-        )}
+                      {item.productName}
+                    </ThemedText>
+                    <ThemedText variant='h4' color='purple' weight='bold'>
+                      {item.countedQuantity}
+                    </ThemedText>
+                  </HStack>
+                  <ThemedText
+                    variant='caption'
+                    color='muted'
+                    style={{ marginTop: 4 }}
+                  >
+                    {new Date(item.timestamp).toLocaleTimeString()}
+                  </ThemedText>
+                </ThemedCard>
+              ))}
+            </HStack>
+          </ScrollView>
+        </Box>
+      )}
 
-        {/* Products List */}
-        <Box className='flex-1'>
-          {isLoading ? (
-            <Box className='flex-1 justify-center items-center'>
-              <Spinner size='large' color='#8B5CF6' />
-              <Text className='{themeClasses.text.muted} mt-4'>
-                Loading products...
-              </Text>
+      {/* Products List */}
+      <Box className='flex-1'>
+        {isLoading ? (
+          <Box className='flex-1 justify-center items-center'>
+            <Spinner size='large' color='#8B5CF6' />
+            <ThemedText variant='body' color='muted' style={{ marginTop: 16 }}>
+              Loading products...
+            </ThemedText>
+          </Box>
+        ) : (
+          <>
+            {/* Search Input */}
+            <Box className='pb-3 px-4'>
+              <ThemedInput
+                variant='default'
+                size='lg'
+                fieldProps={{
+                  placeholder: 'Search products...',
+                  value: searchQuery,
+                  onChangeText: setSearchQuery,
+                }}
+              />
             </Box>
-          ) : (
             <ScrollView
               className='flex-1'
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
             >
-              <VStack className='px-6 py-3' space='sm'>
-                {/* Search Input */}
-                <Input
-                  variant='outline'
-                  size='lg'
-                  className='bg-white/10 border-white/20'
-                >
-                  <InputField
-                    placeholder='Search products...'
-                    // placeholderTextColor='rgba(255,255,255,0.7)'
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    className='border-[1px] border-black/10 rounded-lg'
-                  />
-                </Input>
-                <Text
-                  className={cn('text-lg font-bold', themeClasses.text.primary)}
-                >
+              <VStack className='px-4 pt-3 pb-36' space='sm'>
+                <ThemedHeading variant='h3' color='onGradient' weight='bold'>
                   Select Product to Count
-                </Text>
+                </ThemedHeading>
 
                 {filteredProducts.length === 0 ? (
                   <Box className='py-12 items-center'>
                     <Ionicons name='search-outline' size={48} color='#D1D5DB' />
-                    <Text className='{themeClasses.text.muted} text-center mt-4'>
+                    <ThemedText
+                      variant='body'
+                      color='muted'
+                      align='center'
+                      style={{ marginTop: 16 }}
+                    >
                       {searchQuery
                         ? 'No products found matching your search'
                         : 'No products available'}
-                    </Text>
+                    </ThemedText>
                   </Box>
                 ) : (
                   filteredProducts.map((product) => {
@@ -520,124 +542,121 @@ export function CountScreen() {
                     )
 
                     return (
-                      <Pressable
-                        key={product.id}
-                        className={`border rounded-xl p-4 mb-1 ${
-                          countedItem
-                            ? 'bg-purple-50 border-purple-200'
-                            : 'bg-white border-gray-200'
-                        }`}
-                        onPress={() => handleProductSelect(product)}
-                      >
-                        <HStack className='justify-between items-center'>
-                          {/* Product Image */}
-                          <Box style={{ marginRight: 12 }}>
-                            <ProductImage
-                              uri={product.image}
-                              {...ProductImageVariants.listItem}
-                            />
-                          </Box>
+                      <ThemedCard key={product.id} variant='primary' size='md'>
+                        <Pressable onPress={() => handleProductSelect(product)}>
+                          <HStack className='justify-between items-center'>
+                            {/* Product Image */}
+                            <Box style={{ marginRight: 12 }}>
+                              <ProductImage
+                                uri={product.image}
+                                {...ProductImageVariants.listItem}
+                              />
+                            </Box>
 
-                          <VStack className='flex-1 mr-4'>
-                            <HStack className='items-center' space='sm'>
-                              <Text
-                                className={`font-medium ${
-                                  countedItem
-                                    ? 'text-purple-900'
-                                    : themeClasses.text.primary
-                                }`}
-                                numberOfLines={1}
+                            <VStack className='flex-1 mr-4'>
+                              <HStack className='items-center' space='sm'>
+                                <ThemedText
+                                  variant='body'
+                                  color={countedItem ? 'purple' : 'primary'}
+                                  weight='medium'
+                                  numberOfLines={1}
+                                >
+                                  {product.name}
+                                </ThemedText>
+                                {countedItem && (
+                                  <Box className='w-2 h-2 bg-purple-500 rounded-full' />
+                                )}
+                              </HStack>
+                              <ThemedText
+                                variant='caption'
+                                color={countedItem ? 'purple' : 'muted'}
                               >
-                                {product.name}
-                              </Text>
-                              {countedItem && (
-                                <Box className='w-2 h-2 bg-purple-500 rounded-full' />
-                              )}
-                            </HStack>
-                            <Text
-                              className={`text-sm ${
-                                countedItem
-                                  ? 'text-purple-600'
-                                  : themeClasses.text.muted
-                              }`}
-                            >
-                              {product.sku && `SKU: ${product.sku} • `}
-                              Current: {+currentStock.toFixed(2)}{' '}
-                              {pluralize(
-                                currentStock,
-                                product.container || 'unit'
-                              )}
-                              {minStock > 0 && ` • Min: ${minStock}`}
-                              {countedItem && (
-                                <Text className='text-purple-700 font-medium'>
-                                  {` • Counted: ${countedItem.countedQuantity} ${pluralize(
-                                    countedItem.countedQuantity,
-                                    product.container || 'unit'
-                                  )}`}
-                                </Text>
-                              )}
-                            </Text>
-                          </VStack>
+                                {product.sku && `SKU: ${product.sku} • `}
+                                Current: {+currentStock.toFixed(2)}{' '}
+                                {pluralize(
+                                  currentStock,
+                                  product.container || 'unit'
+                                )}
+                                {minStock > 0 && ` • Min: ${minStock}`}
+                                {countedItem && (
+                                  <ThemedText
+                                    variant='caption'
+                                    color='purple'
+                                    weight='medium'
+                                  >
+                                    {` • Counted: ${countedItem.countedQuantity} ${pluralize(
+                                      countedItem.countedQuantity,
+                                      product.container || 'unit'
+                                    )}`}
+                                  </ThemedText>
+                                )}
+                              </ThemedText>
+                            </VStack>
 
-                          <VStack className='items-end'>
-                            {countedItem ? (
-                              <Box className='px-3 py-1 rounded-full bg-purple-100'>
-                                <Text className='text-xs font-medium text-purple-700'>
-                                  Counted
-                                </Text>
-                              </Box>
-                            ) : (
-                              <Box
-                                className={`px-3 py-1 rounded-full ${
-                                  currentStock <= minStock
-                                    ? 'bg-red-100'
-                                    : currentStock <= minStock * 1.5
-                                      ? 'bg-yellow-100'
-                                      : 'bg-green-100'
-                                }`}
-                              >
-                                <Text
-                                  className={`text-xs font-medium ${
+                            <VStack className='items-end'>
+                              {countedItem ? (
+                                <Box className='px-3 py-1 rounded-full bg-purple-100'>
+                                  <ThemedText
+                                    variant='caption'
+                                    color='purple'
+                                    weight='medium'
+                                  >
+                                    Counted
+                                  </ThemedText>
+                                </Box>
+                              ) : (
+                                <Box
+                                  className={`px-3 py-1 rounded-full ${
                                     currentStock <= minStock
-                                      ? 'text-red-700'
+                                      ? 'bg-red-100'
                                       : currentStock <= minStock * 1.5
-                                        ? 'text-yellow-700'
-                                        : 'text-green-700'
+                                        ? 'bg-yellow-100'
+                                        : 'bg-green-100'
                                   }`}
                                 >
-                                  {currentStock <= minStock
-                                    ? 'Low Stock'
-                                    : 'In Stock'}
-                                </Text>
-                              </Box>
-                            )}
-                            <Ionicons
-                              name='chevron-forward'
-                              size={20}
-                              color={countedItem ? '#8B5CF6' : '#9CA3AF'}
-                            />
-                          </VStack>
-                        </HStack>
-                      </Pressable>
+                                  <ThemedText
+                                    variant='caption'
+                                    weight='medium'
+                                    color={
+                                      currentStock <= minStock
+                                        ? 'danger'
+                                        : currentStock <= minStock * 1.5
+                                          ? 'warning'
+                                          : 'success'
+                                    }
+                                  >
+                                    {currentStock <= minStock
+                                      ? 'Low Stock'
+                                      : 'In Stock'}
+                                  </ThemedText>
+                                </Box>
+                              )}
+                              <Ionicons
+                                name='chevron-forward'
+                                size={20}
+                                color={countedItem ? '#8B5CF6' : '#9CA3AF'}
+                              />
+                            </VStack>
+                          </HStack>
+                        </Pressable>
+                      </ThemedCard>
                     )
                   })
                 )}
               </VStack>
             </ScrollView>
-          )}
-        </Box>
+          </>
+        )}
       </Box>
 
       {/* Count Modal */}
       <Modal isOpen={showCountModal} onClose={() => setShowCountModal(false)}>
         <ModalBackdrop className='bg-black/70' />
-        <ModalContent className='m-6 max-w-md bg-white'>
+        <ModalContent className='m-6 max-w-md bg-white dark:bg-gray-900'>
           <ModalHeader>
-            <Text
-              className={cn('text-2xl font-bold', themeClasses.text.primary)}
-            >
+            <ThemedHeading variant='h2' color='primary' weight='bold'>
               Count Product
-            </Text>
+            </ThemedHeading>
             <ModalCloseButton
               onPress={() => {
                 setShowCountModal(false)
@@ -652,15 +671,10 @@ export function CountScreen() {
             {selectedProduct && (
               <VStack space='lg'>
                 <VStack space='sm'>
-                  <Text
-                    className={cn(
-                      'text-xl font-bold',
-                      themeClasses.text.primary
-                    )}
-                  >
+                  <ThemedHeading variant='h3' color='primary' weight='bold'>
                     {selectedProduct.name}
-                  </Text>
-                  <Text className={themeClasses.text.muted}>
+                  </ThemedHeading>
+                  <ThemedText variant='body' color='muted'>
                     {selectedProduct.sku && `SKU: ${selectedProduct.sku} • `}
                     Current:{' '}
                     {selectedProduct.inventoryItems.reduce(
@@ -676,45 +690,52 @@ export function CountScreen() {
                       ),
                       selectedProduct.container || 'unit'
                     )}
-                  </Text>
+                  </ThemedText>
                 </VStack>
 
                 <VStack space='sm'>
-                  <Text
-                    className={cn('font-medium', themeClasses.text.secondary)}
-                  >
+                  <ThemedText variant='body' color='secondary' weight='medium'>
                     Count Quantity
-                  </Text>
-                  <HStack className='justify-center items-center' space='lg'>
-                    <Pressable
-                      className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
+                  </ThemedText>
+                  <HStack space='sm' className='items-center w-full flex-1'>
+                    <ThemedButton
+                      variant='secondary'
+                      size='md'
                       onPress={() =>
                         setQuantity(
                           String(Math.max(0, parseFloat(quantity) - 1))
                         )
                       }
+                      className='size-12 p-0'
                     >
                       <Ionicons name='remove' size={24} color='#8B5CF6' />
-                    </Pressable>
-
-                    <Input variant='outline' size='md' className='w-24'>
-                      <InputField
-                        value={quantity}
-                        onChangeText={setQuantity}
-                        keyboardType='decimal-pad'
-                        className='text-center text-2xl font-bold'
-                        selectTextOnFocus
+                    </ThemedButton>
+                    <Box className='items-center w-24'>
+                      <ThemedInput
+                        variant='default'
+                        size='md'
+                        fieldProps={{
+                          placeholder: 'YYYY-MM-DD',
+                          value: quantity,
+                          onChangeText: setQuantity,
+                          keyboardType: 'decimal-pad',
+                          style: {
+                            fontWeight: 'bold',
+                          },
+                        }}
                       />
-                    </Input>
+                    </Box>
 
-                    <Pressable
-                      className='w-12 h-12 bg-gray-100 rounded-lg justify-center items-center'
+                    <ThemedButton
+                      variant='secondary'
+                      size='md'
                       onPress={() =>
                         setQuantity(String(parseFloat(quantity) + 1))
                       }
+                      className='size-12 p-0'
                     >
                       <Ionicons name='add' size={24} color='#8B5CF6' />
-                    </Pressable>
+                    </ThemedButton>
                   </HStack>
                 </VStack>
               </VStack>
@@ -723,29 +744,30 @@ export function CountScreen() {
 
           <ModalFooter>
             <HStack space='md' className='w-full'>
-              <Button
+              <ThemedButton
                 variant='outline'
                 size='lg'
-                className='flex-1 border-gray-300'
+                className='flex-1'
                 onPress={() => {
                   setShowCountModal(false)
                   setSelectedProduct(null)
                 }}
               >
-                <ButtonText className={themeClasses.text.secondary}>
+                <ThemedText variant='body' color='secondary' weight='semibold'>
                   Cancel
-                </ButtonText>
-              </Button>
+                </ThemedText>
+              </ThemedButton>
 
-              <Button
+              <ThemedButton
+                variant='primary'
                 size='lg'
-                className='flex-1 bg-purple-600'
+                className='flex-1 bg-purple-600 dark:bg-purple-600'
                 onPress={handleSaveCount}
               >
-                <ButtonText className='text-white font-bold'>
+                <ThemedText variant='body' color='onGradient' weight='bold'>
                   Save Count
-                </ButtonText>
-              </Button>
+                </ThemedText>
+              </ThemedButton>
             </HStack>
           </ModalFooter>
         </ModalContent>

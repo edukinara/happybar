@@ -7,6 +7,7 @@ export const Colors = {
   secondary: '#F59E0B',
   secondaryDark: '#D97706',
   secondaryLight: '#FCD34DDD',
+  tabDark: '#251743',
 
   // Page Gradient - Light Mode
   gradStart: '#6366F1',

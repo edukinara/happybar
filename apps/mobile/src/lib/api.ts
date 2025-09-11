@@ -1,5 +1,5 @@
+import { API_CONFIG } from '../constants/config'
 import { authClient, Session } from './auth'
-import { API_CONFIG, getApiUrl } from '../constants/config'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -395,10 +395,7 @@ export const countApi = {
   },
 
   // Suppliers
-  async getSuppliers(params?: {
-    active?: boolean
-    search?: string
-  }) {
+  async getSuppliers(params?: { active?: boolean; search?: string }) {
     const queryParams = new URLSearchParams()
     if (params?.active !== undefined) {
       queryParams.append('active', params.active.toString())
@@ -419,7 +416,7 @@ export const countApi = {
         updatedAt: string
       }>
     }>(`/api/suppliers?${queryParams}`)
-    
+
     if (!response.success || !response.data) {
       throw new Error('Failed to get suppliers')
     }
@@ -453,7 +450,7 @@ export const countApi = {
         isPreferred: boolean
       }
     }>(`/api/suppliers/${supplierId}/products`, data)
-    
+
     if (!response.success || !response.data) {
       throw new Error('Failed to add product to supplier')
     }
@@ -541,7 +538,7 @@ export const countApi = {
     if (params?.status) searchParams.set('status', params.status)
     if (params?.supplierId) searchParams.set('supplierId', params.supplierId)
     if (params?.limit) searchParams.set('limit', params.limit.toString())
-    
+
     const queryString = searchParams.toString()
     return apiClient.get<{
       success: boolean
@@ -549,7 +546,12 @@ export const countApi = {
         id: string
         supplierId: string
         orderNumber: string
-        status: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+        status:
+          | 'DRAFT'
+          | 'SENT'
+          | 'PARTIALLY_RECEIVED'
+          | 'RECEIVED'
+          | 'CANCELLED'
         orderDate: string
         totalAmount: number
         expectedDate?: string
@@ -598,7 +600,12 @@ export const countApi = {
         id: string
         supplierId: string
         orderNumber: string
-        status: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+        status:
+          | 'DRAFT'
+          | 'SENT'
+          | 'PARTIALLY_RECEIVED'
+          | 'RECEIVED'
+          | 'CANCELLED'
         orderDate: string
         receivedDate?: string
         totalAmount: number
@@ -623,6 +630,7 @@ export const countApi = {
           product: {
             id: string
             name: string
+            image?: string
             sku?: string
             caseSize: number
             category: {
@@ -694,19 +702,27 @@ export const countApi = {
   },
 
   // Update order (status, items, etc.)
-  async updateOrder(id: string, data: {
-    status?: 'DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
-    expectedDate?: string
-    notes?: string
-    items?: Array<{
-      id?: string
-      productId: string
-      quantityOrdered: number
-      quantityReceived?: number
-      unitCost: number
-      orderingUnit: 'UNIT' | 'CASE'
-    }>
-  }) {
+  async updateOrder(
+    id: string,
+    data: {
+      status?:
+        | 'DRAFT'
+        | 'SENT'
+        | 'PARTIALLY_RECEIVED'
+        | 'RECEIVED'
+        | 'CANCELLED'
+      expectedDate?: string
+      notes?: string
+      items?: Array<{
+        id?: string
+        productId: string
+        quantityOrdered: number
+        quantityReceived?: number
+        unitCost: number
+        orderingUnit: 'UNIT' | 'CASE'
+      }>
+    }
+  ) {
     return apiClient.put(`/api/orders/${id}`, data)
   },
 
@@ -716,16 +732,18 @@ export const countApi = {
   },
 
   // Create orders from suggestions (one by one like web app)
-  async createOrdersFromSuggestions(selectedSuggestions: Array<{
-    supplierId: string
-    items: Array<{
-      productId: string
-      quantityOrdered: number
-      unitCost: number
-      orderingUnit: 'UNIT' | 'CASE'
+  async createOrdersFromSuggestions(
+    selectedSuggestions: Array<{
+      supplierId: string
+      items: Array<{
+        productId: string
+        quantityOrdered: number
+        unitCost: number
+        orderingUnit: 'UNIT' | 'CASE'
+      }>
+      notes?: string
     }>
-    notes?: string
-  }>) {
+  ) {
     // Create orders one by one like the web app does
     const results = []
     for (const orderData of selectedSuggestions) {
@@ -735,7 +753,7 @@ export const countApi = {
       }>(`/api/orders`, {
         supplierId: orderData.supplierId,
         notes: orderData.notes || 'Generated from reorder suggestions',
-        items: orderData.items
+        items: orderData.items,
       })
       results.push(result)
     }

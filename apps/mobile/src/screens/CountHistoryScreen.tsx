@@ -1,8 +1,5 @@
 import { Box } from '@/components/ui/box'
-import { Button, ButtonText } from '@/components/ui/button'
-import { Heading } from '@/components/ui/heading'
 import { HStack } from '@/components/ui/hstack'
-import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
@@ -12,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import { themeClasses, cn } from '../constants/themeClasses'
+import { ThemedCard, ThemedHeading, ThemedText } from '../components/themed'
 import { CountItem, useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
 
@@ -128,22 +125,8 @@ export function CountHistoryScreen() {
   const renderCountItem = ({ item }: { item: CountItem }) => {
     const areaName = getAreaName(item.areaId, item.countSessionId)
     return (
-      <Box
-        className={themeClasses.bg.card}
-        style={{
-          borderRadius: 16,
-          marginBottom: 12,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
-          elevation: 3,
-        }}
-      >
-        <Pressable
-          style={{ padding: 16 }}
-          onLongPress={() => handleDeleteItem(item)}
-        >
+      <ThemedCard variant='primary' size='md' className='mb-3'>
+        <Pressable onLongPress={() => handleDeleteItem(item)}>
           <HStack className='items-center justify-between'>
             {/* Product Image */}
             <Box style={{ marginRight: 12 }}>
@@ -155,28 +138,39 @@ export function CountHistoryScreen() {
 
             {/* Product Info */}
             <VStack className='flex-1' style={{ marginRight: 16 }}>
-              <Text className='{themeClasses.text.primary} font-semibold text-base mb-1'>
+              <ThemedText
+                variant='body'
+                color='primary'
+                weight='semibold'
+                className='mb-1'
+              >
                 {item.productName}
-              </Text>
-              <Text className='{themeClasses.text.muted} text-sm'>
+              </ThemedText>
+              <ThemedText variant='caption' color='muted'>
                 {item.sku && `SKU: ${item.sku} • `}
                 {formatTimestamp(item.timestamp)}
-              </Text>
+              </ThemedText>
               <HStack className='items-center mt-1' space='sm'>
                 {item.countSessionId && (
-                  <Text className='text-blue-600 text-xs'>Session Count</Text>
+                  <ThemedText variant='caption' color='primary'>
+                    Session Count
+                  </ThemedText>
                 )}
                 {areaName && (
                   <>
                     {item.countSessionId && (
-                      <Text className='{themeClasses.text.muted} text-xs'>•</Text>
+                      <ThemedText variant='caption' color='muted'>
+                        •
+                      </ThemedText>
                     )}
-                    <Text
-                      className='text-purple-600 text-xs text-ellipsis w-full'
-                      style={{ textWrap: 'nowrap' }}
+                    <ThemedText
+                      variant='caption'
+                      color='purple'
+                      numberOfLines={1}
+                      className='flex-1'
                     >
                       {areaName}
-                    </Text>
+                    </ThemedText>
                   </>
                 )}
               </HStack>
@@ -184,12 +178,12 @@ export function CountHistoryScreen() {
 
             {/* Count Details */}
             <VStack className='items-center' style={{ marginRight: 16 }}>
-              <Text className='{themeClasses.text.primary} font-bold text-lg'>
+              <ThemedText variant='h4' color='primary' weight='bold'>
                 {item.countedQuantity}
-              </Text>
-              <Text className='{themeClasses.text.muted} text-xs'>
+              </ThemedText>
+              <ThemedText variant='caption' color='muted'>
                 {pluralize(item.countedQuantity, item.container || 'unit')}
-              </Text>
+              </ThemedText>
             </VStack>
 
             {/* Variance Indicator */}
@@ -203,21 +197,23 @@ export function CountHistoryScreen() {
                   minWidth: 60,
                 }}
               >
-                <Text
-                  className='font-bold text-sm text-center'
+                <ThemedText
+                  variant='caption'
+                  weight='bold'
+                  align='center'
                   style={{ color: getVarianceColor(item.variance) }}
                 >
                   {item.variance > 0 ? '+' : ''}
                   {item.variance}
-                </Text>
+                </ThemedText>
               </Box>
-              <Text className='{themeClasses.text.muted} text-xs mt-1'>
+              <ThemedText variant='caption' color='muted' className='mt-1'>
                 vs {item.currentStock}
-              </Text>
+              </ThemedText>
             </VStack>
           </HStack>
         </Pressable>
-      </Box>
+      </ThemedCard>
     )
   }
 
@@ -257,12 +253,12 @@ export function CountHistoryScreen() {
           </Pressable>
 
           <VStack className='items-center'>
-            <Heading className='text-white font-bold text-xl'>
+            <ThemedHeading variant='h2' color='onGradient' weight='bold'>
               Count History
-            </Heading>
-            <Text className='text-white/80 text-sm'>
+            </ThemedHeading>
+            <ThemedText variant='caption' color='onGradientMuted'>
               {getTotalCounts()} total counts
-            </Text>
+            </ThemedText>
           </VStack>
 
           <Pressable
@@ -303,14 +299,14 @@ export function CountHistoryScreen() {
                   minWidth: 70,
                 }}
               >
-                <Text
-                  className='font-semibold text-center text-sm'
-                  style={{
-                    color: filter === item.key ? '#8B5CF6' : 'white',
-                  }}
+                <ThemedText
+                  variant='caption'
+                  weight='semibold'
+                  align='center'
+                  color={filter === item.key ? 'purple' : 'onGradient'}
                 >
                   {item.label} ({item.count})
-                </Text>
+                </ThemedText>
               </Pressable>
             )}
           />
@@ -329,14 +325,10 @@ export function CountHistoryScreen() {
             contentContainerStyle={{ paddingBottom: 20 }}
           />
         ) : (
-          <Box
-            className={themeClasses.bg.card}
-            style={{
-              borderRadius: 16,
-              padding: 40,
-              alignItems: 'center',
-              marginTop: 40,
-            }}
+          <ThemedCard
+            variant='primary'
+            size='lg'
+            className='mt-10 items-center p-10'
           >
             <Box
               style={{
@@ -349,30 +341,22 @@ export function CountHistoryScreen() {
                 marginBottom: 16,
               }}
             >
-              <Ionicons
-                name='clipboard-outline'
-                size={28}
-                color='#8B5CF6'
-              />
+              <Ionicons name='clipboard-outline' size={28} color='#8B5CF6' />
             </Box>
-            <Text className='{themeClasses.text.primary} font-semibold text-lg text-center'>
+            <ThemedText
+              variant='h3'
+              color='primary'
+              weight='semibold'
+              align='center'
+            >
               No counts found
-            </Text>
-            <Text className='{themeClasses.text.muted} text-center mt-2'>
+            </ThemedText>
+            <ThemedText color='muted' align='center' className='mt-2'>
               {filter === 'all'
                 ? 'Start scanning items to see count history'
                 : `No counts found for "${filterButtons.find((b) => b.key === filter)?.label}" filter`}
-            </Text>
-
-            <Button
-              onPress={() => navigation.navigate('Main' as never)}
-              className='bg-purple-600 mt-6'
-            >
-              <ButtonText className='text-white font-semibold'>
-                Go to Scanner
-              </ButtonText>
-            </Button>
-          </Box>
+            </ThemedText>
+          </ThemedCard>
         )}
       </VStack>
     </PageGradient>

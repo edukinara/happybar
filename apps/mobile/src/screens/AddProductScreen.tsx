@@ -330,7 +330,7 @@ export function AddProductScreen() {
 
       {/* Content */}
 
-      <Box className='p-0 mb-36 flex flex-1 overflow-hidden'>
+      <Box className='p-0 flex flex-1 overflow-hidden'>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
@@ -341,7 +341,7 @@ export function AddProductScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps='handled'
           >
-            <VStack space='lg' className='w-full'>
+            <VStack space='lg' className='w-full pb-32'>
               {/* Catalog Search */}
               <ThemedCard variant='primary' size='md'>
                 <CatalogSearch
@@ -856,7 +856,7 @@ export function AddProductScreen() {
                 size='lg'
                 onPress={handleSubmit}
                 disabled={isSubmitting}
-                className='mt-4 rounded-xl border border-white/50 p-2 h-14 bg-white/30 dark:bg-purple-800/80'
+                className='mt-4 rounded-xl border border-white/50 p-2 h-14'
                 fullWidth
               >
                 <ThemedText variant='body' weight='bold' color='onGradient'>

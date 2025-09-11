@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { useColorScheme } from 'nativewind'
 import React from 'react'
 import { Platform, View } from 'react-native'
+import { BorderRadius, Colors, Shadows } from '../constants/theme'
 import { HomeScreen } from '../screens/HomeScreen'
 import { InsightsScreen } from '../screens/InsightsScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
@@ -19,6 +21,9 @@ export type MainTabParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
 export function MainNavigator() {
+  const { colorScheme } = useColorScheme()
+  const isDark = colorScheme === 'dark'
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -44,35 +49,35 @@ export function MainNavigator() {
             return (
               <View
                 style={{
-                  backgroundColor: focused ? '#8B5CF6' : '#A855F7',
-                  borderRadius: 30,
+                  backgroundColor: focused ? Colors.primary : Colors.gradEnd,
+                  borderRadius: BorderRadius.full,
                   width: 60,
                   height: 60,
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginBottom: Platform.OS === 'ios' ? -10 : 10,
-                  shadowColor: '#8B5CF6',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 25,
+                  shadowColor: Colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: isDark ? 0.5 : 0.35,
+                  shadowRadius: 8,
                   elevation: 20,
                   borderWidth: 4,
-                  borderColor: 'rgba(255,255,255,0.95)',
+                  borderColor: isDark ? Colors.tabDark : Colors.white,
                 }}
               >
-                <Ionicons name={iconName} size={30} color='white' />
+                <Ionicons name={iconName} size={30} color={Colors.white} />
               </View>
             )
           }
 
           return <Ionicons name={iconName} size={size} color={color} />
         },
-        tabBarActiveTintColor: '#8B5CF6',
-        tabBarInactiveTintColor: '#6B7280',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: isDark ? Colors.gray[400] : Colors.gray[500],
         tabBarStyle: {
-          backgroundColor: 'rgba(255,255,255,1)',
+          backgroundColor: isDark ? Colors.tabDark : Colors.white,
           backdropFilter: 'blur(20px)',
-          elevation: 8,
+          ...Shadows.lg,
           height: Platform.OS === 'ios' ? 90 : 70,
           paddingBottom: Platform.OS === 'ios' ? 32 : 14,
           paddingTop: 10,
@@ -83,6 +88,8 @@ export function MainNavigator() {
           right: 8,
           bottom: Platform.OS === 'ios' ? 0 : 32,
           marginHorizontal: 8,
+          borderWidth: isDark ? 1 : 0,
+          borderColor: isDark ? Colors.gray[700] : 'transparent',
         },
         tabBarLabelStyle: {
           fontSize: 10,
@@ -90,16 +97,16 @@ export function MainNavigator() {
           marginTop: 4,
         },
         headerStyle: {
-          backgroundColor: 'white',
+          backgroundColor: isDark ? Colors.gray[900] : Colors.white,
           elevation: 0,
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
-        headerTintColor: '#111827',
+        headerTintColor: isDark ? Colors.white : Colors.gray[900],
         headerTitleStyle: {
           fontWeight: '700',
           fontSize: 26,
-          color: '#111827',
+          color: isDark ? Colors.white : Colors.gray[900],
         },
       })}
     >
