@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { useQueryClient } from '@tanstack/react-query'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -23,11 +24,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { VStack } from '@/components/ui/vstack'
 import { PageGradient } from '../components/PageGradient'
 import { ProductImage, ProductImageVariants } from '../components/ProductImage'
-import {
-  ThemedButton,
-  ThemedInput,
-  ThemedText,
-} from '../components/themed'
+import { ThemedButton, ThemedInput, ThemedText } from '../components/themed'
 import { useProductByUPC } from '../hooks/useInventoryData'
 import { useCountStore } from '../stores/countStore'
 import { pluralize } from '../utils/pluralize'
@@ -52,27 +49,33 @@ export function ScanScreen() {
   } | null>(null)
   const [quantity, setQuantity] = useState('1')
   const [showModal, setShowModal] = useState(false)
-  const [flashOn, setFlashOn] = useState(false)
   const [scannedUPC, setScannedUPC] = useState<string | null>(null)
+  const [flashOn, setFlashOn] = useState(false)
+  const [isCompletingArea, setIsCompletingArea] = useState(false)
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
+  const queryClient = useQueryClient()
 
   // Count store
   const {
     addCountItem,
     getRecentCountItems,
-    activeSessionId,
     getActiveSession,
     completeCountSession,
     saveCountItemToAPI,
     updateCountItem,
     getCountItemsBySession,
+    completeCurrentArea,
+    getAreaProgress,
   } = useCountStore()
   const recentScans = getRecentCountItems(1)
   const activeSession = getActiveSession()
   const currentArea = activeSession?.areas?.find(
     (area) => area.id === activeSession.currentAreaId
   )
+  const areaProgress = activeSession
+    ? getAreaProgress(activeSession.id)
+    : { completed: 0, total: 0 }
 
   // Handle hardware back button press
   useFocusEffect(
@@ -169,28 +172,28 @@ export function ScanScreen() {
       setQuantity('1')
       setShowModal(false)
       setIsCameraReady(false)
+      setFlashOn(false)
 
-      // iOS specific camera initialization
-      if (Platform.OS === 'ios') {
-        // Add a small delay for iOS camera initialization
+      // Initialize camera when screen gains focus
+      const initializeCamera = async () => {
+        if (!permission?.granted) {
+          try {
+            const result = await requestPermission()
+            if (!result.granted) return
+          } catch (error) {
+            console.error('Failed to request camera permission:', error)
+            return
+          }
+        }
+
+        // Camera initialization with platform-specific timing
+        const delay = Platform.OS === 'ios' ? 300 : 100
         setTimeout(() => {
-          if (permission?.granted) {
-            setIsCameraReady(true)
-          }
-        }, 500)
+          setIsCameraReady(true)
+        }, delay)
       }
 
-      // Request permission on focus if not granted
-      if (!permission?.granted) {
-        requestPermission().then((result) => {
-          if (result.granted && Platform.OS === 'ios') {
-            // Additional delay after permission granted on iOS
-            setTimeout(() => {
-              setIsCameraReady(true)
-            }, 1000)
-          }
-        })
-      }
+      initializeCamera()
 
       return () => {
         // Cleanup when screen loses focus
@@ -199,20 +202,93 @@ export function ScanScreen() {
         setScannedUPC(null)
         setShowModal(false)
         setIsCameraReady(false)
+        setFlashOn(false)
       }
-    }, [permission, requestPermission])
+    }, [permission?.granted, requestPermission])
   )
-
-  // Handle camera ready state for Android and other platforms
-  useEffect(() => {
-    if (permission?.granted && Platform.OS !== 'ios') {
-      // For Android, camera is usually ready immediately after permission is granted
-      setIsCameraReady(true)
-    }
-  }, [permission?.granted])
 
   const navigateToCount = () => {
     navigation.goBack() // Go back to the count screen
+  }
+
+  // Handle area completion
+  const handleCompleteArea = () => {
+    if (!activeSession || !currentArea) return
+
+    Alert.alert(
+      'Complete Area',
+      `Are you sure you want to complete counting for "${currentArea.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Complete',
+          onPress: async () => {
+            setIsCompletingArea(true)
+            try {
+              // Complete current area and get result (now async)
+              const result = await completeCurrentArea(activeSession.id)
+
+              if (!result.hasMoreAreas) {
+                if (result.countCompleted) {
+                  // Count was auto-completed - show success and navigate home
+                  Alert.alert(
+                    'Count Complete!',
+                    'All areas have been counted and the count has been completed. It is now ready for approval.',
+                    [
+                      {
+                        text: 'Done',
+                        onPress: () => {
+                          // Invalidate queries to refresh data on home screen
+                          queryClient.invalidateQueries({
+                            queryKey: ['completed-counts'],
+                          })
+                          navigation.getParent()?.navigate('Home' as never)
+                        },
+                      },
+                    ]
+                  )
+                } else {
+                  // Fallback: manual completion (shouldn't happen with new auto-complete)
+                  Alert.alert(
+                    'Count Complete',
+                    'All areas have been counted. The count session will be marked as complete.',
+                    [
+                      {
+                        text: 'Finish Count',
+                        onPress: async () => {
+                          try {
+                            await completeCountSession(activeSession.id)
+                            // Invalidate queries to refresh data on home screen
+                            queryClient.invalidateQueries({
+                              queryKey: ['completed-counts'],
+                            })
+                            navigation.getParent()?.navigate('Home' as never)
+                          } catch (error) {
+                            console.error('Failed to complete count:', error)
+                            Alert.alert(
+                              'Error',
+                              'Failed to complete count. Please try again.'
+                            )
+                          }
+                        },
+                      },
+                    ]
+                  )
+                }
+              }
+            } catch (error) {
+              console.error('Failed to complete area:', error)
+              Alert.alert(
+                'Error',
+                'Failed to complete area. Please check your connection and try again.'
+              )
+            } finally {
+              setIsCompletingArea(false)
+            }
+          },
+        },
+      ]
+    )
   }
 
   const handleSaveCount = async () => {
@@ -331,16 +407,29 @@ export function ScanScreen() {
           <Box className='w-20 h-20 bg-white/20 rounded-full justify-center items-center mb-6'>
             <Ionicons name='camera-outline' size={40} color='white' />
           </Box>
-          <ThemedText variant='h3' color='onGradient' weight='bold' align='center' className='mb-4'>
+          <ThemedText
+            variant='h3'
+            color='onGradient'
+            weight='bold'
+            align='center'
+            className='mb-4'
+          >
             Camera Permission Required
           </ThemedText>
-          <ThemedText variant='body' color='onGradientMuted' align='center' className='mb-8'>
+          <ThemedText
+            variant='body'
+            color='onGradientMuted'
+            align='center'
+            className='mb-8'
+          >
             We need camera access to scan barcodes for inventory counting
           </ThemedText>
           <ThemedButton
-            variant='white'
+            variant='outline'
             size='lg'
-            onPress={requestPermission}
+            onPress={async () => {
+              await requestPermission()
+            }}
           >
             Grant Permission
           </ThemedButton>
@@ -361,7 +450,7 @@ export function ScanScreen() {
           bottom: 0,
         }}
         facing='back'
-        flash={flashOn ? 'on' : 'off'}
+        enableTorch={flashOn}
         barcodeScannerSettings={{
           barcodeTypes: [
             'qr',
@@ -381,15 +470,8 @@ export function ScanScreen() {
           isScanning && isCameraReady ? handleBarCodeScanned : undefined
         }
         onCameraReady={() => {
-          if (Platform.OS !== 'ios') {
-            // For non-iOS platforms, set ready immediately
-            setIsCameraReady(true)
-          } else {
-            // For iOS, add a small delay to ensure camera is fully initialized
-            setTimeout(() => {
-              setIsCameraReady(true)
-            }, 200)
-          }
+          // Camera hardware is ready, ensure we're in ready state
+          setIsCameraReady(true)
         }}
       />
 
@@ -419,18 +501,27 @@ export function ScanScreen() {
             >
               <Ionicons name='arrow-back' size={20} color='white' />
             </Pressable>
+
+            {/* Flash Button */}
             <Pressable
-              className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
-              onPress={() => setFlashOn(!flashOn)}
+              className={`w-10 h-10 rounded-full justify-center items-center ${
+                flashOn ? 'bg-yellow-500' : 'bg-black/30'
+              }`}
+              onPress={() => {
+                if (isCameraReady) {
+                  setFlashOn(!flashOn)
+                  Haptics.selectionAsync()
+                }
+              }}
             >
               <Ionicons
-                name={flashOn ? 'flash' : 'flash-off'}
+                name={flashOn ? 'flash' : 'flash-outline'}
                 size={20}
-                color='white'
+                color={flashOn ? 'black' : 'white'}
               />
             </Pressable>
           </HStack>
-          <VStack className='items-center flex-1'>
+          <VStack className='items-end flex-1'>
             <ThemedText variant='body' color='onGradient' weight='bold'>
               {activeSession ? activeSession.name : 'Quick Count'}
             </ThemedText>
@@ -440,35 +531,46 @@ export function ScanScreen() {
               </ThemedText>
             )}
             {currentArea && (
-              <ThemedText variant='caption' color='onGradient' weight='medium'>
-                Area: {currentArea.name}
-              </ThemedText>
+              <VStack className='items-center' space='xs'>
+                <HStack className='items-center' space='xs'>
+                  <ThemedText
+                    variant='caption'
+                    color='onGradient'
+                    weight='medium'
+                  >
+                    Area: {currentArea.name}
+                  </ThemedText>
+                  {areaProgress.total > 0 && (
+                    <ThemedText variant='caption' color='onGradientMuted'>
+                      ({areaProgress.completed + 1}/{areaProgress.total})
+                    </ThemedText>
+                  )}
+                </HStack>
+                {/* <Pressable
+                  onPress={handleCompleteArea}
+                  className='px-3 py-1 bg-white/20 rounded-full'
+                >
+                  <ThemedText
+                    variant='caption'
+                    color='onGradient'
+                    weight='medium'
+                  >
+                    Complete Area
+                  </ThemedText>
+                </Pressable> */}
+
+                <ThemedButton
+                  variant='primary'
+                  size='lg'
+                  onPress={handleCompleteArea}
+                >
+                  <ThemedText color='onGradient'>
+                    Complete Area Count
+                  </ThemedText>
+                </ThemedButton>
+              </VStack>
             )}
           </VStack>
-          <Pressable
-            className='w-10 h-10 rounded-full bg-black/30 justify-center items-center'
-            onPress={async () => {
-              if (activeSession) {
-                try {
-                  await completeCountSession(activeSession.id)
-                  // After completing, go back to home
-                  navigation.getParent()?.navigate('Home' as never)
-                } catch (error) {
-                  console.error('Failed to complete count session:', error)
-                  Alert.alert(
-                    'Error',
-                    'Failed to complete count. Please try again.'
-                  )
-                }
-              }
-            }}
-          >
-            <Ionicons
-              name={activeSession ? 'checkmark' : 'help-circle-outline'}
-              size={20}
-              color='white'
-            />
-          </Pressable>
         </HStack>
       </Box>
 
@@ -487,7 +589,13 @@ export function ScanScreen() {
           )}
         </Box>
 
-        <ThemedText variant='body' color='onGradient' weight='medium' align='center' className='mt-8 px-8'>
+        <ThemedText
+          variant='body'
+          color='onGradient'
+          weight='medium'
+          align='center'
+          className='mt-8 px-8'
+        >
           {isScanning
             ? 'Point camera at barcode'
             : isLookingUp
@@ -511,13 +619,19 @@ export function ScanScreen() {
                 <Pressable
                   onPress={() => navigation.navigate('CountHistory' as never)}
                 >
-                  <ThemedText color='purple' weight='medium'>View All</ThemedText>
+                  <ThemedText color='purple' weight='medium'>
+                    View All
+                  </ThemedText>
                 </Pressable>
               </HStack>
 
               <HStack className='justify-between items-center py-3 px-4 bg-white/10 rounded-lg backdrop-blur-sm'>
                 <VStack className='flex-1'>
-                  <ThemedText color='onGradient' weight='medium' numberOfLines={1}>
+                  <ThemedText
+                    color='onGradient'
+                    weight='medium'
+                    numberOfLines={1}
+                  >
                     {recentScans[0].productName}
                   </ThemedText>
                   <ThemedText variant='caption' color='onGradientMuted'>
@@ -551,13 +665,11 @@ export function ScanScreen() {
             </VStack>
           )}
 
-          <ThemedButton
-            variant='purple'
-            size='lg'
-            onPress={navigateToCount}
-            icon={<Ionicons name='list' size={20} color='white' />}
-          >
-            Select from List
+          <ThemedButton variant='primary' size='lg' onPress={navigateToCount}>
+            <HStack space='xs'>
+              <Ionicons name='list' size={20} color='white' />
+              <ThemedText color='onGradient'>Select from List</ThemedText>
+            </HStack>
           </ThemedButton>
         </VStack>
       </Box>
@@ -634,7 +746,7 @@ export function ScanScreen() {
                         onChangeText: setQuantity,
                         keyboardType: 'decimal-pad',
                         selectTextOnFocus: true,
-                        className: 'text-center text-2xl font-bold'
+                        className: 'text-center text-2xl font-bold',
                       }}
                     />
 
@@ -669,7 +781,7 @@ export function ScanScreen() {
               </ThemedButton>
 
               <ThemedButton
-                variant='purple'
+                variant='primary'
                 size='lg'
                 className='flex-1'
                 onPress={handleSaveCount}
@@ -680,6 +792,18 @@ export function ScanScreen() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Loading Overlay for Area Completion */}
+      {isCompletingArea && (
+        <Box className='absolute inset-0 bg-black/70 justify-center items-center z-50'>
+          <VStack space='md' className='items-center'>
+            <Spinner size='large' color='white' />
+            <ThemedText variant='body' color='onGradient' weight='medium'>
+              Completing area...
+            </ThemedText>
+          </VStack>
+        </Box>
+      )}
     </Box>
   )
 }

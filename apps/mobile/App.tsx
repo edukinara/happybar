@@ -45,7 +45,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
-          <GluestackUIProvider mode='dark'>
+          <GluestackUIProvider mode='system'>
             <RootNavigator />
             <StatusBar style='auto' />
           </GluestackUIProvider>

@@ -11,7 +11,8 @@
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
     "build:dev:ios": "eas build --platform ios --profile development --local",
-    "build:dev:android": "eas build --platform android --profile development --local"
+    "build:dev:android": "eas build --platform android --profile development --local",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

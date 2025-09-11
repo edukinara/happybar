@@ -259,12 +259,6 @@ export function AddProductScreen() {
       const createdProduct =
         await createProductMutation.mutateAsync(productData)
 
-      console.log('Product created successfully:', {
-        id: createdProduct.id,
-        name: createdProduct.name,
-        suppliersCount: createdProduct.suppliers?.length || 0,
-      })
-
       // Show success message
       const message =
         productSuppliers.length > 0

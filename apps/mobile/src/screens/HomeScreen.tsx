@@ -378,15 +378,6 @@ export function HomeScreen() {
                     >
                       Quick Count
                     </ThemedText>
-                    {totalCounts > 0 && (
-                      <ThemedText
-                        variant='overline'
-                        color='purple'
-                        weight='medium'
-                      >
-                        {totalCounts} counted
-                      </ThemedText>
-                    )}
                   </VStack>
                 </ThemedCard>
               </Pressable>
@@ -589,7 +580,11 @@ export function HomeScreen() {
                     <Ionicons name='checkmark-circle' size={16} color='white' />
                   }
                 >
-                  <ThemedText variant='caption' weight='bold' color='white'>
+                  <ThemedText
+                    variant='caption'
+                    weight='bold'
+                    color='onGradient'
+                  >
                     Approve
                   </ThemedText>
                 </ThemedButton>

@@ -3,10 +3,20 @@ import { HStack } from '@/components/ui/hstack'
 import { Pressable } from '@/components/ui/pressable'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import React, { useEffect, useState } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+  Alert,
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PageGradient } from '../components/PageGradient'
 import {
@@ -49,6 +59,23 @@ export default function CountSetupScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const route = useRoute()
   const insets = useSafeAreaInsets()
+
+  // Handle hardware back button press
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // Navigate to home tab instead of going back in stack
+        navigation.getParent()?.navigate('Home' as never)
+        return true // Prevent default back behavior
+      }
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      )
+      return () => subscription.remove()
+    }, [navigation])
+  )
 
   // Get route params for quick count
   const routeParams = route.params as
@@ -123,7 +150,8 @@ export default function CountSetupScreen() {
     if (currentIndex > 0) {
       setCurrentStep(steps[currentIndex - 1])
     } else {
-      navigation.goBack()
+      // Navigate back to home
+      navigation.getParent()?.navigate('Home' as never)
     }
   }
 

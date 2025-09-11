@@ -14,6 +14,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { VStack } from '@/components/ui/vstack'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { useQueryClient } from '@tanstack/react-query'
 import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
 import React, { useCallback, useState } from 'react'
@@ -41,9 +42,11 @@ export function CountScreen() {
   const [quantity, setQuantity] = useState('0')
   const [showCountModal, setShowCountModal] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [isCompletingArea, setIsCompletingArea] = useState(false)
 
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
+  const queryClient = useQueryClient()
 
   // Count sync hook
   const { syncNow } = useCountSync()
@@ -111,6 +114,7 @@ export function CountScreen() {
         {
           text: 'Complete',
           onPress: async () => {
+            setIsCompletingArea(true)
             try {
               // Complete current area and get result (now async)
               const result = await completeCurrentArea(activeSession.id)
@@ -125,6 +129,10 @@ export function CountScreen() {
                       {
                         text: 'Done',
                         onPress: () => {
+                          // Invalidate queries to refresh data on home screen
+                          queryClient.invalidateQueries({
+                            queryKey: ['completed-counts'],
+                          })
                           navigation.getParent()?.navigate('Home' as never)
                         },
                       },
@@ -141,6 +149,10 @@ export function CountScreen() {
                         onPress: async () => {
                           try {
                             await completeCountSession(activeSession.id)
+                            // Invalidate queries to refresh data on home screen
+                            queryClient.invalidateQueries({
+                              queryKey: ['completed-counts'],
+                            })
                             navigation.getParent()?.navigate('Home' as never)
                           } catch (error) {
                             console.error('Failed to complete count:', error)
@@ -161,6 +173,8 @@ export function CountScreen() {
                 'Error',
                 'Failed to complete area. Please check your connection and try again.'
               )
+            } finally {
+              setIsCompletingArea(false)
             }
           },
         },
@@ -301,8 +315,6 @@ export function CountScreen() {
     ;(navigation as any).navigate('Scan')
   }
   const { countItems } = useCountStore()
-
-  console.log(countItems)
 
   return (
     <PageGradient>
@@ -772,6 +784,21 @@ export function CountScreen() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Loading Overlay for Area Completion */}
+      {isCompletingArea && (
+        <Box className='absolute inset-0 bg-black/50 justify-center items-center z-50'>
+          <VStack
+            className='bg-white dark:bg-gray-800 p-6 rounded-2xl items-center'
+            space='md'
+          >
+            <Spinner size='large' />
+            <ThemedText variant='body' weight='medium'>
+              Completing area...
+            </ThemedText>
+          </VStack>
+        </Box>
+      )}
     </PageGradient>
   )
 }

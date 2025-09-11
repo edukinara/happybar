@@ -94,9 +94,7 @@ interface CountStore {
 
   // Area management
   setCurrentArea: (sessionId: string, areaId: string) => void
-  completeCurrentArea: (
-    sessionId: string
-  ) => Promise<{
+  completeCurrentArea: (sessionId: string) => Promise<{
     hasMoreAreas: boolean
     nextArea: CountArea | null
     countCompleted?: boolean
@@ -582,10 +580,10 @@ export const useCountStore = create<CountStore>()((set, get) => ({
 
       // Create session ID first so we can use it in count items
       const sessionId = `backend-${apiCount.id}`
-      
+
       // Extract count items from API response areas
       const countItems: CountItem[] = []
-      
+
       if (apiCount.areas) {
         for (const area of apiCount.areas) {
           if (area.items && Array.isArray(area.items)) {
@@ -642,7 +640,9 @@ export const useCountStore = create<CountStore>()((set, get) => ({
         // Add count items, removing any existing items for this session
         countItems: [
           ...countItems,
-          ...state.countItems.filter((item) => item.countSessionId !== sessionId),
+          ...state.countItems.filter(
+            (item) => item.countSessionId !== sessionId
+          ),
         ],
         activeSessionId: sessionId,
       }))
@@ -926,7 +926,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
     try {
       const activeSession = get().getActiveSession()
       if (!activeSession || !activeSession.apiId) {
-        console.log('No active session to rehydrate items for')
         return
       }
 
@@ -936,7 +935,7 @@ export const useCountStore = create<CountStore>()((set, get) => ({
 
       // Extract count items from API response areas
       const countItems: CountItem[] = []
-      
+
       if (apiCount.areas) {
         for (const area of apiCount.areas) {
           if (area.items && Array.isArray(area.items)) {
@@ -969,11 +968,11 @@ export const useCountStore = create<CountStore>()((set, get) => ({
       set((state) => ({
         countItems: [
           ...countItems,
-          ...state.countItems.filter((item) => item.countSessionId !== activeSession.id),
+          ...state.countItems.filter(
+            (item) => item.countSessionId !== activeSession.id
+          ),
         ],
       }))
-
-      console.log(`Rehydrated ${countItems.length} count items for current session from backend`)
     } catch (error) {
       console.error('Failed to rehydrate current session items:', error)
       // Don't throw - this is a background operation
