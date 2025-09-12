@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons'
 import React, { useState } from 'react'
 import { ActivityIndicator, ScrollView } from 'react-native'
 
@@ -34,15 +35,30 @@ interface CatalogSearchProps {
   onSelect: (product: CatalogProduct) => void
   placeholder?: string
   className?: string
+  onScanBarcode?: () => void
+  searchTerm?: string
+  setSearchTerm?: (term: string) => void
+  showResults?: boolean
+  setShowResults?: (show: boolean) => void
 }
 
 export function CatalogSearch({
   onSelect,
   placeholder = 'Search product catalog...',
   className = '',
+  onScanBarcode,
+  searchTerm: externalSearchTerm,
+  setSearchTerm: externalSetSearchTerm,
+  showResults: externalShowResults,
+  setShowResults: externalSetShowResults,
 }: CatalogSearchProps) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showResults, setShowResults] = useState(false)
+  const [internalSearchTerm, setInternalSearchTerm] = useState('')
+  const [internalShowResults, setInternalShowResults] = useState(false)
+
+  const searchTerm = externalSearchTerm ?? internalSearchTerm
+  const setSearchTerm = externalSetSearchTerm ?? setInternalSearchTerm
+  const showResults = externalShowResults ?? internalShowResults
+  const setShowResults = externalSetShowResults ?? setInternalShowResults
 
   // Debounce search input to avoid too many API calls
   const debouncedSearch = useDebounce(searchTerm, 300)
@@ -68,6 +84,7 @@ export function CatalogSearch({
     setTimeout(() => setShowResults(false), 200)
   }
 
+
   const hasValidSearch = searchTerm.length >= 3
 
   return (
@@ -76,21 +93,33 @@ export function CatalogSearch({
         <ThemedText variant='body' weight='medium' color='primary'>
           Search Catalog (Optional)
         </ThemedText>
-        <ThemedInput
-          variant='default'
-          size='md'
-          fieldProps={{
-            placeholder,
-            value: searchTerm,
-            onChangeText: setSearchTerm,
-            onFocus: handleSearchFocus,
-            onBlur: handleSearchBlur,
-            autoCapitalize: 'none',
-            autoCorrect: false,
-          }}
-        />
+        <HStack space='xs'>
+          <Box className='flex-1'>
+            <ThemedInput
+              variant='default'
+              size='md'
+              fieldProps={{
+                placeholder,
+                value: searchTerm,
+                onChangeText: setSearchTerm,
+                onFocus: handleSearchFocus,
+                onBlur: handleSearchBlur,
+                autoCapitalize: 'none',
+                autoCorrect: false,
+              }}
+            />
+          </Box>
+          {onScanBarcode && (
+            <Pressable
+              onPress={onScanBarcode}
+              className='bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg justify-center'
+            >
+              <Ionicons name='barcode-outline' size={20} color='#8B5CF6' />
+            </Pressable>
+          )}
+        </HStack>
         <ThemedText variant='caption' color='muted'>
-          Search to auto-fill product details from catalog
+          Search by name, UPC, or scan barcode to auto-fill product details
         </ThemedText>
       </VStack>
 
@@ -234,3 +263,4 @@ export function CatalogSearch({
     </VStack>
   )
 }
+

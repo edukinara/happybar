@@ -4,8 +4,9 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native'
+import { CameraView, useCameraPermissions } from 'expo-camera'
 import { StatusBar } from 'expo-status-bar'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -103,6 +104,17 @@ export function AddProductScreen() {
   const [showSupplierPicker, setShowSupplierPicker] = useState(false)
   const [showSupplierForm, setShowSupplierForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Barcode scanning state
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false)
+  const [isScanning, setIsScanning] = useState(false)
+  const [isCameraReady, setIsCameraReady] = useState(false)
+  const [scanMode, setScanMode] = useState<'upc' | 'catalog'>('upc') // Track what field to update
+  const [permission, requestPermission] = useCameraPermissions()
+
+  // Catalog search state
+  const [catalogSearchTerm, setCatalogSearchTerm] = useState('')
+  const [showCatalogResults, setShowCatalogResults] = useState(false)
 
   // Supplier state
   const [productSuppliers, setProductSuppliers] = useState<ProductSupplier[]>(
@@ -205,6 +217,61 @@ export function AddProductScreen() {
       )
     )
   }
+
+  // Barcode scanning handlers
+  const handleScanBarcodeForUPC = async () => {
+    setScanMode('upc')
+    await openScanner()
+  }
+
+  const handleScanBarcodeForCatalog = async () => {
+    setScanMode('catalog')
+    await openScanner()
+  }
+
+  const openScanner = async () => {
+    if (!permission?.granted) {
+      try {
+        const result = await requestPermission()
+        if (!result.granted) {
+          Alert.alert(
+            'Camera Permission',
+            'Camera access is needed to scan barcodes',
+            [{ text: 'OK' }]
+          )
+          return
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to request camera permission')
+        return
+      }
+    }
+
+    setShowBarcodeScanner(true)
+    setIsScanning(true)
+    setIsCameraReady(false)
+  }
+
+  const handleBarCodeScanned = useCallback(
+    ({ data }: { data: string }) => {
+      if (!isScanning) return
+      setIsScanning(false)
+      
+      if (scanMode === 'upc') {
+        setFormData((prev) => ({ ...prev, upc: data }))
+      } else if (scanMode === 'catalog') {
+        setCatalogSearchTerm(data)
+        setShowCatalogResults(true)
+      }
+      
+      setShowBarcodeScanner(false)
+    },
+    [isScanning, scanMode]
+  )
+
+  const onCameraReady = useCallback(() => {
+    setIsCameraReady(true)
+  }, [])
 
   const handleSubmit = async () => {
     // Validation
@@ -342,6 +409,11 @@ export function AddProductScreen() {
                 <CatalogSearch
                   onSelect={handleCatalogSelect}
                   placeholder='Search catalog to auto-fill product details...'
+                  onScanBarcode={handleScanBarcodeForCatalog}
+                  searchTerm={catalogSearchTerm}
+                  setSearchTerm={setCatalogSearchTerm}
+                  showResults={showCatalogResults}
+                  setShowResults={setShowCatalogResults}
                 />
               </ThemedCard>
 
@@ -368,47 +440,51 @@ export function AddProductScreen() {
                     />
                   </VStack>
 
-                  <HStack space='sm'>
-                    <VStack space='sm' className='flex-1'>
-                      <ThemedText
-                        variant='body'
-                        weight='medium'
-                        color='primary'
+                  <VStack space='sm' className='flex-1'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
+                      SKU
+                    </ThemedText>
+                    <ThemedInput
+                      variant='default'
+                      size='md'
+                      fieldProps={{
+                        placeholder: 'e.g., BUD-001',
+                        value: formData.sku,
+                        onChangeText: (value) =>
+                          handleInputChange('sku', value),
+                      }}
+                    />
+                  </VStack>
+                  <VStack space='sm' className='flex-1'>
+                    <ThemedText variant='body' weight='medium' color='primary'>
+                      UPC/Barcode
+                    </ThemedText>
+                    <HStack space='xs'>
+                      <Box className='flex-1'>
+                        <ThemedInput
+                          variant='default'
+                          size='md'
+                          fieldProps={{
+                            placeholder: '123456789012',
+                            value: formData.upc,
+                            onChangeText: (value) =>
+                              handleInputChange('upc', value),
+                            keyboardType: 'numeric',
+                          }}
+                        />
+                      </Box>
+                      <Pressable
+                        onPress={handleScanBarcodeForUPC}
+                        className='bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg justify-center'
                       >
-                        SKU
-                      </ThemedText>
-                      <ThemedInput
-                        variant='default'
-                        size='md'
-                        fieldProps={{
-                          placeholder: 'e.g., BUD-001',
-                          value: formData.sku,
-                          onChangeText: (value) =>
-                            handleInputChange('sku', value),
-                        }}
-                      />
-                    </VStack>
-                    <VStack space='sm' className='flex-1'>
-                      <ThemedText
-                        variant='body'
-                        weight='medium'
-                        color='primary'
-                      >
-                        UPC/Barcode
-                      </ThemedText>
-                      <ThemedInput
-                        variant='default'
-                        size='md'
-                        fieldProps={{
-                          placeholder: '123456789012',
-                          value: formData.upc,
-                          onChangeText: (value) =>
-                            handleInputChange('upc', value),
-                          keyboardType: 'numeric',
-                        }}
-                      />
-                    </VStack>
-                  </HStack>
+                        <Ionicons
+                          name='barcode-outline'
+                          size={20}
+                          color='#8B5CF6'
+                        />
+                      </Pressable>
+                    </HStack>
+                  </VStack>
 
                   <VStack space='sm'>
                     <ThemedText variant='body' weight='medium' color='primary'>
@@ -1255,6 +1331,87 @@ export function AddProductScreen() {
               </ScrollView>
             </VStack>
           </ThemedCard>
+        </Box>
+      )}
+
+      {/* Barcode Scanner Modal */}
+      {showBarcodeScanner && (
+        <Box className='absolute inset-0 bg-black'>
+          <Box
+            className='absolute top-0 left-0 right-0 z-50 bg-black/70 p-4'
+            style={{ paddingTop: insets.top }}
+          >
+            <HStack className='justify-between items-center'>
+              <ThemedText variant='h3' color='onGradient' weight='bold'>
+                {scanMode === 'upc' ? 'Scan UPC/Barcode' : 'Scan for Catalog Search'}
+              </ThemedText>
+              <Pressable
+                onPress={() => {
+                  setShowBarcodeScanner(false)
+                  setIsScanning(false)
+                  setIsCameraReady(false)
+                }}
+                className='p-2'
+              >
+                <Ionicons name='close' size={24} color='white' />
+              </Pressable>
+            </HStack>
+            <ThemedText variant='body' color='onGradientMuted' className='mt-2'>
+              {scanMode === 'upc' 
+                ? 'Scan to fill the UPC field' 
+                : 'Scan to search the product catalog'
+              }
+            </ThemedText>
+          </Box>
+
+          {permission?.granted && (
+            <CameraView
+              style={{ flex: 1 }}
+              facing='back'
+              barcodeScannerSettings={{
+                barcodeTypes: [
+                  'qr',
+                  'pdf417',
+                  'ean13',
+                  'ean8',
+                  'upc_a',
+                  'upc_e',
+                  'code39',
+                  'code93',
+                  'code128',
+                  'codabar',
+                ],
+              }}
+              onBarcodeScanned={
+                isScanning && isCameraReady ? handleBarCodeScanned : undefined
+              }
+              onCameraReady={onCameraReady}
+            />
+          )}
+
+          {/* Camera Loading Overlay */}
+          {!isCameraReady && (
+            <Box className='absolute inset-0 bg-black/70 justify-center items-center'>
+              <VStack space='md' className='items-center'>
+                <Box className='w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin' />
+                <ThemedText variant='body' color='onGradient'>
+                  Initializing Camera...
+                </ThemedText>
+              </VStack>
+            </Box>
+          )}
+
+          {/* Scanning Frame */}
+          {isCameraReady && (
+            <Box className='absolute inset-0 justify-center items-center pointer-events-none'>
+              <Box className='w-64 h-64 border-2 border-white/50 rounded-lg'>
+                <Box className='absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-lg' />
+                <Box className='absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-lg' />
+                <Box className='absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-lg' />
+                <Box className='absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-lg' />
+              </Box>
+            </Box>
+          )}
         </Box>
       )}
     </PageGradient>

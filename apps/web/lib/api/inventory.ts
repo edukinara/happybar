@@ -92,7 +92,7 @@ export interface InventoryTransaction {
   notes?: string
   reason?: string
   performedBy?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface TransactionHistoryResponse {
@@ -102,6 +102,78 @@ export interface TransactionHistoryResponse {
     offset: number
     total: number
   }
+}
+
+type VarianceAnalysisRes = {
+  summary: {
+    totalVariance: number
+    totalVariancePercent: number
+    totalCostImpact: number
+    itemsWithVariance: number
+    totalItemsCounted: number
+  }
+  variancesByLocation: Array<{
+    locationId: string
+    locationName: string
+    totalVariance: number
+    costImpact: number
+    itemCount: number
+  }>
+  variancesByProduct: Array<{
+    productId: string
+    productName: string
+    totalVariance: number
+    costImpact: number
+    countFrequency: number
+  }>
+}
+
+type InventoryValuationRes = {
+  summary: {
+    totalValue: number
+    totalItems: number
+    averageTurnover: number
+    slowMovingItems: number
+  }
+  valueByCategory: Array<{
+    categoryId: string
+    categoryName: string
+    totalValue: number
+    itemCount: number
+    turnoverRate: number
+  }>
+  valueByLocation: Array<{
+    locationId: string
+    locationName: string
+    totalValue: number
+    itemCount: number
+    averageAge: number
+  }>
+}
+
+type CountSummaryRes = {
+  summary: {
+    totalCounts: number
+    completedCounts: number
+    averageVariance: number
+    totalCostImpact: number
+  }
+  countsByLocation: Array<{
+    locationId: string
+    locationName: string
+    countFrequency: number
+    averageVariance: number
+    lastCountDate: string
+  }>
+  recentCounts: Array<{
+    id: string
+    name: string
+    locationName: string
+    completedAt: string
+    totalItems: number
+    varianceCount: number
+    costImpact: number
+  }>
 }
 
 export const inventoryApi = {
@@ -227,7 +299,7 @@ export const inventoryApi = {
       notes?: string
     }
   ) {
-    const response = await apiClient.post<APIRes<any>>(
+    const response = await apiClient.post<APIRes<unknown>>(
       `/api/inventory-counts/${countId}/items`,
       data
     )
@@ -240,8 +312,8 @@ export const inventoryApi = {
   async updateParLevel(
     inventoryItemId: string,
     parLevel: number
-  ): Promise<any> {
-    const response = await apiClient.put<APIRes<any>>(
+  ): Promise<unknown> {
+    const response = await apiClient.put<APIRes<unknown>>(
       `/api/inventory/levels/${inventoryItemId}`,
       { minimumQuantity: parLevel }
     )
@@ -255,8 +327,8 @@ export const inventoryApi = {
     productId: string
     locationId: string
     minimumQuantity: number
-  }): Promise<any> {
-    const response = await apiClient.post<APIRes<any>>(
+  }): Promise<unknown> {
+    const response = await apiClient.post<APIRes<unknown>>(
       '/api/inventory/levels',
       data
     )
@@ -270,8 +342,8 @@ export const inventoryApi = {
     countId: string,
     areaId: string,
     status: string
-  ): Promise<any> {
-    const response = await apiClient.put<APIRes<any>>(
+  ): Promise<unknown> {
+    const response = await apiClient.put<APIRes<unknown>>(
       `/api/inventory-counts/${countId}/areas/${areaId}`,
       { status }
     )
@@ -443,7 +515,17 @@ export const inventoryApi = {
       totalPages: number
     }
   }> {
-    const response = await apiClient.get<APIRes<any>>('/api/stock/transfers', {
+    const response = await apiClient.get<
+      APIRes<{
+        movements: StockMovement[]
+        pagination: {
+          page: number
+          limit: number
+          total: number
+          totalPages: number
+        }
+      }>
+    >('/api/stock/transfers', {
       params,
     })
     if (!response.success || !response.data) {
@@ -456,19 +538,25 @@ export const inventoryApi = {
     locationId: string,
     lowStockOnly?: boolean
   ): Promise<{
-    inventory: any[]
+    inventory: unknown[]
     summary: {
       totalItems: number
       lowStockItems: number
       totalValue: number
     }
   }> {
-    const response = await apiClient.get<APIRes<any>>(
-      `/api/stock/inventory/by-location/${locationId}`,
-      {
-        params: { lowStockOnly },
-      }
-    )
+    const response = await apiClient.get<
+      APIRes<{
+        inventory: unknown[]
+        summary: {
+          totalItems: number
+          lowStockItems: number
+          totalValue: number
+        }
+      }>
+    >(`/api/stock/inventory/by-location/${locationId}`, {
+      params: { lowStockOnly },
+    })
     if (!response.success || !response.data) {
       throw new Error('Failed to get location inventory')
     }
@@ -509,7 +597,7 @@ export const inventoryApi = {
     if (params?.locationId) queryParams.append('locationId', params.locationId)
     if (params?.productId) queryParams.append('productId', params.productId)
 
-    const response = await apiClient.get<APIRes<any>>(
+    const response = await apiClient.get<APIRes<UsageAnalysisResponse>>(
       `/api/inventory/reports/usage-analysis?${queryParams.toString()}`
     )
     if (!response.success || !response.data) {
@@ -522,30 +610,8 @@ export const inventoryApi = {
     startDate?: string
     endDate?: string
     locationId?: string
-  }): Promise<{
-    summary: {
-      totalVariance: number
-      totalVariancePercent: number
-      totalCostImpact: number
-      itemsWithVariance: number
-      totalItemsCounted: number
-    }
-    variancesByLocation: Array<{
-      locationId: string
-      locationName: string
-      totalVariance: number
-      costImpact: number
-      itemCount: number
-    }>
-    variancesByProduct: Array<{
-      productId: string
-      productName: string
-      totalVariance: number
-      costImpact: number
-      countFrequency: number
-    }>
-  }> {
-    const response = await apiClient.get<APIRes<any>>(
+  }): Promise<VarianceAnalysisRes> {
+    const response = await apiClient.get<APIRes<VarianceAnalysisRes>>(
       '/api/inventory/reports/variance-analysis',
       {
         params,
@@ -557,29 +623,10 @@ export const inventoryApi = {
     return response.data
   },
 
-  async getInventoryValuation(locationId?: string): Promise<{
-    summary: {
-      totalValue: number
-      totalItems: number
-      averageTurnover: number
-      slowMovingItems: number
-    }
-    valueByCategory: Array<{
-      categoryId: string
-      categoryName: string
-      totalValue: number
-      itemCount: number
-      turnoverRate: number
-    }>
-    valueByLocation: Array<{
-      locationId: string
-      locationName: string
-      totalValue: number
-      itemCount: number
-      averageAge: number
-    }>
-  }> {
-    const response = await apiClient.get<APIRes<any>>(
+  async getInventoryValuation(
+    locationId?: string
+  ): Promise<InventoryValuationRes> {
+    const response = await apiClient.get<APIRes<InventoryValuationRes>>(
       '/api/inventory/reports/valuation',
       {
         params: { locationId },
@@ -612,12 +659,25 @@ export const inventoryApi = {
       totalValue: number
     }>
   }> {
-    const response = await apiClient.get<APIRes<any>>(
-      '/api/inventory/reports/movement-history',
-      {
-        params,
-      }
-    )
+    const response = await apiClient.get<
+      APIRes<{
+        movements: StockMovement[]
+        summary: {
+          totalMovements: number
+          transferCount: number
+          adjustmentCount: number
+          totalValue: number
+        }
+        movementsByType: Array<{
+          type: string
+          count: number
+          totalQuantity: number
+          totalValue: number
+        }>
+      }>
+    >('/api/inventory/reports/movement-history', {
+      params,
+    })
     if (!response.success || !response.data) {
       throw new Error('Failed to get movement history')
     }
@@ -628,31 +688,8 @@ export const inventoryApi = {
     startDate?: string
     endDate?: string
     locationId?: string
-  }): Promise<{
-    summary: {
-      totalCounts: number
-      completedCounts: number
-      averageVariance: number
-      totalCostImpact: number
-    }
-    countsByLocation: Array<{
-      locationId: string
-      locationName: string
-      countFrequency: number
-      averageVariance: number
-      lastCountDate: string
-    }>
-    recentCounts: Array<{
-      id: string
-      name: string
-      locationName: string
-      completedAt: string
-      totalItems: number
-      varianceCount: number
-      costImpact: number
-    }>
-  }> {
-    const response = await apiClient.get<APIRes<any>>(
+  }): Promise<CountSummaryRes> {
+    const response = await apiClient.get<APIRes<CountSummaryRes>>(
       '/api/inventory/reports/count-summary',
       {
         params,

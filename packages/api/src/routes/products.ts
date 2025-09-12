@@ -315,7 +315,7 @@ export async function productRoutes(fastify: FastifyInstance) {
 
       // If suppliers are provided, validate they exist in the organization
       if (suppliers && suppliers.length > 0) {
-        const supplierIds = suppliers.map(s => s.supplierId)
+        const supplierIds = suppliers.map((s) => s.supplierId)
         const existingSuppliers = await fastify.prisma.supplier.findMany({
           where: {
             id: { in: supplierIds },
@@ -324,9 +324,11 @@ export async function productRoutes(fastify: FastifyInstance) {
           select: { id: true },
         })
 
-        const foundSupplierIds = existingSuppliers.map(s => s.id)
-        const missingSuppliers = supplierIds.filter(id => !foundSupplierIds.includes(id))
-        
+        const foundSupplierIds = existingSuppliers.map((s) => s.id)
+        const missingSuppliers = supplierIds.filter(
+          (id) => !foundSupplierIds.includes(id)
+        )
+
         if (missingSuppliers.length > 0) {
           throw new AppError(
             `Suppliers not found: ${missingSuppliers.join(', ')}`,
@@ -336,7 +338,7 @@ export async function productRoutes(fastify: FastifyInstance) {
         }
 
         // Ensure only one supplier is marked as preferred
-        const preferredCount = suppliers.filter(s => s.isPreferred).length
+        const preferredCount = suppliers.filter((s) => s.isPreferred).length
         if (preferredCount > 1) {
           throw new AppError(
             'Only one supplier can be marked as preferred',
@@ -367,7 +369,7 @@ export async function productRoutes(fastify: FastifyInstance) {
         // Create supplier relationships if provided
         if (suppliers && suppliers.length > 0) {
           const supplierRelationships = await Promise.all(
-            suppliers.map(supplierData => 
+            suppliers.map((supplierData) =>
               prisma.productSupplier.create({
                 data: {
                   productId: product.id,
@@ -401,8 +403,35 @@ export async function productRoutes(fastify: FastifyInstance) {
           }
         }
 
+        // Prepare update data
+        const updateData: any = {}
+        updateData.currentQuantity = 0
+        updateData.minimumQuantity = 1
+
         return product
       })
+
+      if (result?.id) {
+        for await (const locationId of await fastify.prisma.location
+          .findMany({
+            where: {
+              organizationId,
+            },
+          })
+          .then((l) => l.map((i) => i.id))) {
+          await fastify.prisma.inventoryItem
+            .create({
+              data: {
+                organizationId,
+                productId: result.id,
+                locationId,
+                currentQuantity: 0,
+                minimumQuantity: 1,
+              },
+            })
+            .catch(() => {})
+        }
+      }
 
       return { success: true, data: result }
     }
@@ -614,16 +643,25 @@ export async function productRoutes(fastify: FastifyInstance) {
     async (request: any, reply) => {
       const { id } = request.params as { id: string }
 
+      const organizationId = getOrganizationId(request)
+
       const product = await fastify.prisma.product.findFirst({
         where: {
           id,
-          organizationId: getOrganizationId(request),
+          organizationId,
         },
       })
 
       if (!product) {
         throw new AppError('Product not found', ErrorCode.NOT_FOUND, 404)
       }
+
+      const locationIds = await fastify.prisma.location
+        .findMany({
+          select: { id: true },
+        })
+        .then((r) => r.map((l) => l.id))
+        .catch(() => [])
 
       // Delete related records that don't have cascade delete
       // This includes InventoryCountItems which don't have onDelete: Cascade
@@ -641,6 +679,14 @@ export async function productRoutes(fastify: FastifyInstance) {
           where: { id },
         }),
       ])
+      // Delete inventory item
+      try {
+        await fastify.prisma.inventoryItem.deleteMany({
+          where: {
+            productId: id,
+          },
+        })
+      } catch {}
 
       return { success: true }
     }

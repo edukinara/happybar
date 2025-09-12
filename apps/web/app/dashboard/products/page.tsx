@@ -60,6 +60,7 @@ import type {
   InventoryProduct,
   ProductContainer,
 } from '@happy-bar/types'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
   Building2,
@@ -167,11 +168,17 @@ export default function ProductsPage() {
     setCurrentPage(1)
   }
 
+  const queryClient = useQueryClient()
+
   const handleDeleteProduct = (productId: string) => {
     showDestructiveConfirm(
       'Are you sure you want to delete this product? This action cannot be undone.',
       async () => {
-        deleteProductMutation.mutateAsync(productId)
+        await deleteProductMutation
+          .mutateAsync(productId)
+          .then(() =>
+            queryClient.invalidateQueries({ queryKey: ['inventory'] })
+          )
       },
       'Delete Product',
       'Delete'
