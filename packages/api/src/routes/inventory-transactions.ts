@@ -120,9 +120,13 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
           date: movement.createdAt,
           productId: movement.productId,
           locationId: movement.fromLocationId,
-          quantity: movement.quantity,
-          reason: movement.reason,
-          reference: movement.id,
+          quantity:
+            movement.fromLocationId == locationId &&
+            movement.type === MovementType.ADJUSTMENT_OUT
+              ? -movement.quantity
+              : movement.quantity,
+          reason: movement.notes,
+          reference: movement.reason,
           notes: movement.notes,
           performedBy: movement.user?.name || 'Unknown',
           metadata: {
