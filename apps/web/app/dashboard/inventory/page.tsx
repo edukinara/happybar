@@ -38,6 +38,9 @@ import { cn } from '@/lib/utils'
 import type { InventoryLevel } from '@happy-bar/types'
 import {
   AlertTriangle,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
   DollarSign,
   MapPin,
   Package,
@@ -46,6 +49,56 @@ import {
 import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useMemo, useState } from 'react'
+
+type SortColumn =
+  | 'product'
+  | 'category'
+  | 'location'
+  | 'current'
+  | 'unitCost'
+  | 'value'
+  | 'status'
+  | 'lastCount'
+type SortDirection = 'asc' | 'desc' | null
+
+// Sortable Table Header Component
+const SortableTableHead = ({
+  column,
+  currentSort,
+  currentDirection,
+  onSort,
+  children,
+  className = '',
+}: {
+  column: SortColumn
+  currentSort: SortColumn | null
+  currentDirection: SortDirection
+  onSort: (column: SortColumn) => void
+  children: React.ReactNode
+  className?: string
+}) => {
+  const isActive = currentSort === column
+
+  return (
+    <TableHead
+      className={`cursor-pointer hover:bg-muted/50 transition-colors ${className}`}
+      onClick={() => onSort(column)}
+    >
+      <div className='flex items-center gap-1'>
+        {children}
+        {isActive && currentDirection ? (
+          currentDirection === 'asc' ? (
+            <ChevronUp className='size-4' />
+          ) : (
+            <ChevronDown className='size-4' />
+          )
+        ) : (
+          <ArrowUpDown className='size-4 opacity-50' />
+        )}
+      </div>
+    </TableHead>
+  )
+}
 
 export default function InventoryPage() {
   // Use query hooks for data fetching
@@ -56,9 +109,37 @@ export default function InventoryPage() {
 
   const [searchTerm, setSearchTerm] = useState('')
 
+  // Sorting state
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
+
+  // Helper function to get stock status
+  const getStockStatus = (current: number, minimum: number) => {
+    if (current <= 0)
+      return {
+        label: 'Out of Stock',
+        color: 'bg-red-100 text-red-800',
+        textColor: 'text-red-600',
+        sortValue: 0,
+      }
+    if (current < minimum)
+      return {
+        label: 'Low Stock',
+        color: 'bg-yellow-100 text-yellow-800',
+        textColor: 'text-yellow-600',
+        sortValue: 1,
+      }
+    return {
+      label: 'In Stock',
+      color: 'bg-green-100 text-green-800',
+      textColor: 'text-green-600',
+      sortValue: 2,
+    }
+  }
 
   // Filtered inventory using useMemo for performance
   const filteredInventory = useMemo(() => {
@@ -81,12 +162,69 @@ export default function InventoryPage() {
     })
   }, [inventory, searchTerm, selectedLocationId])
 
+  // Sort inventory
+  const sortedInventory = useMemo(() => {
+    if (!sortColumn || !sortDirection) return filteredInventory
+
+    return [...filteredInventory].sort((a, b) => {
+      let aValue: string | number
+      let bValue: string | number
+
+      switch (sortColumn) {
+        case 'product':
+          aValue = a.product.name.toLowerCase()
+          bValue = b.product.name.toLowerCase()
+          break
+        case 'category':
+          aValue = a.product.category.name.toLowerCase()
+          bValue = b.product.category.name.toLowerCase()
+          break
+        case 'location':
+          aValue = a.location.name.toLowerCase()
+          bValue = b.location.name.toLowerCase()
+          break
+        case 'current':
+          aValue = a.currentQuantity
+          bValue = b.currentQuantity
+          break
+        case 'unitCost':
+          aValue = a.product.costPerUnit
+          bValue = b.product.costPerUnit
+          break
+        case 'value':
+          aValue = a.currentQuantity * a.product.costPerUnit
+          bValue = b.currentQuantity * b.product.costPerUnit
+          break
+        case 'status':
+          aValue = getStockStatus(
+            a.currentQuantity,
+            a.minimumQuantity
+          ).sortValue
+          bValue = getStockStatus(
+            b.currentQuantity,
+            b.minimumQuantity
+          ).sortValue
+          break
+        case 'lastCount':
+          aValue = a.lastCountDate ? new Date(a.lastCountDate).getTime() : 0
+          bValue = b.lastCountDate ? new Date(b.lastCountDate).getTime() : 0
+          break
+        default:
+          return 0
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+  }, [filteredInventory, sortColumn, sortDirection])
+
   // Calculate pagination values
-  const totalItems = filteredInventory.length
+  const totalItems = sortedInventory.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
-  const paginatedInventory = filteredInventory.slice(startIndex, endIndex)
+  const paginatedInventory = sortedInventory.slice(startIndex, endIndex)
 
   // Reset page when filters change
   useEffect(() => {
@@ -111,25 +249,21 @@ export default function InventoryPage() {
     setCurrentPage(1)
   }
 
-  // Remove fetchInventory - now handled by query hooks
-
-  const getStockStatus = (current: number, minimum: number) => {
-    if (current <= 0)
-      return {
-        label: 'Out of Stock',
-        color: 'bg-red-100 text-red-800',
-        textColor: 'text-red-600',
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      // Cycle through: asc -> desc -> null (original)
+      if (sortDirection === 'asc') {
+        setSortDirection('desc')
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null)
+        setSortColumn(null)
+      } else {
+        setSortDirection('asc')
       }
-    if (current < minimum)
-      return {
-        label: 'Low Stock',
-        color: 'bg-yellow-100 text-yellow-800',
-        textColor: 'text-yellow-600',
-      }
-    return {
-      label: 'In Stock',
-      color: 'bg-green-100 text-green-800',
-      textColor: 'text-green-600',
+    } else {
+      // Set new column and start with ascending
+      setSortColumn(column)
+      setSortDirection('asc')
     }
   }
 
@@ -271,14 +405,70 @@ export default function InventoryPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead />
-                    <TableHead>Product</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Current</TableHead>
-                    <TableHead>Unit Cost</TableHead>
-                    <TableHead>Value</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Count</TableHead>
+                    <SortableTableHead
+                      column='product'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Product
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='category'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Category
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='location'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Location
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='current'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Current
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='unitCost'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Unit Cost
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='value'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Value
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='status'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Status
+                    </SortableTableHead>
+                    <SortableTableHead
+                      column='lastCount'
+                      currentSort={sortColumn}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                    >
+                      Last Count
+                    </SortableTableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

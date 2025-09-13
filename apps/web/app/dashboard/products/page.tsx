@@ -63,8 +63,10 @@ import type {
 import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
+  ArrowUpDown,
   Building2,
   ChevronDown,
+  ChevronUp,
   DollarSign,
   Edit,
   Link2,
@@ -81,6 +83,56 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+type SortColumn =
+  | 'name'
+  | 'category'
+  | 'unit'
+  | 'cost'
+  | 'sellPrice'
+  | 'totalQty'
+  | 'locations'
+  | 'alcohol'
+type SortDirection = 'asc' | 'desc' | null
+
+// Sortable Table Header Component
+const SortableTableHead = ({
+  column,
+  currentSort,
+  currentDirection,
+  onSort,
+  children,
+  className = '',
+}: {
+  column: SortColumn
+  currentSort: SortColumn | null
+  currentDirection: SortDirection
+  onSort: (column: SortColumn) => void
+  children: React.ReactNode
+  className?: string
+}) => {
+  const isActive = currentSort === column
+
+  return (
+    <TableHead
+      className={`cursor-pointer hover:bg-muted/50 transition-colors ${className}`}
+      onClick={() => onSort(column)}
+    >
+      <div className='flex items-center gap-1'>
+        {children}
+        {isActive && currentDirection ? (
+          currentDirection === 'asc' ? (
+            <ChevronUp className='size-4' />
+          ) : (
+            <ChevronDown className='size-4' />
+          )
+        ) : (
+          <ArrowUpDown className='size-4 opacity-50' />
+        )}
+      </div>
+    </TableHead>
+  )
+}
+
 export default function ProductsPage() {
   const { showDestructiveConfirm } = useAlertDialog()
   const [searchTerm, setSearchTerm] = useState('')
@@ -94,6 +146,10 @@ export default function ProductsPage() {
   )
   const [showBulkSupplierDialog, setShowBulkSupplierDialog] = useState(false)
   const [showBulkMatchingDialog, setShowBulkMatchingDialog] = useState(false)
+
+  // Sorting state
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null)
 
   // Use hooks for data fetching and mutations
   const {
@@ -116,6 +172,36 @@ export default function ProductsPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
+
+  // Helper functions for getting product metrics
+  const getTotalQuantity = (product: InventoryProduct) => {
+    // If filtering by location, only count quantity in that location
+    if (selectedLocationId) {
+      return (
+        product.inventoryItems
+          ?.filter((item) => item.locationId === selectedLocationId)
+          ?.reduce((sum, item) => sum + item.currentQuantity, 0) || 0
+      )
+    }
+    return (
+      product.inventoryItems?.reduce(
+        (sum, item) => sum + item.currentQuantity,
+        0
+      ) || 0
+    )
+  }
+
+  const getLocationCount = (product: InventoryProduct) => {
+    // If filtering by location, show 1 or 0 based on whether it exists in that location
+    if (selectedLocationId) {
+      return product.inventoryItems?.some(
+        (item) => item.locationId === selectedLocationId
+      )
+        ? 1
+        : 0
+    }
+    return product.inventoryItems?.length || 0
+  }
 
   // Filter products based on search term and location
   const filteredProducts = products.products.filter((product) => {
@@ -140,12 +226,61 @@ export default function ProductsPage() {
     return matchesSearch && matchesLocation && matchesCategory
   })
 
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (!sortColumn || !sortDirection) return 0
+
+    let aValue: string | number
+    let bValue: string | number
+
+    switch (sortColumn) {
+      case 'name':
+        aValue = a.name.toLowerCase()
+        bValue = b.name.toLowerCase()
+        break
+      case 'category':
+        aValue = a.category.name.toLowerCase()
+        bValue = b.category.name.toLowerCase()
+        break
+      case 'unit':
+        aValue = (a.container || 'unit').toLowerCase()
+        bValue = (b.container || 'unit').toLowerCase()
+        break
+      case 'cost':
+        aValue = a.costPerUnit || 0
+        bValue = b.costPerUnit || 0
+        break
+      case 'sellPrice':
+        aValue = a.sellPrice || 0
+        bValue = b.sellPrice || 0
+        break
+      case 'totalQty':
+        aValue = getTotalQuantity(a)
+        bValue = getTotalQuantity(b)
+        break
+      case 'locations':
+        aValue = getLocationCount(a)
+        bValue = getLocationCount(b)
+        break
+      case 'alcohol':
+        aValue = a.alcoholContent || 0
+        bValue = b.alcoholContent || 0
+        break
+      default:
+        return 0
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+    return 0
+  })
+
   // Calculate pagination values
-  const totalItems = filteredProducts.length
+  const totalItems = sortedProducts.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex)
+  const paginatedProducts = sortedProducts.slice(startIndex, endIndex)
 
   // Update usage tracking when products change
   useEffect(() => {
@@ -166,6 +301,24 @@ export default function ProductsPage() {
   const handleItemsPerPageChange = (newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage)
     setCurrentPage(1)
+  }
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      // Cycle through: asc -> desc -> null (original)
+      if (sortDirection === 'asc') {
+        setSortDirection('desc')
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null)
+        setSortColumn(null)
+      } else {
+        setSortDirection('asc')
+      }
+    } else {
+      // Set new column and start with ascending
+      setSortColumn(column)
+      setSortDirection('asc')
+    }
   }
 
   const queryClient = useQueryClient()
@@ -267,31 +420,6 @@ export default function ProductsPage() {
   const isAllSelected =
     paginatedProducts.length > 0 &&
     paginatedProducts.every((p) => selectedProducts.has(p.id))
-
-  const getTotalQuantity = (product: InventoryProduct) => {
-    // If filtering by location, only count quantity in that location
-    if (selectedLocationId) {
-      return product.inventoryItems
-        .filter((item) => item.locationId === selectedLocationId)
-        .reduce((sum, item) => sum + item.currentQuantity, 0)
-    }
-    return product.inventoryItems.reduce(
-      (sum, item) => sum + item.currentQuantity,
-      0
-    )
-  }
-
-  const getLocationCount = (product: InventoryProduct) => {
-    // If filtering by location, show 1 or 0 based on whether it exists in that location
-    if (selectedLocationId) {
-      return product.inventoryItems.some(
-        (item) => item.locationId === selectedLocationId
-      )
-        ? 1
-        : 0
-    }
-    return product.inventoryItems.length
-  }
 
   if (loading) {
     return (
@@ -524,14 +652,70 @@ export default function ProductsPage() {
                         />
                       </TableHead>
                       <TableHead className='w-[34px]'></TableHead>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead>Cost</TableHead>
-                      <TableHead>Sell Price</TableHead>
-                      <TableHead>Total Qty</TableHead>
-                      <TableHead>Locations</TableHead>
-                      <TableHead>Alcohol</TableHead>
+                      <SortableTableHead
+                        column='name'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Product
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='category'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Category
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='unit'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Unit
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='cost'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Cost
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='sellPrice'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Sell Price
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='totalQty'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Total Qty
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='locations'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Locations
+                      </SortableTableHead>
+                      <SortableTableHead
+                        column='alcohol'
+                        currentSort={sortColumn}
+                        currentDirection={sortDirection}
+                        onSort={handleSort}
+                      >
+                        Alcohol
+                      </SortableTableHead>
                       <TableHead className='w-[100px]'>Actions</TableHead>
                     </TableRow>
                   </TableHeader>

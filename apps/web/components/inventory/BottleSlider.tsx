@@ -172,7 +172,7 @@ export function BottleSlider({
               {category && (
                 <Badge
                   variant='secondary'
-                  className='text-[9px] bg-amber-500/10 dark:bg-amber-500/20'
+                  className='text-[9px] bg-amber-500/10 dark:bg-amber-500/20 text-foreground'
                 >
                   {category}
                 </Badge>

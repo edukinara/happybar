@@ -215,7 +215,7 @@ export async function productRoutes(fastify: FastifyInstance) {
           },
           skip,
           take: limit,
-          orderBy: { name: 'asc' },
+          orderBy: [{ sales: { _count: 'desc' } }, { name: 'asc' }],
         }),
         fastify.prisma.product.count({ where }),
       ])

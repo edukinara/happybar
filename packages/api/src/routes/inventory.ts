@@ -90,7 +90,20 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
             },
           },
         },
-        orderBy: { product: { name: 'asc' } },
+        orderBy: [
+          {
+            product: {
+              sales: {
+                _count: 'desc',
+              },
+            },
+          },
+          {
+            product: {
+              name: 'asc',
+            },
+          },
+        ],
       })
 
       return {
@@ -120,7 +133,17 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
           },
           location: true,
         },
-        orderBy: [{ product: { name: 'asc' } }, { location: { name: 'asc' } }],
+        orderBy: [
+          {
+            product: {
+              sales: {
+                _count: 'desc',
+              },
+            },
+          },
+          { product: { name: 'asc' } },
+          { location: { name: 'asc' } },
+        ],
       })
 
       return {
