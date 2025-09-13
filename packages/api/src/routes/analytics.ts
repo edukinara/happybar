@@ -58,7 +58,7 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
           where: {
             organizationId,
             ...(locationId && { locationId }),
-            status: 'COMPLETED',
+            status: { in: ['COMPLETED', 'APPROVED'] },
             completedAt: {
               gte: startDate ? new Date(startDate) : undefined,
               lte: endDate ? new Date(endDate) : undefined,
@@ -74,6 +74,11 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
                 },
               },
             },
+            location: {
+              select: {
+                name: true,
+              },
+            },
           },
           orderBy: {
             completedAt: 'desc',
@@ -81,8 +86,8 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
           take: 10,
         })
 
-        // Calculate variance metrics
-        const varianceData = counts.flatMap((count) =>
+        // Calculate variance metrics and aggregate by product
+        const rawVarianceData = counts.flatMap((count) =>
           count.areas.flatMap((area) =>
             area.items.map((item) => ({
               productId: item.productId,
@@ -99,11 +104,42 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
                 (item.totalQuantity - (item.expectedQty || 0)) *
                 item.product.costPerUnit,
               costPerUnit: item.product.costPerUnit,
-              location: count.locationId,
+              location: count.location.name,
               countDate: count.completedAt?.toISOString().split('T')[0],
               investigationStatus: 'PENDING' as const,
             }))
           )
+        )
+
+        // Aggregate by product to avoid duplicate keys
+        const productVarianceMap = new Map()
+        rawVarianceData.forEach((item) => {
+          const key = item.productId
+          if (productVarianceMap.has(key)) {
+            const existing = productVarianceMap.get(key)
+            existing.theoretical += item.theoretical
+            existing.actual += item.actual
+            existing.variance += item.variance
+            existing.varianceValue += item.varianceValue
+            // Update to most recent count date
+            if (item.countDate && item.countDate > existing.countDate) {
+              existing.countDate = item.countDate
+              existing.location = item.location
+            }
+          } else {
+            productVarianceMap.set(key, { ...item })
+          }
+        })
+
+        // Convert back to array and recalculate percentages
+        const varianceData = Array.from(productVarianceMap.values()).map(
+          (item) => ({
+            ...item,
+            variancePercent:
+              item.theoretical > 0
+                ? (item.variance / item.theoretical) * 100
+                : 0,
+          })
         )
 
         const totalVarianceValue = varianceData.reduce(

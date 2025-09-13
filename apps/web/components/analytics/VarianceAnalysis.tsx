@@ -231,8 +231,8 @@ export function VarianceAnalysis({
                       </Badge>
                     </div>
                     <div className='text-sm text-muted-foreground'>
-                      Expected: {item.theoretical} • Actual: {item.actual} •
-                      Location: {item.location}
+                      Expected: {+item.theoretical.toFixed(2)} • Actual:{' '}
+                      {+item.actual.toFixed(2)} • Location: {item.location}
                     </div>
                     <div className='text-xs text-muted-foreground'>
                       Count Date: {item.countDate} • Cost per Unit:{' '}
@@ -253,7 +253,7 @@ export function VarianceAnalysis({
                     </div>
                     <div className='text-xs text-muted-foreground'>
                       Qty: {item.variance > 0 ? '+' : ''}
-                      {item.variance}
+                      {+item.variance.toFixed(2)}
                     </div>
                   </div>
                 </div>

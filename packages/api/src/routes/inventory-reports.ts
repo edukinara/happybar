@@ -130,7 +130,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
               area: {
                 count: {
                   organizationId,
-                  status: 'COMPLETED',
+                  status: { in: ['COMPLETED', 'APPROVED'] },
                   ...(locationId && { locationId }),
                   ...(dateFilter.gte || dateFilter.lte
                     ? { completedAt: dateFilter }
@@ -325,13 +325,13 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
           dateFilter.lte = new Date(endDate)
         }
 
-        // Get count items with variance from completed counts
+        // Get count items with variance from completed or approved counts
         const countItems = await fastify.prisma.inventoryCountItem.findMany({
           where: {
             area: {
               count: {
                 organizationId,
-                status: 'COMPLETED',
+                status: { in: ['COMPLETED', 'APPROVED'] },
                 ...(locationId && { locationId }),
                 ...(dateFilter.gte || dateFilter.lte
                   ? { completedAt: dateFilter }
@@ -363,7 +363,7 @@ const inventoryReportsRoutes: FastifyPluginAsync = async (
               area: {
                 count: {
                   organizationId,
-                  status: 'COMPLETED',
+                  status: { in: ['COMPLETED', 'APPROVED'] },
                   ...(locationId && { locationId }),
                   ...(dateFilter.gte || dateFilter.lte
                     ? { completedAt: dateFilter }
