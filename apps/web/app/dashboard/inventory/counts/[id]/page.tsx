@@ -9,6 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { useAlertDialog } from '@/hooks/use-alert-dialog'
@@ -40,6 +50,8 @@ export default function InventoryCountDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [approving, setApproving] = useState(false)
+  const [showApprovalDialog, setShowApprovalDialog] = useState(false)
+  const [customCompletionDate, setCustomCompletionDate] = useState('')
 
   const countId = params.id as string
 
@@ -65,23 +77,23 @@ export default function InventoryCountDetailPage() {
     }
   }
 
-  const handleApproveCount = async () => {
+  const handleApproveCount = async (customDate?: string) => {
     if (!count || approving) return
-
-    // Confirm the action since this will update inventory levels
-    const confirmed = window.confirm(
-      'Approving this count will immediately update your inventory levels based on the count results.\n\nThis action cannot be undone.\n\nAre you sure you want to approve and apply this count?'
-    )
-
-    if (!confirmed) return
 
     try {
       setApproving(true)
       setError(null) // Clear any previous errors
 
-      await inventoryApi.updateInventoryCount(count.id, {
+      const updateData: any = {
         status: InventoryCountStatus.APPROVED,
-      })
+      }
+
+      // Add custom completion date if provided
+      if (customDate) {
+        updateData.customCompletedAt = customDate
+      }
+
+      await inventoryApi.updateInventoryCount(count.id, updateData)
 
       // Show success message
       showSuccess(
@@ -89,7 +101,9 @@ export default function InventoryCountDetailPage() {
         'Count approved successfully!'
       )
 
-      // Refresh the count data to show updated status
+      // Close dialog and refresh data
+      setShowApprovalDialog(false)
+      setCustomCompletionDate('')
       await fetchCount()
     } catch (err) {
       console.error('Failed to approve count:', err)
@@ -97,6 +111,15 @@ export default function InventoryCountDetailPage() {
     } finally {
       setApproving(false)
     }
+  }
+
+  const handleOpenApprovalDialog = () => {
+    // Set default date to the count's completion time or now
+    const defaultDate = count?.completedAt
+      ? new Date(count.completedAt).toISOString().slice(0, 16)
+      : new Date().toISOString().slice(0, 16)
+    setCustomCompletionDate(defaultDate)
+    setShowApprovalDialog(true)
   }
 
   const getStatusColor = (status: InventoryCountStatus) => {
@@ -225,14 +248,68 @@ export default function InventoryCountDetailPage() {
             </Button>
           )}
           {count.status === InventoryCountStatus.COMPLETED && (
-            <Button
-              onClick={handleApproveCount}
-              disabled={approving}
-              loading={approving}
-            >
-              <CheckCircle className='size-4 mr-2' />
-              {approving ? 'Approving...' : 'Approve & Apply to Inventory'}
-            </Button>
+            <Dialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  onClick={handleOpenApprovalDialog}
+                  disabled={approving}
+                >
+                  <CheckCircle className='size-4 mr-2' />
+                  Approve & Apply to Inventory
+                </Button>
+              </DialogTrigger>
+              <DialogContent className='sm:max-w-[425px]'>
+                <DialogHeader>
+                  <DialogTitle>Approve Inventory Count</DialogTitle>
+                  <DialogDescription>
+                    Approving this count will immediately update your inventory levels based on the count results.
+                    You can optionally specify a custom completion date/time.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className='grid gap-4 py-4'>
+                  {error && (
+                    <div className='p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md'>
+                      {error}
+                    </div>
+                  )}
+                  <div className='grid grid-cols-4 items-center gap-4'>
+                    <Label htmlFor='completion-date' className='text-right col-span-1'>
+                      Completed At
+                    </Label>
+                    <div className='col-span-3'>
+                      <Input
+                        id='completion-date'
+                        type='datetime-local'
+                        value={customCompletionDate}
+                        onChange={(e) => setCustomCompletionDate(e.target.value)}
+                        max={new Date().toISOString().slice(0, 16)}
+                      />
+                      <p className='text-xs text-muted-foreground mt-1'>
+                        This will be used as the count completion time for reporting.
+                        If earlier than the start time, the start time will be adjusted.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className='flex justify-end gap-3'>
+                  <Button
+                    variant='outline'
+                    onClick={() => setShowApprovalDialog(false)}
+                    disabled={approving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => handleApproveCount(customCompletionDate)}
+                    disabled={approving || !customCompletionDate}
+                    loading={approving}
+                  >
+                    <CheckCircle className='size-4 mr-2' />
+                    {approving ? 'Approving...' : 'Approve & Apply'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
           {count.status === InventoryCountStatus.APPROVED && (
             <div className='flex items-center gap-2 text-green-600'>

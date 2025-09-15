@@ -41,6 +41,7 @@ const updateCountSchema = z.object({
   name: z.string().optional(),
   notes: z.string().optional(),
   status: inventoryCountStatusSchema.optional(),
+  customCompletedAt: z.string().optional(), // ISO date string for custom completion date
 })
 
 const addAreaSchema = z.object({
@@ -265,23 +266,51 @@ const inventoryCountRoutes: FastifyPluginAsync = async (fastify) => {
 
     const updateData: any = { ...data }
 
+    // Handle custom completion date
+    let completionDate = new Date()
+    if (data.customCompletedAt) {
+      completionDate = new Date(data.customCompletedAt)
+      // Validate that the date is not in the future
+      if (completionDate > new Date()) {
+        throw new AppError('Completion date cannot be in the future', ErrorCode.BAD_REQUEST, 400)
+      }
+    }
+
     // Set completion/approval timestamps based on status
     if (
       data.status === InventoryCountStatus.COMPLETED &&
       existingCount.status !== InventoryCountStatus.COMPLETED
     ) {
-      updateData.completedAt = new Date()
+      updateData.completedAt = completionDate
+
+      // If custom completion date is before startedAt, update startedAt
+      if (existingCount.startedAt && completionDate < existingCount.startedAt) {
+        updateData.startedAt = completionDate
+      }
     }
     if (
       data.status === InventoryCountStatus.APPROVED &&
       existingCount.status !== InventoryCountStatus.APPROVED
     ) {
-      updateData.approvedAt = new Date()
+      updateData.approvedAt = new Date() // Always use current time for approval
       updateData.approvedById = (request.user as any)?.id
+
+      // If completing and approving at the same time with custom date
+      if (existingCount.status !== InventoryCountStatus.COMPLETED) {
+        updateData.completedAt = completionDate
+
+        // If custom completion date is before startedAt, update startedAt
+        if (existingCount.startedAt && completionDate < existingCount.startedAt) {
+          updateData.startedAt = completionDate
+        }
+      }
 
       // Apply count results to actual inventory when approved
       await applyCountResultsToInventory(fastify, id, organizationId)
     }
+
+    // Remove customCompletedAt from updateData as it's not a database field
+    delete updateData.customCompletedAt
 
     const count = await fastify.prisma.inventoryCount.update({
       where: { id },

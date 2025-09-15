@@ -331,7 +331,7 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
           locationId: undefined, // Could add location tracking to sales if needed
           quantity: -depletedQuantity, // Negative for depletion
           reference: saleItem.totalPrice,
-          notes: saleItem.itemName || saleItem.posProduct?.name || 'POS Sale',
+          notes: `${saleItem.orderNumber ? `Order #${saleItem.orderNumber}: ` : ''}${saleItem.itemName || saleItem.posProduct?.name || 'POS Sale'}`,
           performedBy: 'POS System',
           metadata: {
             saleId: saleItem.saleId,

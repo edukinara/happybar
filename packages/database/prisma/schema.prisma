@@ -319,6 +319,7 @@ model SaleItem {
   quantity     Float
   unitPrice    Float
   totalPrice   Float // Calculated: quantity * unitPrice
+  orderNumber  String?
 
   // Relations
   sale       Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)

@@ -163,51 +163,51 @@ export class POSSalesSyncService {
           // Try to use business date approach for better accuracy
           let orders: any[] = []
 
-          try {
-            // Calculate business dates based on restaurant's timezone and closeout hour
-            const restaurantTimeZone =
-              restaurant.general?.timeZone || 'America/Chicago'
-            const closeoutHour = restaurant.general?.closeoutHour || 3
+          // try {
+          //   // Calculate business dates based on restaurant's timezone and closeout hour
+          //   const restaurantTimeZone =
+          //     restaurant.general?.timeZone || 'America/Chicago'
+          //   const closeoutHour = restaurant.general?.closeoutHour || 3
 
-            // Calculate business date range
-            const startBusinessDate = this.calculateBusinessDate(
-              startDate,
-              restaurantTimeZone,
-              closeoutHour
-            )
-            const endBusinessDate = this.calculateBusinessDate(
-              endDate,
-              restaurantTimeZone,
-              closeoutHour
-            )
+          //   // Calculate business date range
+          //   const startBusinessDate = this.calculateBusinessDate(
+          //     startDate,
+          //     restaurantTimeZone,
+          //     closeoutHour
+          //   )
+          //   const endBusinessDate = this.calculateBusinessDate(
+          //     endDate,
+          //     restaurantTimeZone,
+          //     closeoutHour
+          //   )
 
-            // Use business date range if available
-            if (startBusinessDate === endBusinessDate) {
-              // Single business date - more efficient
-              orders = await posClient.getOrdersByBusinessDate(
-                restaurant.guid,
-                startBusinessDate
-              )
-            } else {
-              // Multiple business dates
-              orders = await posClient.getOrdersByBusinessDateRange(
-                restaurant.guid,
-                startBusinessDate,
-                endBusinessDate
-              )
-            }
-          } catch (businessDateError) {
-            console.warn(
-              `Business date fetching failed, falling back to timestamp range:`,
-              businessDateError
-            )
-            // Fallback to timestamp-based approach
-            orders = await posClient.getOrders(
-              restaurant.guid,
-              startDate,
-              endDate
-            )
-          }
+          //   // Use business date range if available
+          //   if (startBusinessDate === endBusinessDate) {
+          //     // Single business date - more efficient
+          //     orders = await posClient.getOrdersByBusinessDate(
+          //       restaurant.guid,
+          //       startBusinessDate
+          //     )
+          //   } else {
+          //     // Multiple business dates
+          //     orders = await posClient.getOrdersByBusinessDateRange(
+          //       restaurant.guid,
+          //       startBusinessDate,
+          //       endBusinessDate
+          //     )
+          //   }
+          // } catch (businessDateError) {
+          // console.warn(
+          //   `Business date fetching failed, falling back to timestamp range:`,
+          //   businessDateError
+          // )
+          // Fallback to timestamp-based approach
+          orders = await posClient.getOrders(
+            restaurant.guid,
+            startDate,
+            endDate
+          )
+          // }
 
           const sales = posClient.convertToPOSSales(orders)
 
@@ -397,7 +397,7 @@ export class POSSalesSyncService {
                     organizationId,
                     integrationId,
                     externalId: item.productId,
-                    name: `Unknown Product ${item.productId}`,
+                    name: `Unknown Product ${item.productId}: ${item.name}`,
                     isActive: true,
                   },
                 })
@@ -408,6 +408,7 @@ export class POSSalesSyncService {
                   quantity: item.quantity,
                   unitPrice: item.unitPrice,
                   totalPrice: item.totalPrice,
+                  orderNumber: item.orderNumber,
                 }
               }
 
@@ -423,6 +424,7 @@ export class POSSalesSyncService {
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
                 totalPrice: item.totalPrice,
+                orderNumber: item.orderNumber,
               }
             })
           ),
@@ -435,15 +437,20 @@ export class POSSalesSyncService {
 
     // Check if we should deplete inventory for this sale
     // Only deplete if the sale occurred after the last approved inventory count
-    const shouldDepleteInventory = !lastCountDate || sale.timestamp > lastCountDate
-    
+    const shouldDepleteInventory =
+      !lastCountDate || sale.timestamp > lastCountDate
+
     if (!shouldDepleteInventory) {
-      console.log(`⏭️  Skipping inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred before last approved count (${lastCountDate?.toISOString()})`)
+      console.log(
+        `⏭️  Skipping inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred before last approved count (${lastCountDate?.toISOString()})`
+      )
       return { isNew: true, saleId: saleRecord.id }
     }
 
     // Process inventory depletion for each aggregated sale item
-    console.log(`✅ Processing inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred after last approved count`)
+    console.log(
+      `✅ Processing inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred after last approved count`
+    )
     const inventoryResults = []
     const inventoryErrors = []
 
@@ -530,10 +537,13 @@ export class POSSalesSyncService {
             organizationId: integration.organizationId,
           },
           orderBy: {
-            approvedAt: 'desc',
+            completedAt: 'desc',
           },
         })
-        if (!completedCount?.approvedAt || completedCount.approvedAt === null) {
+        if (
+          !completedCount?.completedAt ||
+          completedCount.completedAt === null
+        ) {
           try {
             // Create sync log entry
             await this.prisma.syncLog.create({
@@ -563,7 +573,7 @@ export class POSSalesSyncService {
 
         const result = await this.syncSalesForIntegration(integration.id, {
           forced: options?.forced,
-          lastCountDate: completedCount.approvedAt,
+          lastCountDate: completedCount.completedAt,
         })
 
         results.push({

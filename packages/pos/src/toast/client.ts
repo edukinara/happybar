@@ -458,7 +458,6 @@ export class ToastAPIClient {
   /**
    * Get sales/orders for a specific restaurant and date range using Toast Orders API
    * Based on official Toast Orders API specification
-   * @deprecated Use getOrdersByBusinessDate for better accuracy and performance
    */
   async getOrders(
     restaurantGuid: string,
@@ -631,6 +630,8 @@ export class ToastAPIClient {
                 quantity: selection.quantity,
                 unitPrice: selection.receiptLinePrice,
                 totalPrice: selection.price,
+                orderNumber: check.displayNumber,
+                name: selection.displayName,
               }))
             ) || [],
         })

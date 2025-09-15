@@ -47,10 +47,10 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
           organizationId: integration.organizationId,
         },
         orderBy: {
-          approvedAt: 'desc',
+          completedAt: 'desc',
         },
       })
-      if (!completedCount?.approvedAt || completedCount.approvedAt === null) {
+      if (!completedCount?.completedAt || completedCount.completedAt === null) {
         try {
           // Create sync log entry
           await fastify.prisma.syncLog.create({
@@ -80,7 +80,7 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
         startDate: body.startDate ? new Date(body.startDate) : undefined,
         endDate: body.endDate ? new Date(body.endDate) : undefined,
         forced: body.forced,
-        lastCountDate: completedCount.approvedAt,
+        lastCountDate: completedCount.completedAt,
       })
 
       reply.send({

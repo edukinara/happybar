@@ -195,6 +195,7 @@ export interface POSSaleItem {
   quantity: number
   unitPrice: number
   totalPrice: number
+  orderNumber: string
 }
 
 export interface ConvertedPOSProduct {
