@@ -241,6 +241,7 @@ export class ToastPartnerService {
 
   /**
    * Get orders for a specific restaurant using Toast Orders API
+   * Automatically handles pagination to fetch all orders
    */
   async getOrders(
     restaurantGuid: string,
@@ -251,14 +252,55 @@ export class ToastPartnerService {
       const client = this.getClient()
       const headers: Record<string, string> = {}
       headers['Toast-Restaurant-External-ID'] = restaurantGuid
-      const response = await client.get(`/orders/v2/ordersBulk`, {
-        params: {
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-        },
-        headers,
-      })
-      return response.data
+
+      const allOrders: any[] = []
+      let page = 1
+      const pageSize = 100 // Max allowed page size
+
+      while (true) {
+        try {
+          const response = await client.get(`/orders/v2/ordersBulk`, {
+            params: {
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+              page,
+              pageSize,
+            },
+            headers,
+          })
+
+          const orders = response.data || []
+
+          // If no orders returned or empty array, we've reached the end
+          if (!orders.length) {
+            break
+          }
+
+          allOrders.push(...orders)
+
+          // If we got fewer orders than the page size, we've reached the end
+          if (orders.length < pageSize) {
+            break
+          }
+
+          page++
+        } catch (error: any) {
+          // If it's a 404 or similar, we've likely reached the end of pagination
+          if (error.response?.status === 404) {
+            break
+          }
+
+          console.error(
+            `Failed to fetch orders page ${page}:`,
+            error.response?.data || error.message
+          )
+
+          // Don't fail the entire request for a single page error
+          break
+        }
+      }
+
+      return allOrders
     } catch (error: any) {
       console.error(
         'Failed to fetch orders:',

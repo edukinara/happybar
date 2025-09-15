@@ -458,6 +458,7 @@ export class ToastAPIClient {
   /**
    * Get sales/orders for a specific restaurant and date range using Toast Orders API
    * Based on official Toast Orders API specification
+   * Automatically handles pagination to fetch all orders
    */
   async getOrders(
     restaurantGuid: string,
@@ -475,19 +476,63 @@ export class ToastAPIClient {
         headers['Toast-Restaurant-External-ID'] = restaurantGuid
       }
 
-      // Use the official Orders API bulk endpoint
-      const response: AxiosResponse<ToastOrder[]> = await this.client.get(
-        `/orders/v2/ordersBulk`,
-        {
-          params: {
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-          },
-          headers,
-        }
-      )
+      const allOrders: ToastOrder[] = []
+      let page = 1
+      const pageSize = 100 // Max allowed page size
 
-      return response.data || []
+      while (true) {
+        try {
+          // Use the official Orders API bulk endpoint with pagination
+          const response: AxiosResponse<ToastOrder[]> = await this.client.get(
+            `/orders/v2/ordersBulk`,
+            {
+              params: {
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                page,
+                pageSize,
+              },
+              headers,
+            }
+          )
+
+          const orders = response.data || []
+
+          // If no orders returned or empty array, we've reached the end
+          if (!orders.length) {
+            break
+          }
+
+          allOrders.push(...orders)
+
+          // If we got fewer orders than the page size, we've reached the end
+          if (orders.length < pageSize) {
+            break
+          }
+
+          page++
+        } catch (error: unknown) {
+          const axiosError = error as {
+            response?: { data?: { message?: string }; status?: number }
+            message?: string
+          }
+
+          // If it's a 404 or similar, we've likely reached the end of pagination
+          if (axiosError.response?.status === 404) {
+            break
+          }
+
+          console.error(
+            `Failed to fetch orders page ${page}:`,
+            axiosError.response?.data || axiosError.message
+          )
+
+          // Don't fail the entire request for a single page error
+          break
+        }
+      }
+
+      return allOrders
     } catch (error: unknown) {
       const axiosError = error as {
         response?: { data?: { message?: string } }
