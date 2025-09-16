@@ -656,28 +656,32 @@ export class ToastAPIClient {
           order.paidDate &&
           !order.voided &&
           order.checks?.length &&
-          order.checks.some((check) =>
-            check.selections?.some((sel) => !!sel.item)
+          order.checks.some(
+            (check) =>
+              !check.voided &&
+              check.selections?.some((sel) => !!sel.item && !sel.voided)
           )
       )
       .map(
         (order): POSSale => ({
           externalId: order.guid,
-          timestamp: new Date(order.paidDate!),
+          timestamp: new Date(order.openedDate!),
           totalAmount: order.checks.reduce(
             (acc, check) => acc + check.amount,
             0
           ),
           items:
             order.checks.flatMap((check) =>
-              check.selections.map((selection) => ({
-                productId: selection.item.guid,
-                quantity: selection.quantity,
-                unitPrice: selection.receiptLinePrice,
-                totalPrice: selection.price,
-                orderNumber: check.displayNumber,
-                name: selection.displayName,
-              }))
+              check.selections
+                .filter((s) => !s.voided)
+                .map((selection) => ({
+                  productId: selection.item.guid,
+                  quantity: selection.quantity,
+                  unitPrice: selection.receiptLinePrice,
+                  totalPrice: selection.price,
+                  orderNumber: check.displayNumber,
+                  name: selection.displayName,
+                }))
             ) || [],
         })
       )

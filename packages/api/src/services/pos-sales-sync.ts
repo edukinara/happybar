@@ -342,6 +342,16 @@ export class POSSalesSyncService {
     })
 
     if (existingSale) {
+      if (existingSale.saleDate !== sale.timestamp) {
+        await this.prisma.sale.update({
+          where: {
+            id: existingSale.id,
+          },
+          data: {
+            saleDate: sale.timestamp,
+          },
+        })
+      }
       return { isNew: false, saleId: existingSale.id }
     }
 
