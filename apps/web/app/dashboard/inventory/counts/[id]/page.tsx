@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Calendar as CalendarComp } from '@/components/ui/calendar'
 import {
   Card,
   CardContent,
@@ -19,14 +20,32 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { inventoryApi } from '@/lib/api/inventory'
+import { getProducts } from '@/lib/api/products'
 import {
   CountType,
   InventoryCountStatus,
+  type CountArea,
+  type InventoryCountItem,
   type InventoryCountType,
+  type InventoryProduct,
 } from '@happy-bar/types'
 import { formatDistanceToNow } from 'date-fns'
 import {
@@ -34,9 +53,13 @@ import {
   BarChart3,
   Calendar,
   CheckCircle,
+  ChevronDown,
+  ChevronDownIcon,
+  ChevronRight,
   ClipboardCheck,
   DollarSign,
   MapPin,
+  Package,
   Play,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -51,13 +74,20 @@ export default function InventoryCountDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [approving, setApproving] = useState(false)
   const [showApprovalDialog, setShowApprovalDialog] = useState(false)
-  const [customCompletionDate, setCustomCompletionDate] = useState('')
+  const [customCompletionOpen, setCustomCompletionOpen] = useState(false)
+  const [customCompletionDate, setCustomCompletionDate] = useState<
+    Date | undefined
+  >(count?.completedAt ? new Date(count.completedAt) : new Date())
+  const [customCompletionTime, setCustomCompletionTime] = useState('00:00:00')
+  const [products, setProducts] = useState<InventoryProduct[]>([])
+  const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set())
 
   const countId = params.id as string
 
   useEffect(() => {
     if (countId) {
       fetchCount()
+      fetchProducts()
     }
   }, [countId])
 
@@ -77,6 +107,15 @@ export default function InventoryCountDetailPage() {
     }
   }
 
+  const fetchProducts = async () => {
+    try {
+      const response = await getProducts()
+      setProducts(response.products)
+    } catch (err) {
+      console.error('Failed to fetch products:', err)
+    }
+  }
+
   const handleApproveCount = async (customDate?: string) => {
     if (!count || approving) return
 
@@ -84,7 +123,10 @@ export default function InventoryCountDetailPage() {
       setApproving(true)
       setError(null) // Clear any previous errors
 
-      const updateData: any = {
+      const updateData: {
+        status: InventoryCountStatus
+        customCompletedAt?: string
+      } = {
         status: InventoryCountStatus.APPROVED,
       }
 
@@ -103,7 +145,7 @@ export default function InventoryCountDetailPage() {
 
       // Close dialog and refresh data
       setShowApprovalDialog(false)
-      setCustomCompletionDate('')
+      setCustomCompletionDate(new Date())
       await fetchCount()
     } catch (err) {
       console.error('Failed to approve count:', err)
@@ -116,9 +158,12 @@ export default function InventoryCountDetailPage() {
   const handleOpenApprovalDialog = () => {
     // Set default date to the count's completion time or now
     const defaultDate = count?.completedAt
-      ? new Date(count.completedAt).toISOString().slice(0, 16)
-      : new Date().toISOString().slice(0, 16)
+      ? new Date(count.completedAt)
+      : new Date()
     setCustomCompletionDate(defaultDate)
+    setCustomCompletionTime(
+      `${defaultDate.getUTCHours()}:${defaultDate.getUTCMinutes()}:${defaultDate.getUTCSeconds()}`
+    )
     setShowApprovalDialog(true)
   }
 
@@ -148,6 +193,39 @@ export default function InventoryCountDetailPage() {
       default:
         return type
     }
+  }
+
+  const toggleAreaExpansion = (areaId: string) => {
+    setExpandedAreas((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(areaId)) {
+        newSet.delete(areaId)
+      } else {
+        newSet.add(areaId)
+      }
+      return newSet
+    })
+  }
+
+  const getProductById = (productId: string) => {
+    return products.find((p) => p.id === productId)
+  }
+
+  const calculateAreaTotals = (area: CountArea) => {
+    let totalItems = 0
+    let totalValue = 0
+
+    if (area.items) {
+      area.items.forEach((item: InventoryCountItem) => {
+        totalItems += item.totalQuantity
+        const product = getProductById(item.productId)
+        if (product) {
+          totalValue += item.totalQuantity * product.costPerUnit
+        }
+      })
+    }
+
+    return { totalItems, totalValue }
   }
 
   if (loading) {
@@ -248,12 +326,12 @@ export default function InventoryCountDetailPage() {
             </Button>
           )}
           {count.status === InventoryCountStatus.COMPLETED && (
-            <Dialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+            <Dialog
+              open={showApprovalDialog}
+              onOpenChange={setShowApprovalDialog}
+            >
               <DialogTrigger asChild>
-                <Button
-                  onClick={handleOpenApprovalDialog}
-                  disabled={approving}
-                >
+                <Button onClick={handleOpenApprovalDialog} disabled={approving}>
                   <CheckCircle className='size-4 mr-2' />
                   Approve & Apply to Inventory
                 </Button>
@@ -262,8 +340,9 @@ export default function InventoryCountDetailPage() {
                 <DialogHeader>
                   <DialogTitle>Approve Inventory Count</DialogTitle>
                   <DialogDescription>
-                    Approving this count will immediately update your inventory levels based on the count results.
-                    You can optionally specify a custom completion date/time.
+                    Approving this count will immediately update your inventory
+                    levels based on the count results. You can optionally
+                    specify a custom completion date/time.
                   </DialogDescription>
                 </DialogHeader>
                 <div className='grid gap-4 py-4'>
@@ -272,23 +351,60 @@ export default function InventoryCountDetailPage() {
                       {error}
                     </div>
                   )}
-                  <div className='grid grid-cols-4 items-center gap-4'>
-                    <Label htmlFor='completion-date' className='text-right col-span-1'>
-                      Completed At
-                    </Label>
-                    <div className='col-span-3'>
-                      <Input
-                        id='completion-date'
-                        type='datetime-local'
-                        value={customCompletionDate}
-                        onChange={(e) => setCustomCompletionDate(e.target.value)}
-                        max={new Date().toISOString().slice(0, 16)}
-                      />
-                      <p className='text-xs text-muted-foreground mt-1'>
-                        This will be used as the count completion time for reporting.
-                        If earlier than the start time, the start time will be adjusted.
-                      </p>
+                  <div className='flex flex-col items-start gap-2'>
+                    <Label htmlFor='completion-date'>Completed At</Label>
+                    <div className='flex gap-2'>
+                      <div className='flex flex-col gap-3'>
+                        <Popover
+                          open={customCompletionOpen}
+                          onOpenChange={setCustomCompletionOpen}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant='outline'
+                              id='date-picker'
+                              className='w-32 justify-between font-normal'
+                            >
+                              {customCompletionDate
+                                ? customCompletionDate.toLocaleDateString()
+                                : 'Select date'}
+                              <ChevronDownIcon />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className='w-auto overflow-hidden p-0'
+                            align='start'
+                          >
+                            <CalendarComp
+                              mode='single'
+                              selected={customCompletionDate}
+                              captionLayout='dropdown'
+                              onSelect={(date) => {
+                                setCustomCompletionDate(date)
+                                setCustomCompletionOpen(false)
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className='flex flex-col gap-3'>
+                        <Input
+                          type='time'
+                          id='time-picker'
+                          step='1'
+                          value={customCompletionTime}
+                          onChange={(t) =>
+                            setCustomCompletionTime(t.target.value)
+                          }
+                          className='bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none'
+                        />
+                      </div>
                     </div>
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      This will be used as the count completion time for
+                      reporting. If earlier than the start time, the start time
+                      will be adjusted.
+                    </p>
                   </div>
                 </div>
                 <div className='flex justify-end gap-3'>
@@ -300,7 +416,13 @@ export default function InventoryCountDetailPage() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={() => handleApproveCount(customCompletionDate)}
+                    onClick={() =>
+                      handleApproveCount(
+                        new Date(
+                          `${customCompletionDate?.toISOString().slice(0, 11)}${customCompletionTime}`
+                        ).toISOString()
+                      )
+                    }
                     disabled={approving || !customCompletionDate}
                     loading={approving}
                   >
@@ -322,7 +444,7 @@ export default function InventoryCountDetailPage() {
 
       {/* Overview Cards */}
       <div className='grid gap-4 md:grid-cols-4'>
-        <Card>
+        <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Progress</CardTitle>
             <BarChart3 className='size-4 text-muted-foreground' />
@@ -339,7 +461,7 @@ export default function InventoryCountDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Items Counted</CardTitle>
             <ClipboardCheck className='size-4 text-muted-foreground' />
@@ -352,7 +474,7 @@ export default function InventoryCountDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Value</CardTitle>
             <DollarSign className='size-4 text-muted-foreground' />
@@ -370,7 +492,7 @@ export default function InventoryCountDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className='gap-2'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Variance</CardTitle>
             <BarChart3 className='size-4 text-muted-foreground' />
@@ -384,104 +506,323 @@ export default function InventoryCountDetailPage() {
         </Card>
       </div>
 
-      {/* Count Areas */}
-      <div className='grid gap-6 md:grid-cols-2'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Count Areas</CardTitle>
-            <CardDescription>Progress by storage area</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {count.areas && count.areas.length > 0 ? (
-              <div className='space-y-4'>
-                {count.areas.map((area, index) => (
-                  <div
-                    key={area.id}
-                    className='flex items-center justify-between p-3 border rounded-lg'
-                  >
-                    <div className='flex items-center gap-3'>
-                      <div className='w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-semibold'>
-                        {index + 1}
-                      </div>
-                      <div>
-                        <div className='font-medium'>{area.name}</div>
-                        <div className='text-sm text-muted-foreground'>
-                          {area.items?.length || 0} items
+      {/* Count Overview Tabs */}
+      <Tabs defaultValue='areas' className='space-y-4'>
+        <TabsList className='grid w-full grid-cols-2'>
+          <TabsTrigger value='areas'>Count Areas</TabsTrigger>
+          <TabsTrigger
+            value='details'
+            disabled={
+              count.status !== InventoryCountStatus.COMPLETED &&
+              count.status !== InventoryCountStatus.APPROVED
+            }
+          >
+            Count Details
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value='areas' className='grid gap-6 md:grid-cols-2'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Count Areas</CardTitle>
+              <CardDescription>Progress by storage area</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {count.areas && count.areas.length > 0 ? (
+                <div className='space-y-4'>
+                  {count.areas.map((area, index) => (
+                    <div
+                      key={area.id}
+                      className='flex items-center justify-between p-3 border rounded-lg'
+                    >
+                      <div className='flex items-center gap-3'>
+                        <div className='w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-semibold'>
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className='font-medium'>{area.name}</div>
+                          <div className='text-sm text-muted-foreground'>
+                            {area.items?.length || 0} items
+                          </div>
                         </div>
                       </div>
+                      <Badge
+                        variant={
+                          area.status === 'COMPLETED' ? 'default' : 'secondary'
+                        }
+                      >
+                        {area.status}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant={
-                        area.status === 'COMPLETED' ? 'default' : 'secondary'
-                      }
-                    >
-                      {area.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className='text-center py-8 text-muted-foreground'>
-                <ClipboardCheck className='size-8 mx-auto mb-2' />
-                <p>No areas configured yet</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Count Details</CardTitle>
-            <CardDescription>Summary and metadata</CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-4'>
-            <div className='space-y-3'>
-              <div className='flex justify-between'>
-                <span className='text-sm font-medium'>Count Type</span>
-                <span className='text-sm'>{getCountTypeLabel(count.type)}</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-sm font-medium'>Location</span>
-                <span className='text-sm'>{count.location?.name}</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-sm font-medium'>Started</span>
-                <span className='text-sm'>
-                  {new Date(count.startedAt).toLocaleDateString()}
-                </span>
-              </div>
-              {count.completedAt && (
-                <div className='flex justify-between'>
-                  <span className='text-sm font-medium'>Completed</span>
-                  <span className='text-sm'>
-                    {new Date(count.completedAt).toLocaleDateString()}
-                  </span>
+                  ))}
+                </div>
+              ) : (
+                <div className='text-center py-8 text-muted-foreground'>
+                  <ClipboardCheck className='size-8 mx-auto mb-2' />
+                  <p>No areas configured yet</p>
                 </div>
               )}
-              {count.approvedAt && (
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Count Summary</CardTitle>
+              <CardDescription>Summary and metadata</CardDescription>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              <div className='space-y-3'>
                 <div className='flex justify-between'>
-                  <span className='text-sm font-medium'>Approved</span>
+                  <span className='text-sm font-medium'>Count Type</span>
                   <span className='text-sm'>
-                    {new Date(count.approvedAt).toLocaleDateString()}
+                    {getCountTypeLabel(count.type)}
                   </span>
                 </div>
-              )}
-            </div>
-
-            {count.notes && (
-              <>
-                <Separator />
-                <div>
-                  <div className='text-sm font-medium mb-2'>Notes</div>
-                  <div className='text-sm text-muted-foreground'>
-                    {count.notes}
-                  </div>
+                <div className='flex justify-between'>
+                  <span className='text-sm font-medium'>Location</span>
+                  <span className='text-sm'>{count.location?.name}</span>
                 </div>
-              </>
+                <div className='flex justify-between'>
+                  <span className='text-sm font-medium'>Started</span>
+                  <span className='text-sm'>
+                    {new Date(count.startedAt).toLocaleDateString()}
+                  </span>
+                </div>
+                {count.completedAt && (
+                  <div className='flex justify-between'>
+                    <span className='text-sm font-medium'>Completed</span>
+                    <span className='text-sm'>
+                      {new Date(count.completedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+                {count.approvedAt && (
+                  <div className='flex justify-between'>
+                    <span className='text-sm font-medium'>Approved</span>
+                    <span className='text-sm'>
+                      {new Date(count.approvedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {count.notes && (
+                <>
+                  <Separator />
+                  <div>
+                    <div className='text-sm font-medium mb-2'>Notes</div>
+                    <div className='text-sm text-muted-foreground'>
+                      {count.notes}
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value='details' className='space-y-6'>
+          {(count.status === InventoryCountStatus.COMPLETED ||
+            count.status === InventoryCountStatus.APPROVED) &&
+            count.areas && (
+              <div className='space-y-6'>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Detailed Count Results</CardTitle>
+                    <CardDescription>
+                      View all counted items by area
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {count.areas.map((area, index) => {
+                      const isExpanded = expandedAreas.has(area.id)
+                      const { totalItems, totalValue } =
+                        calculateAreaTotals(area)
+
+                      return (
+                        <div key={area.id} className='mb-6'>
+                          <button
+                            onClick={() => toggleAreaExpansion(area.id)}
+                            className='w-full text-left'
+                          >
+                            <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors'>
+                              <div className='flex items-center gap-3'>
+                                {isExpanded ? (
+                                  <ChevronDown className='size-5' />
+                                ) : (
+                                  <ChevronRight className='size-5' />
+                                )}
+                                <div className='w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-semibold'>
+                                  {index + 1}
+                                </div>
+                                <div>
+                                  <div className='font-medium text-lg'>
+                                    {area.name}
+                                  </div>
+                                  <div className='text-sm text-muted-foreground'>
+                                    {area.items?.length || 0} unique items •
+                                    {totalItems.toFixed(2)} total units • $
+                                    {totalValue.toFixed(2)} value
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge
+                                variant={
+                                  area.status === 'COMPLETED'
+                                    ? 'default'
+                                    : 'secondary'
+                                }
+                              >
+                                {area.status}
+                              </Badge>
+                            </div>
+                          </button>
+
+                          {isExpanded &&
+                            area.items &&
+                            area.items.length > 0 && (
+                              <div className='mt-4 pl-4'>
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className='w-[40px]'></TableHead>
+                                      <TableHead>Product</TableHead>
+                                      <TableHead>Category</TableHead>
+                                      <TableHead className='text-right'>
+                                        Full Units
+                                      </TableHead>
+                                      <TableHead className='text-right'>
+                                        Partial
+                                      </TableHead>
+                                      <TableHead className='text-right'>
+                                        Total Qty
+                                      </TableHead>
+                                      <TableHead className='text-right'>
+                                        Unit Cost
+                                      </TableHead>
+                                      <TableHead className='text-right'>
+                                        Total Value
+                                      </TableHead>
+                                      <TableHead>Notes</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {area.items.map((item) => {
+                                      const product = getProductById(
+                                        item.productId
+                                      )
+                                      const totalValue = product
+                                        ? item.totalQuantity *
+                                          product.costPerUnit
+                                        : 0
+
+                                      return (
+                                        <TableRow key={item.id}>
+                                          <TableCell>
+                                            <Package className='size-4 text-muted-foreground' />
+                                          </TableCell>
+                                          <TableCell className='font-medium'>
+                                            {product?.name || 'Unknown Product'}
+                                          </TableCell>
+                                          <TableCell>
+                                            {product?.category?.name || '-'}
+                                          </TableCell>
+                                          <TableCell className='text-right'>
+                                            {item.fullUnits}
+                                          </TableCell>
+                                          <TableCell className='text-right'>
+                                            {item.partialUnit.toFixed(1)}
+                                          </TableCell>
+                                          <TableCell className='text-right font-medium'>
+                                            {item.totalQuantity.toFixed(2)}
+                                          </TableCell>
+                                          <TableCell className='text-right'>
+                                            $
+                                            {product?.costPerUnit.toFixed(2) ||
+                                              '0.00'}
+                                          </TableCell>
+                                          <TableCell className='text-right font-medium'>
+                                            ${totalValue.toFixed(2)}
+                                          </TableCell>
+                                          <TableCell className='max-w-[200px] truncate'>
+                                            {item.notes || '-'}
+                                          </TableCell>
+                                        </TableRow>
+                                      )
+                                    })}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            )}
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+
+                {/* Summary Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Count Summary</CardTitle>
+                    <CardDescription>
+                      Overall totals across all areas
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                      <div className='space-y-1'>
+                        <p className='text-sm text-muted-foreground'>
+                          Total Areas
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {count.areas.length}
+                        </p>
+                      </div>
+                      <div className='space-y-1'>
+                        <p className='text-sm text-muted-foreground'>
+                          Unique Items
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {count.areas.reduce(
+                            (acc, area) => acc + (area.items?.length || 0),
+                            0
+                          )}
+                        </p>
+                      </div>
+                      <div className='space-y-1'>
+                        <p className='text-sm text-muted-foreground'>
+                          Total Units
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {count.areas
+                            .reduce((acc, area) => {
+                              const { totalItems } = calculateAreaTotals(area)
+                              return acc + totalItems
+                            }, 0)
+                            .toFixed(2)}
+                        </p>
+                      </div>
+                      <div className='space-y-1'>
+                        <p className='text-sm text-muted-foreground'>
+                          Total Value
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          $
+                          {count.areas
+                            .reduce((acc, area) => {
+                              const { totalValue } = calculateAreaTotals(area)
+                              return acc + totalValue
+                            }, 0)
+                            .toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

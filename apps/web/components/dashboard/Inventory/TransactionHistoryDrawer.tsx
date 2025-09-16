@@ -174,7 +174,7 @@ export function TransactionHistoryDrawer({
           <History className='size-4' />
         </Button>
       </SheetTrigger>
-      <SheetContent className='w-[500px] sm:w-[540px] p-2 gap-2'>
+      <SheetContent className='w-[360px] sm:w-max sm:max-w-md p-2 gap-2'>
         <SheetHeader className='p-0 m-0'>
           <SheetTitle>Transaction History</SheetTitle>
           <SheetDescription>
@@ -320,7 +320,7 @@ export function TransactionHistoryDrawer({
                                   </div>
 
                                   {/* Additional details */}
-                                  <div className='grid grid-cols-2 gap-2 text-sm'>
+                                  <div className='grid grid-cols-2 gap-2 text-sm w-full'>
                                     {transaction.reference && (
                                       <div>
                                         <span className='text-muted-foreground'>

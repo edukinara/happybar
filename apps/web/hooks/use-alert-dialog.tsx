@@ -1,6 +1,5 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -11,6 +10,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import React, { createContext, useContext, useState } from 'react'
 
 interface AlertDialogOptions {
   title: string
@@ -113,17 +113,20 @@ export function AlertDialogProvider({
   }
 
   const handleAction = async () => {
-    if (!dialog?.onAction) return
-    
+    if (!dialog?.onAction) {
+      setOpen((p) => !p)
+      return
+    }
+
     try {
       setLoading(true)
       const result = dialog.onAction()
-      
+
       // Handle both sync and async actions
       if (result instanceof Promise) {
         await result
       }
-      
+
       handleClose()
     } catch (error) {
       // Keep dialog open on error, just stop loading
@@ -140,12 +143,18 @@ export function AlertDialogProvider({
 
   return (
     <AlertDialogContext.Provider
-      value={{ showAlert, showError, showSuccess, showConfirm, showDestructiveConfirm }}
+      value={{
+        showAlert,
+        showError,
+        showSuccess,
+        showConfirm,
+        showDestructiveConfirm,
+      }}
     >
       {children}
       {dialog && (
-        <AlertDialog 
-          open={open} 
+        <AlertDialog
+          open={open}
           onOpenChange={(open) => {
             // Prevent closing while loading
             if (!loading) {
@@ -156,7 +165,9 @@ export function AlertDialogProvider({
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{dialog.title}</AlertDialogTitle>
-              <AlertDialogDescription>{dialog.description}</AlertDialogDescription>
+              <AlertDialogDescription>
+                {dialog.description}
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               {dialog.cancelText && (
@@ -168,7 +179,9 @@ export function AlertDialogProvider({
                 onClick={handleAction}
                 disabled={loading}
                 loading={loading}
-                variant={dialog.variant === 'destructive' ? 'destructive' : 'default'}
+                variant={
+                  dialog.variant === 'destructive' ? 'destructive' : 'default'
+                }
               >
                 {dialog.actionText || 'OK'}
               </Button>
