@@ -1,4 +1,4 @@
-import {
+import type {
   ConvertedPOSProduct,
   POSSale,
   SyncResult,
@@ -6,8 +6,8 @@ import {
   ToastOrder,
   ToastRestaurant,
 } from '@happy-bar/types'
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
-import { MenuGroup, Restaurant } from '../menu'
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
+import type { MenuGroup, Restaurant } from '../menu'
 
 export interface ToastAPIResponse<T = unknown> {
   data?: T
@@ -171,7 +171,6 @@ export class ToastAPIClient {
       if (this.onCredentialsUpdate) {
         try {
           await this.onCredentialsUpdate(this.credentials)
-          console.log('Toast credentials updated and saved to database')
         } catch (error) {
           console.error('Failed to save updated Toast credentials:', error)
           // Don't throw here - token refresh succeeded, saving failed

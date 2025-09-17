@@ -1,4 +1,4 @@
-import { CountStatus } from '.'
+import type { CountStatus } from '.'
 import type { Location } from './location'
 import type { Category, Product } from './product'
 

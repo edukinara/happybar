@@ -328,9 +328,9 @@ export interface Restaurant {
 }
 
 // API Response Types
-export interface MenusResponse extends Restaurant {}
+export type MenusResponse = Restaurant
 
-export interface MetadataResponse extends Metadata {}
+export type MetadataResponse = Metadata
 
 // API Parameters
 export interface MenusGetParams {

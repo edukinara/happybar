@@ -1,8 +1,8 @@
 import {
-  POSCredentials,
+  type POSCredentials,
   POSType,
-  SyncResult,
-  ToastCredentials,
+  type SyncResult,
+  type ToastCredentials,
 } from '@happy-bar/types'
 import { ToastAPIClient } from './toast/client'
 
@@ -20,7 +20,7 @@ export interface POSClient {
  */
 export function createPOSClient(
   credentials: POSCredentials,
-  onCredentialsUpdate?: (credentials: any) => Promise<void>
+  onCredentialsUpdate?: (credentials: unknown) => Promise<void>
 ): POSClient {
   switch (credentials.type) {
     case POSType.TOAST:

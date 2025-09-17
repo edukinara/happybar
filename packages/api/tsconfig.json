@@ -1,27 +1,16 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": "src",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "composite": true,
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
       "@happy-bar/database": ["../database/src/index"],
-      "@happy-bar/database/*": ["../database/*"],
       "@happy-bar/types": ["../types/src/index"],
-      "@happy-bar/types/*": ["../types/*"],
-      "@happy-bar/pos": ["../pos/src/index"],
-      "@happy-bar/pos/*": ["../pos/*"]
+      "@happy-bar/pos": ["../pos/src/index"]
     }
   },
   "include": ["src", "src/types"],

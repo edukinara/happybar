@@ -1,4 +1,4 @@
-import { POSProduct, POSSyncStatus, POSType } from '.'
+import type { POSProduct, POSSyncStatus, POSType } from '.'
 
 // Product unit options
 export enum ProductUnit {
