@@ -360,26 +360,32 @@ export type Member = {
 export { ac, roles } from './auth/roles'
 
 const decodeJWT = (token: string) => {
-  var segments = token.split('.')
+  const segments = token.split('.')
 
   if (segments.length !== 3) {
     return undefined
   }
 
   // All segment should be base64
-  var headerSeg = segments[0]
-  var payloadSeg = segments[1]
-  var signatureSeg = segments[2]
+  const payloadSeg = segments[1]!
 
   // base64 decode and parse JSON
-  var payload = JSON.parse(
+  const payload = JSON.parse(
     Buffer.from(base64urlUnescape(payloadSeg), 'base64').toString()
-  )
+  ) as {
+    name: string
+    given_name?: string
+    family_name?: string
+    email: string
+    picture?: string
+    iss: string
+    sub: string
+  }
 
   return payload
 }
 
 const base64urlUnescape = (str: string) => {
   str += Array(5 - (str.length % 4)).join('=')
-  return str.replace(/\-/g, '+').replace(/_/g, '/')
+  return str.replace(/-/g, '+').replace(/_/g, '/')
 }

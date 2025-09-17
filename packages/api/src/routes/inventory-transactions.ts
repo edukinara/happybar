@@ -1,6 +1,6 @@
 import { MovementType } from '@happy-bar/database'
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { UnitConverter } from '../utils/unit-conversion'
 
@@ -251,36 +251,15 @@ const inventoryTransactionsRoutes: FastifyPluginAsync = async (fastify) => {
           // Check if there's a product mapping with serving units
           const servingUnit =
             saleItem.posProduct?.servingUnit ||
-            saleItem.posProduct?.mappings?.[0].servingUnit ||
+            saleItem.posProduct?.mappings?.[0]?.servingUnit ||
             undefined
           const servingSize =
             saleItem.posProduct?.servingSize ||
-            saleItem.posProduct?.mappings?.[0].servingSize ||
+            saleItem.posProduct?.mappings?.[0]?.servingSize ||
             undefined
 
           if (servingSize && servingUnit && product.unit) {
             // Use unit conversion for POS serving to inventory unit
-            const conversion = UnitConverter.calculateServingDepletion(
-              servingSize,
-              servingUnit,
-              product.unit,
-              product.unitSize,
-              saleItem.quantity
-            )
-            // Divide by unitSize to get the number of inventory units depleted
-            depletedQuantity = conversion.convertedAmount / product.unitSize
-            conversionDetails = {
-              posServingSize: servingSize,
-              posServingUnit: servingUnit,
-              inventoryUnit: product.unit,
-              inventoryUnitSize: product.unitSize,
-              convertedAmount: conversion.convertedAmount,
-              depletedUnits: depletedQuantity,
-              conversionFactor: conversion.conversionFactor,
-              isFullDepletion: conversion.isFullDepletion,
-            }
-          } else if (servingSize && servingUnit && product.unit) {
-            // Use POS product serving info directly
             const conversion = UnitConverter.calculateServingDepletion(
               servingSize,
               servingUnit,

@@ -1,5 +1,5 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyPluginAsync, FastifyReply } from 'fastify'
+import type { FastifyPluginAsync, FastifyReply } from 'fastify'
 import { authMiddleware, requirePermission } from '../middleware/auth-simple'
 import { canAccessFinancialData } from '../utils/permissions'
 import { UnitConverter } from '../utils/unit-conversion'
@@ -297,11 +297,11 @@ export const analyticsRoutes: FastifyPluginAsync = async function (fastify) {
               }
               const posUnit =
                 item.posProduct?.servingUnit ||
-                item.posProduct?.mappings?.[0].servingUnit ||
+                item.posProduct?.mappings?.[0]?.servingUnit ||
                 'unit'
               const servingSize =
                 item.posProduct?.servingSize ||
-                item.posProduct?.mappings?.[0].servingSize ||
+                item.posProduct?.mappings?.[0]?.servingSize ||
                 undefined
               const full = fullDepltionUnits.includes(posUnit)
               const actualQty =

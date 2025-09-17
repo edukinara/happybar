@@ -1,5 +1,5 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyInstance } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { authMiddleware, requirePermission } from '../middleware/auth-simple'
 
@@ -146,9 +146,7 @@ export async function productRoutes(fastify: FastifyInstance) {
       }
 
       const page = parseInt(query.page || '1', 10)
-      const limit = !!query.limit
-        ? parseInt(query.limit || '50', 10)
-        : undefined
+      const limit = query.limit ? parseInt(query.limit || '50', 10) : undefined
       const category = query.category
       const search = query.search
       const isActive =
@@ -349,7 +347,7 @@ export async function productRoutes(fastify: FastifyInstance) {
 
         // If no supplier is marked as preferred but suppliers exist, mark the first one
         if (preferredCount === 0 && suppliers.length > 0) {
-          suppliers[0].isPreferred = true
+          suppliers[0]!.isPreferred = true
         }
       }
 
@@ -686,7 +684,9 @@ export async function productRoutes(fastify: FastifyInstance) {
             productId: id,
           },
         })
-      } catch {}
+      } catch {
+        // Ignore error
+      }
 
       return { success: true }
     }
@@ -710,17 +710,17 @@ export async function productRoutes(fastify: FastifyInstance) {
       organizationId: getOrganizationId(request),
     }
 
-    if (!!integrationId) {
+    if (integrationId) {
       where.integrationId = integrationId
     }
 
-    if (!!unmappedOnly) {
+    if (unmappedOnly) {
       where.mappings = {
         none: {},
       }
     }
 
-    if (!!search) {
+    if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } },
@@ -728,7 +728,7 @@ export async function productRoutes(fastify: FastifyInstance) {
       ]
     }
 
-    if (!!category) {
+    if (category) {
       where.category = { contains: category, mode: 'insensitive' }
     }
 
@@ -1394,7 +1394,7 @@ export async function productRoutes(fastify: FastifyInstance) {
         search?: string
       }
 
-      const limit = !!query.limit ? parseInt(query.limit || '25', 10) : 25
+      const limit = query.limit ? parseInt(query.limit || '25', 10) : 25
       const search = query.search
 
       if (!search || search.trim().length === 0) {
