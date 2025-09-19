@@ -27,6 +27,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
   Table,
   TableBody,
   TableCell,
@@ -34,6 +47,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { getProducts, getProductUnits, type ProductUnits } from '@/lib/api/products'
 import { recipesApi } from '@/lib/api/recipes'
 import type {
@@ -49,6 +63,8 @@ import {
   Search,
   Trash2,
   X,
+  Check,
+  ChevronsUpDown,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -82,6 +98,7 @@ export default function RecipesPage() {
     displayQuantity: 0, // What the user enters (e.g., 60ml)
     displayUnit: '', // Unit selected by user (e.g., ml, oz, etc.)
   })
+  const [productSelectorOpen, setProductSelectorOpen] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -225,6 +242,7 @@ export default function RecipesPage() {
       ],
     })
     setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
+    setProductSelectorOpen(false)
   }
 
   const removeIngredient = (productId: string) => {
@@ -242,6 +260,7 @@ export default function RecipesPage() {
       items: [],
     })
     setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
+    setProductSelectorOpen(false)
     setEditingRecipe(null)
   }
 
@@ -376,34 +395,66 @@ export default function RecipesPage() {
                   <Label>Add Ingredients</Label>
                   <div className='flex gap-2'>
                     <div className='flex-1'>
-                      <Select
-                        value={newIngredient.productId}
-                        onValueChange={(value) =>
-                          setNewIngredient({
-                            ...newIngredient,
-                            productId: value,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder='Select product' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products
-                            .filter(
-                              (product) =>
-                                !formData.items.some(
-                                  (item) => item.productId === product.id
-                                )
-                            )
-                            .map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                {product.name} ({product.unitSize}
-                                {product.unit})
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={productSelectorOpen} onOpenChange={setProductSelectorOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant='outline'
+                            role='combobox'
+                            aria-expanded={productSelectorOpen}
+                            className='w-full justify-between'
+                          >
+                            {newIngredient.productId
+                              ? products.find((product) => product.id === newIngredient.productId)?.name
+                              : 'Select product...'}
+                            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-[400px] p-0'>
+                          <Command>
+                            <CommandInput placeholder='Search products...' />
+                            <CommandEmpty>No product found.</CommandEmpty>
+                            <CommandList>
+                              <CommandGroup>
+                                {products
+                                  .filter(
+                                    (product) =>
+                                      !formData.items.some(
+                                        (item) => item.productId === product.id
+                                      )
+                                  )
+                                  .map((product) => (
+                                    <CommandItem
+                                      key={product.id}
+                                      value={`${product.name} ${product.unitSize}${product.unit}`}
+                                      onSelect={() => {
+                                        setNewIngredient({
+                                          ...newIngredient,
+                                          productId: product.id,
+                                        })
+                                        setProductSelectorOpen(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={`mr-2 h-4 w-4 ${
+                                          newIngredient.productId === product.id
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
+                                        }`}
+                                      />
+                                      <div className='flex flex-col'>
+                                        <span className='font-medium'>{product.name}</span>
+                                        <span className='text-sm text-muted-foreground'>
+                                          {product.unitSize}{product.unit}
+                                          {product.category?.name && ` • ${product.category.name}`}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div className='flex gap-2'>
                       <Input
@@ -458,30 +509,35 @@ export default function RecipesPage() {
                 {formData.items.length > 0 && (
                   <div className='space-y-2'>
                     <Label>Recipe Ingredients ({formData.items.length})</Label>
-                    <div className='border rounded-lg p-4 space-y-2 max-h-60 overflow-y-auto'>
-                      {formData.items.map((item) => (
-                        <div
-                          key={item.productId}
-                          className='flex items-center justify-between py-2 px-3 bg-muted rounded-lg'
-                        >
-                          <div>
-                            <span className='font-medium'>
-                              {getProductName(item.productId)}
-                            </span>
-                            <span className='ml-2 text-sm text-muted-foreground'>
-                              {getDisplayQuantity(item)}
-                            </span>
-                          </div>
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='sm'
-                            onClick={() => removeIngredient(item.productId)}
-                          >
-                            <X className='size-4' />
-                          </Button>
+                    <div className='border rounded-lg'>
+                      <ScrollArea className={`p-4 ${formData.items.length > 5 ? 'h-[300px]' : formData.items.length > 2 ? 'h-[200px]' : 'h-auto max-h-[300px]'}`}>
+                        <div className='space-y-2'>
+                          {formData.items.map((item) => (
+                            <div
+                              key={item.productId}
+                              className='flex items-center justify-between py-2 px-3 bg-muted rounded-lg'
+                            >
+                              <div className='flex-1'>
+                                <div className='font-medium'>
+                                  {getProductName(item.productId)}
+                                </div>
+                                <div className='text-sm text-muted-foreground'>
+                                  {getDisplayQuantity(item)}
+                                </div>
+                              </div>
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='sm'
+                                onClick={() => removeIngredient(item.productId)}
+                                className='ml-2 shrink-0'
+                              >
+                                <X className='size-4' />
+                              </Button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </ScrollArea>
                     </div>
                   </div>
                 )}
