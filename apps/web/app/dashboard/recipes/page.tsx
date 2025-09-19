@@ -10,6 +10,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -20,17 +28,18 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import {
   Table,
   TableBody,
@@ -39,8 +48,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { getProducts, getProductUnits, type ProductUnits } from '@/lib/api/products'
+import {
+  getProducts,
+  getProductUnits,
+  type ProductUnits,
+} from '@/lib/api/products'
 import { recipesApi } from '@/lib/api/recipes'
 import type {
   CreateRecipeRequest,
@@ -48,15 +60,15 @@ import type {
   Recipe,
 } from '@happy-bar/types'
 import {
+  Check,
   ChefHat,
+  ChevronsUpDown,
   DollarSign,
   Edit,
   Plus,
   Search,
   Trash2,
   X,
-  Check,
-  ChevronsUpDown,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -91,7 +103,6 @@ export default function RecipesPage() {
     displayUnit: '', // Unit selected by user (e.g., ml, oz, etc.)
   })
   const [productSelectorOpen, setProductSelectorOpen] = useState(false)
-  const [productSearchQuery, setProductSearchQuery] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -113,7 +124,14 @@ export default function RecipesPage() {
       setRecipes(recipesData.recipes)
       setPagination(recipesData.pagination)
       setProducts(productsData.products)
-      setUnits(unitsData)
+      const { allUnits, categories } = unitsData
+      setUnits({
+        allUnits,
+        categories: {
+          ...categories,
+          Weight: categories.Weight.filter((w) => w !== 'oz'),
+        },
+      })
     } catch (error) {
       console.error('Failed to fetch data:', error)
       toast.error('Failed to load recipes')
@@ -198,8 +216,14 @@ export default function RecipesPage() {
   }
 
   const addIngredient = () => {
-    if (!newIngredient.productId || newIngredient.displayQuantity <= 0 || !newIngredient.displayUnit) {
-      toast.error('Please select a product, enter a quantity, and select a unit')
+    if (
+      !newIngredient.productId ||
+      newIngredient.displayQuantity <= 0 ||
+      !newIngredient.displayUnit
+    ) {
+      toast.error(
+        'Please select a product, enter a quantity, and select a unit'
+      )
       return
     }
 
@@ -234,9 +258,13 @@ export default function RecipesPage() {
         } as any,
       ],
     })
-    setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
+    setNewIngredient({
+      productId: '',
+      quantity: 0,
+      displayQuantity: 0,
+      displayUnit: '',
+    })
     setProductSelectorOpen(false)
-    setProductSearchQuery('')
   }
 
   const removeIngredient = (productId: string) => {
@@ -253,9 +281,13 @@ export default function RecipesPage() {
       isActive: true,
       items: [],
     })
-    setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
+    setNewIngredient({
+      productId: '',
+      quantity: 0,
+      displayQuantity: 0,
+      displayUnit: '',
+    })
     setProductSelectorOpen(false)
-    setProductSearchQuery('')
     setEditingRecipe(null)
   }
 
@@ -390,7 +422,11 @@ export default function RecipesPage() {
                   <Label>Add Ingredients</Label>
                   <div className='flex gap-2'>
                     <div className='flex-1'>
-                      <Popover open={productSelectorOpen} onOpenChange={setProductSelectorOpen}>
+                      <Popover
+                        open={productSelectorOpen}
+                        onOpenChange={setProductSelectorOpen}
+                        modal
+                      >
                         <PopoverTrigger asChild>
                           <Button
                             variant='outline'
@@ -399,79 +435,62 @@ export default function RecipesPage() {
                             className='w-full justify-between'
                           >
                             {newIngredient.productId
-                              ? products.find((product) => product.id === newIngredient.productId)?.name
+                              ? products.find(
+                                  (product) =>
+                                    product.id === newIngredient.productId
+                                )?.name
                               : 'Select product...'}
                             <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className='w-[400px] p-0'>
-                          <div className='flex flex-col'>
-                            <div className='flex items-center border-b px-3'>
-                              <Search className='mr-2 h-4 w-4 shrink-0 opacity-50' />
-                              <Input
-                                placeholder='Search products...'
-                                value={productSearchQuery}
-                                onChange={(e) => setProductSearchQuery(e.target.value)}
-                                className='border-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0'
-                              />
-                            </div>
-                            <ScrollArea className='h-[250px]' type='always'>
-                              <div className='p-2 pb-4'>
-                                {(() => {
-                                  const filteredProducts = products
-                                    .filter(
-                                      (product) =>
-                                        !formData.items.some(
-                                          (item) => item.productId === product.id
-                                        )
-                                    )
-                                    .filter((product) =>
-                                      productSearchQuery === '' ||
-                                      product.name.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
-                                      product.category?.name?.toLowerCase().includes(productSearchQuery.toLowerCase())
-                                    )
-
-                                  if (filteredProducts.length === 0) {
-                                    return (
-                                      <div className='py-6 text-center text-sm text-muted-foreground'>
-                                        No product found.
-                                      </div>
-                                    )
-                                  }
-
-                                  return filteredProducts.map((product) => (
-                                    <div
+                          <Command>
+                            <CommandInput placeholder='Search products...' />
+                            <CommandEmpty>No product found.</CommandEmpty>
+                            <CommandList>
+                              <CommandGroup>
+                                {products
+                                  .filter(
+                                    (product) =>
+                                      !formData.items.some(
+                                        (item) => item.productId === product.id
+                                      )
+                                  )
+                                  .map((product) => (
+                                    <CommandItem
                                       key={product.id}
-                                      onClick={() => {
+                                      value={`${product.name} ${product.unitSize}${product.unit}`}
+                                      onSelect={() => {
                                         setNewIngredient({
                                           ...newIngredient,
                                           productId: product.id,
                                         })
                                         setProductSelectorOpen(false)
-                                        setProductSearchQuery('')
                                       }}
-                                      className='flex items-center gap-2 px-2 py-3 cursor-pointer rounded-sm hover:bg-accent hover:text-accent-foreground mb-1'
                                     >
                                       <Check
-                                        className={`h-4 w-4 ${
+                                        className={`mr-2 h-4 w-4 ${
                                           newIngredient.productId === product.id
                                             ? 'opacity-100'
                                             : 'opacity-0'
                                         }`}
                                       />
-                                      <div className='flex flex-col flex-1 min-w-0'>
-                                        <span className='font-medium truncate'>{product.name}</span>
-                                        <span className='text-sm text-muted-foreground truncate'>
-                                          {product.unitSize}{product.unit}
-                                          {product.category?.name && ` • ${product.category.name}`}
+                                      <div className='flex flex-col'>
+                                        <span className='font-medium'>
+                                          {product.name}
+                                        </span>
+                                        <span className='text-sm text-muted-foreground'>
+                                          {product.unitSize}
+                                          {product.unit}
+                                          {product.category?.name &&
+                                            ` • ${product.category.name}`}
                                         </span>
                                       </div>
-                                    </div>
-                                  ))
-                                })()}
-                              </div>
-                            </ScrollArea>
-                          </div>
+                                    </CommandItem>
+                                  ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -503,18 +522,24 @@ export default function RecipesPage() {
                           <SelectValue placeholder='Unit' />
                         </SelectTrigger>
                         <SelectContent>
-                          {units && Object.entries(units.categories).map(([category, unitList]) => (
-                            <div key={category}>
-                              <div className='px-2 py-1 text-sm font-semibold text-muted-foreground'>
-                                {category}
-                              </div>
-                              {unitList.map((unit) => (
-                                <SelectItem key={unit} value={unit}>
-                                  {unit}
-                                </SelectItem>
-                              ))}
-                            </div>
-                          ))}
+                          {units &&
+                            Object.entries(units.categories).map(
+                              ([category, unitList]) => (
+                                <div key={category}>
+                                  <div className='px-2 py-1 text-sm font-semibold text-muted-foreground'>
+                                    {category}
+                                  </div>
+                                  {unitList.map((unit) => (
+                                    <SelectItem
+                                      key={category + unit}
+                                      value={category + unit}
+                                    >
+                                      {unit}
+                                    </SelectItem>
+                                  ))}
+                                </div>
+                              )
+                            )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -529,7 +554,9 @@ export default function RecipesPage() {
                   <div className='space-y-2'>
                     <Label>Recipe Ingredients ({formData.items.length})</Label>
                     <div className='border rounded-lg'>
-                      <ScrollArea className={`p-4 ${formData.items.length > 5 ? 'h-[300px]' : formData.items.length > 2 ? 'h-[200px]' : 'h-auto max-h-[300px]'}`}>
+                      <ScrollArea
+                        className={`p-4 ${formData.items.length > 5 ? 'h-[300px]' : formData.items.length > 2 ? 'h-[200px]' : 'h-auto max-h-[300px]'}`}
+                      >
                         <div className='space-y-2'>
                           {formData.items.map((item) => (
                             <div

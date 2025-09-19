@@ -350,7 +350,7 @@ export default function OrderDetailScreen({
                 </HStack>
 
                 {/* Quantity Information */}
-                <HStack className='justify-between items-center'>
+                <HStack className='items-start justify-between'>
                   <VStack space='xs'>
                     <ThemedText variant='caption' color='muted'>
                       Ordered
@@ -372,7 +372,7 @@ export default function OrderDetailScreen({
                       <ThemedText variant='caption' color='muted'>
                         Received
                       </ThemedText>
-                      <HStack className='items-center' space='sm'>
+                      <HStack className='flex flex-1 items-center gap-4 justify-between'>
                         <ThemedButton
                           variant='secondary'
                           size='sm'
@@ -382,25 +382,26 @@ export default function OrderDetailScreen({
                               (receivedQuantities[item.id] || 0) - 1
                             )
                           }
-                          className='w-8 h-8 p-0'
+                          className='size-12 p-0'
                         >
                           <Ionicons name='remove' size={16} color='#8B5CF6' />
                         </ThemedButton>
-
-                        <ThemedInput
-                          variant='default'
-                          size='sm'
-                          className='w-16'
-                          fieldProps={{
-                            value: String(receivedQuantities[item.id] || 0),
-                            onChangeText: (text) => {
-                              const num = parseInt(text) || 0
-                              updateReceivedQuantity(item.id, num)
-                            },
-                            keyboardType: 'numeric',
-                            textAlign: 'center',
-                          }}
-                        />
+                        <Box>
+                          <ThemedInput
+                            variant='default'
+                            size='md'
+                            className='w-24'
+                            fieldProps={{
+                              value: String(receivedQuantities[item.id] || 0),
+                              onChangeText: (text) => {
+                                const num = parseInt(text) || 0
+                                updateReceivedQuantity(item.id, num)
+                              },
+                              keyboardType: 'numeric',
+                              textAlign: 'center',
+                            }}
+                          />
+                        </Box>
 
                         <ThemedButton
                           variant='secondary'
@@ -411,7 +412,7 @@ export default function OrderDetailScreen({
                               (receivedQuantities[item.id] || 0) + 1
                             )
                           }
-                          className='w-8 h-8 p-0'
+                          className='size-12 p-0'
                         >
                           <Ionicons name='add' size={16} color='#8B5CF6' />
                         </ThemedButton>
