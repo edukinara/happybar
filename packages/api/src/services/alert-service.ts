@@ -1,4 +1,4 @@
-import { PrismaClient } from '@happy-bar/database'
+import type { PrismaClient } from '@happy-bar/database'
 
 export class AlertService {
   constructor(private prisma: PrismaClient) {}
@@ -25,7 +25,7 @@ export class AlertService {
       where: { organizationId },
       include: {
         product: {
-          include: { category: true }
+          include: { category: true },
         },
         location: true,
       },
@@ -39,7 +39,7 @@ export class AlertService {
 
   private async processRule(rule: any, inventoryItems: any[]): Promise<void> {
     // Filter inventory items that match this rule's criteria
-    const matchingItems = inventoryItems.filter(item => {
+    const matchingItems = inventoryItems.filter((item) => {
       // Location filter
       if (rule.locationId && item.locationId !== rule.locationId) {
         return false
@@ -61,7 +61,7 @@ export class AlertService {
     // Check each matching item against the rule threshold
     for (const item of matchingItems) {
       const shouldAlert = this.evaluateThreshold(rule, item)
-      
+
       if (shouldAlert) {
         await this.createOrUpdateAlert(rule, item)
       } else {
@@ -77,14 +77,22 @@ export class AlertService {
 
     switch (type) {
       case 'LOW_STOCK':
-        return this.evaluateLowStockThreshold(thresholdType, thresholdValue, currentQuantity, minimumQuantity)
-      
+        return this.evaluateLowStockThreshold(
+          thresholdType,
+          thresholdValue,
+          currentQuantity,
+          minimumQuantity
+        )
+
       case 'OUT_OF_STOCK':
         return currentQuantity <= 0
-      
+
       case 'OVERSTOCKED':
-        return inventoryItem.maximumQuantity && currentQuantity > inventoryItem.maximumQuantity
-      
+        return (
+          inventoryItem.maximumQuantity &&
+          currentQuantity > inventoryItem.maximumQuantity
+        )
+
       default:
         return false
     }
@@ -99,24 +107,26 @@ export class AlertService {
     switch (thresholdType) {
       case 'QUANTITY':
         return currentQuantity <= thresholdValue
-      
+
       case 'PERCENTAGE':
         if (minimumQuantity <= 0) return false
-        const percentage = (currentQuantity / minimumQuantity) * 100
-        return percentage <= thresholdValue
-      
+        return (currentQuantity / minimumQuantity) * 100 <= thresholdValue
+
       case 'DAYS_SUPPLY':
         // For now, use simple threshold - could be enhanced with sales data
         return currentQuantity <= thresholdValue
-      
+
       default:
         return false
     }
   }
 
-  private async createOrUpdateAlert(rule: any, inventoryItem: any): Promise<void> {
+  private async createOrUpdateAlert(
+    rule: any,
+    inventoryItem: any
+  ): Promise<void> {
     const { organizationId } = rule
-    
+
     // Check if there's already an active alert for this rule and inventory item
     const existingAlert = await this.prisma.alert.findFirst({
       where: {
@@ -128,13 +138,13 @@ export class AlertService {
     })
 
     // Check cooldown period for this rule/item combination
-    if (existingAlert || await this.isInCooldownPeriod(rule, inventoryItem)) {
+    if (existingAlert || (await this.isInCooldownPeriod(rule, inventoryItem))) {
       return
     }
 
     // Calculate severity based on how far below threshold we are
     const severity = this.calculateSeverity(rule, inventoryItem)
-    
+
     // Generate alert message
     const { title, message } = this.generateAlertMessage(rule, inventoryItem)
 
@@ -155,7 +165,10 @@ export class AlertService {
     })
   }
 
-  private async resolveAlertIfExists(rule: any, inventoryItem: any): Promise<void> {
+  private async resolveAlertIfExists(
+    rule: any,
+    inventoryItem: any
+  ): Promise<void> {
     // Find any active alerts that should now be resolved
     await this.prisma.alert.updateMany({
       where: {
@@ -171,7 +184,10 @@ export class AlertService {
     })
   }
 
-  private async isInCooldownPeriod(rule: any, inventoryItem: any): Promise<boolean> {
+  private async isInCooldownPeriod(
+    rule: any,
+    inventoryItem: any
+  ): Promise<boolean> {
     const cooldownStart = new Date()
     cooldownStart.setHours(cooldownStart.getHours() - rule.cooldownHours)
 
@@ -189,27 +205,33 @@ export class AlertService {
     return !!recentAlert
   }
 
-  private calculateSeverity(rule: any, inventoryItem: any): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+  private calculateSeverity(
+    rule: any,
+    inventoryItem: any
+  ): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
     const { currentQuantity, minimumQuantity } = inventoryItem
-    
+
     if (currentQuantity <= 0) {
       return 'CRITICAL'
     }
-    
+
     if (minimumQuantity > 0) {
       const ratio = currentQuantity / minimumQuantity
       if (ratio <= 0.25) return 'HIGH'
       if (ratio <= 0.5) return 'MEDIUM'
       return 'LOW'
     }
-    
+
     // Fallback for items without minimum quantity set
     if (currentQuantity <= 2) return 'HIGH'
     if (currentQuantity <= 5) return 'MEDIUM'
     return 'LOW'
   }
 
-  private generateAlertMessage(rule: any, inventoryItem: any): { title: string; message: string } {
+  private generateAlertMessage(
+    rule: any,
+    inventoryItem: any
+  ): { title: string; message: string } {
     const productName = inventoryItem.product.name
     const locationName = inventoryItem.location.name
     const currentQty = inventoryItem.currentQuantity
@@ -222,19 +244,19 @@ export class AlertService {
           title: `Low Stock Alert: ${productName}`,
           message: `${productName} at ${locationName} is running low. Current: ${currentQty} ${unit}, Minimum: ${minQty} ${unit}`,
         }
-      
+
       case 'OUT_OF_STOCK':
         return {
           title: `Out of Stock: ${productName}`,
           message: `${productName} at ${locationName} is out of stock. Current: ${currentQty} ${unit}`,
         }
-      
+
       case 'OVERSTOCKED':
         return {
           title: `Overstocked: ${productName}`,
           message: `${productName} at ${locationName} is overstocked. Current: ${currentQty} ${unit}`,
         }
-      
+
       default:
         return {
           title: `Alert: ${productName}`,
@@ -246,7 +268,10 @@ export class AlertService {
   /**
    * Check specific location for alert conditions
    */
-  async checkLocationAlerts(organizationId: string, locationId: string): Promise<void> {
+  async checkLocationAlerts(
+    organizationId: string,
+    locationId: string
+  ): Promise<void> {
     const rules = await this.prisma.alertRule.findMany({
       where: {
         organizationId,
@@ -264,13 +289,13 @@ export class AlertService {
     })
 
     const inventoryItems = await this.prisma.inventoryItem.findMany({
-      where: { 
+      where: {
         organizationId,
         locationId,
       },
       include: {
         product: {
-          include: { category: true }
+          include: { category: true },
         },
         location: true,
       },
@@ -284,29 +309,32 @@ export class AlertService {
   /**
    * Get alert summary for dashboard
    */
-  async getAlertSummary(organizationId: string, locationId?: string): Promise<{
+  async getAlertSummary(
+    organizationId: string,
+    locationId?: string
+  ): Promise<{
     total: number
     active: number
     critical: number
     recent: any[]
   }> {
     const where: any = { organizationId }
-    
+
     if (locationId) {
       where.inventoryItem = {
-        locationId
+        locationId,
       }
     }
 
     const [total, active, critical, recent] = await Promise.all([
       this.prisma.alert.count({ where }),
       this.prisma.alert.count({ where: { ...where, status: 'ACTIVE' } }),
-      this.prisma.alert.count({ 
-        where: { 
-          ...where, 
-          status: 'ACTIVE', 
-          severity: 'CRITICAL' 
-        } 
+      this.prisma.alert.count({
+        where: {
+          ...where,
+          status: 'ACTIVE',
+          severity: 'CRITICAL',
+        },
       }),
       this.prisma.alert.findMany({
         where: { ...where, status: 'ACTIVE' },
@@ -315,15 +343,12 @@ export class AlertService {
             include: {
               product: { select: { name: true, sku: true } },
               location: { select: { name: true } },
-            }
-          }
+            },
+          },
         },
-        orderBy: [
-          { severity: 'desc' },
-          { createdAt: 'desc' }
-        ],
-        take: 5
-      })
+        orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
+        take: 5,
+      }),
     ])
 
     return { total, active, critical, recent }

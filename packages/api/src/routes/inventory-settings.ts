@@ -1,7 +1,7 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
-import { authMiddleware, requirePermission, AuthenticatedRequest } from '../middleware/auth-simple'
+import { authMiddleware, requirePermission } from '../middleware/auth-simple'
 
 // Validation schemas
 const policySchema = z.object({
@@ -54,110 +54,124 @@ const getDefaultSettings = () => ({
   auditLogRetentionDays: 90,
 })
 
-export const inventorySettingsRoutes: FastifyPluginAsync = async function (fastify) {
+export const inventorySettingsRoutes: FastifyPluginAsync = async function (
+  fastify
+) {
   // Get inventory settings
   // Get inventory settings
-  fastify.get('/', {
-    preHandler: [authMiddleware, requirePermission('admin', 'settings')]
-  }, async (request: any, _reply) => {
-    const organizationId = getOrganizationId(request)
+  fastify.get(
+    '/',
+    {
+      preHandler: [authMiddleware, requirePermission('admin', 'settings')],
+    },
+    async (request: any, _reply) => {
+      const organizationId = getOrganizationId(request)
 
-    let settings = await fastify.prisma.inventorySettings.findUnique({
-      where: { organizationId },
-    })
+      const settings = await fastify.prisma.inventorySettings.findUnique({
+        where: { organizationId },
+      })
 
-    // If no settings exist, return defaults
-    if (!settings) {
-      const defaults = getDefaultSettings()
+      // If no settings exist, return defaults
+      if (!settings) {
+        const defaults = getDefaultSettings()
+        return {
+          success: true,
+          data: defaults,
+        }
+      }
+
+      // Parse JSON fields and return structured settings
+      const result = {
+        webhookPolicy: settings.webhookPolicy as any,
+        cronSyncPolicy: settings.cronSyncPolicy as any,
+        manualPolicy: settings.manualPolicy as any,
+        enableAutoConversion: settings.enableAutoConversion,
+        conversionFallback: settings.conversionFallback,
+        enableOverDepletionLogging: settings.enableOverDepletionLogging,
+        enableUnitConversionLogging: settings.enableUnitConversionLogging,
+        auditLogRetentionDays: settings.auditLogRetentionDays,
+      }
+
       return {
         success: true,
-        data: defaults,
+        data: result,
       }
     }
-
-    // Parse JSON fields and return structured settings
-    const result = {
-      webhookPolicy: settings.webhookPolicy as any,
-      cronSyncPolicy: settings.cronSyncPolicy as any,
-      manualPolicy: settings.manualPolicy as any,
-      enableAutoConversion: settings.enableAutoConversion,
-      conversionFallback: settings.conversionFallback,
-      enableOverDepletionLogging: settings.enableOverDepletionLogging,
-      enableUnitConversionLogging: settings.enableUnitConversionLogging,
-      auditLogRetentionDays: settings.auditLogRetentionDays,
-    }
-
-    return {
-      success: true,
-      data: result,
-    }
-  })
+  )
 
   // Create or update inventory settings
   // Update inventory settings
-  fastify.put('/', {
-    preHandler: [authMiddleware, requirePermission('admin', 'settings')]
-  }, async (request: any, _reply) => {
-    const organizationId = getOrganizationId(request)
-    const data = inventorySettingsSchema.parse(request.body)
+  fastify.put(
+    '/',
+    {
+      preHandler: [authMiddleware, requirePermission('admin', 'settings')],
+    },
+    async (request: any, _reply) => {
+      const organizationId = getOrganizationId(request)
+      const data = inventorySettingsSchema.parse(request.body)
 
-    // Validate thresholds make sense (critical should be <= low)
-    const policies = [data.webhookPolicy, data.cronSyncPolicy, data.manualPolicy]
-    for (const policy of policies) {
-      if (policy.warningThresholds.critical > policy.warningThresholds.low) {
-        throw new AppError(
-          'Critical threshold must be less than or equal to low threshold',
-          ErrorCode.VALIDATION_ERROR,
-          400
-        )
+      // Validate thresholds make sense (critical should be <= low)
+      const policies = [
+        data.webhookPolicy,
+        data.cronSyncPolicy,
+        data.manualPolicy,
+      ]
+      for (const policy of policies) {
+        if (policy.warningThresholds.critical > policy.warningThresholds.low) {
+          throw new AppError(
+            'Critical threshold must be less than or equal to low threshold',
+            ErrorCode.VALIDATION_ERROR,
+            400
+          )
+        }
+      }
+
+      const settings = await fastify.prisma.inventorySettings.upsert({
+        where: { organizationId },
+        create: {
+          organizationId,
+          webhookPolicy: data.webhookPolicy,
+          cronSyncPolicy: data.cronSyncPolicy,
+          manualPolicy: data.manualPolicy,
+          enableAutoConversion: data.enableAutoConversion,
+          conversionFallback: data.conversionFallback,
+          enableOverDepletionLogging: data.enableOverDepletionLogging,
+          enableUnitConversionLogging: data.enableUnitConversionLogging,
+          auditLogRetentionDays: data.auditLogRetentionDays,
+        },
+        update: {
+          webhookPolicy: data.webhookPolicy,
+          cronSyncPolicy: data.cronSyncPolicy,
+          manualPolicy: data.manualPolicy,
+          enableAutoConversion: data.enableAutoConversion,
+          conversionFallback: data.conversionFallback,
+          enableOverDepletionLogging: data.enableOverDepletionLogging,
+          enableUnitConversionLogging: data.enableUnitConversionLogging,
+          auditLogRetentionDays: data.auditLogRetentionDays,
+        },
+      })
+
+      // Parse JSON fields for response
+      const result = {
+        id: settings.id,
+        webhookPolicy: settings.webhookPolicy as any,
+        cronSyncPolicy: settings.cronSyncPolicy as any,
+        manualPolicy: settings.manualPolicy as any,
+        enableAutoConversion: settings.enableAutoConversion,
+        conversionFallback: settings.conversionFallback,
+        enableOverDepletionLogging: settings.enableOverDepletionLogging,
+        enableUnitConversionLogging: settings.enableUnitConversionLogging,
+        auditLogRetentionDays: settings.auditLogRetentionDays,
+        createdAt: settings.createdAt,
+        updatedAt: settings.updatedAt,
+      }
+
+      return {
+        success: true,
+        data: result,
       }
     }
-
-    const settings = await fastify.prisma.inventorySettings.upsert({
-      where: { organizationId },
-      create: {
-        organizationId,
-        webhookPolicy: data.webhookPolicy,
-        cronSyncPolicy: data.cronSyncPolicy,
-        manualPolicy: data.manualPolicy,
-        enableAutoConversion: data.enableAutoConversion,
-        conversionFallback: data.conversionFallback,
-        enableOverDepletionLogging: data.enableOverDepletionLogging,
-        enableUnitConversionLogging: data.enableUnitConversionLogging,
-        auditLogRetentionDays: data.auditLogRetentionDays,
-      },
-      update: {
-        webhookPolicy: data.webhookPolicy,
-        cronSyncPolicy: data.cronSyncPolicy,
-        manualPolicy: data.manualPolicy,
-        enableAutoConversion: data.enableAutoConversion,
-        conversionFallback: data.conversionFallback,
-        enableOverDepletionLogging: data.enableOverDepletionLogging,
-        enableUnitConversionLogging: data.enableUnitConversionLogging,
-        auditLogRetentionDays: data.auditLogRetentionDays,
-      },
-    })
-
-    // Parse JSON fields for response
-    const result = {
-      id: settings.id,
-      webhookPolicy: settings.webhookPolicy as any,
-      cronSyncPolicy: settings.cronSyncPolicy as any,
-      manualPolicy: settings.manualPolicy as any,
-      enableAutoConversion: settings.enableAutoConversion,
-      conversionFallback: settings.conversionFallback,
-      enableOverDepletionLogging: settings.enableOverDepletionLogging,
-      enableUnitConversionLogging: settings.enableUnitConversionLogging,
-      auditLogRetentionDays: settings.auditLogRetentionDays,
-      createdAt: settings.createdAt,
-      updatedAt: settings.updatedAt,
-    }
-
-    return {
-      success: true,
-      data: result,
-    }
-  })
+  )
 
   // Partially update inventory settings
   fastify.patch('/', async (request, _reply) => {
@@ -195,14 +209,22 @@ export const inventorySettingsRoutes: FastifyPluginAsync = async function (fasti
 
     // Build update data object
     const updateData: any = {}
-    if (data.webhookPolicy !== undefined) updateData.webhookPolicy = data.webhookPolicy
-    if (data.cronSyncPolicy !== undefined) updateData.cronSyncPolicy = data.cronSyncPolicy
-    if (data.manualPolicy !== undefined) updateData.manualPolicy = data.manualPolicy
-    if (data.enableAutoConversion !== undefined) updateData.enableAutoConversion = data.enableAutoConversion
-    if (data.conversionFallback !== undefined) updateData.conversionFallback = data.conversionFallback
-    if (data.enableOverDepletionLogging !== undefined) updateData.enableOverDepletionLogging = data.enableOverDepletionLogging
-    if (data.enableUnitConversionLogging !== undefined) updateData.enableUnitConversionLogging = data.enableUnitConversionLogging
-    if (data.auditLogRetentionDays !== undefined) updateData.auditLogRetentionDays = data.auditLogRetentionDays
+    if (data.webhookPolicy !== undefined)
+      updateData.webhookPolicy = data.webhookPolicy
+    if (data.cronSyncPolicy !== undefined)
+      updateData.cronSyncPolicy = data.cronSyncPolicy
+    if (data.manualPolicy !== undefined)
+      updateData.manualPolicy = data.manualPolicy
+    if (data.enableAutoConversion !== undefined)
+      updateData.enableAutoConversion = data.enableAutoConversion
+    if (data.conversionFallback !== undefined)
+      updateData.conversionFallback = data.conversionFallback
+    if (data.enableOverDepletionLogging !== undefined)
+      updateData.enableOverDepletionLogging = data.enableOverDepletionLogging
+    if (data.enableUnitConversionLogging !== undefined)
+      updateData.enableUnitConversionLogging = data.enableUnitConversionLogging
+    if (data.auditLogRetentionDays !== undefined)
+      updateData.auditLogRetentionDays = data.auditLogRetentionDays
 
     const settings = await fastify.prisma.inventorySettings.update({
       where: { organizationId },
@@ -232,40 +254,44 @@ export const inventorySettingsRoutes: FastifyPluginAsync = async function (fasti
 
   // Reset to default settings
   // Reset inventory settings to defaults
-  fastify.post('/reset', {
-    preHandler: [authMiddleware, requirePermission('admin', 'settings')]
-  }, async (request: any, _reply) => {
-    const organizationId = getOrganizationId(request)
-    const defaults = getDefaultSettings()
+  fastify.post(
+    '/reset',
+    {
+      preHandler: [authMiddleware, requirePermission('admin', 'settings')],
+    },
+    async (request: any, _reply) => {
+      const organizationId = getOrganizationId(request)
+      const defaults = getDefaultSettings()
 
-    const settings = await fastify.prisma.inventorySettings.upsert({
-      where: { organizationId },
-      create: {
-        organizationId,
-        ...defaults,
-      },
-      update: defaults,
-    })
+      const settings = await fastify.prisma.inventorySettings.upsert({
+        where: { organizationId },
+        create: {
+          organizationId,
+          ...defaults,
+        },
+        update: defaults,
+      })
 
-    // Parse JSON fields for response
-    const result = {
-      id: settings.id,
-      webhookPolicy: settings.webhookPolicy as any,
-      cronSyncPolicy: settings.cronSyncPolicy as any,
-      manualPolicy: settings.manualPolicy as any,
-      enableAutoConversion: settings.enableAutoConversion,
-      conversionFallback: settings.conversionFallback,
-      enableOverDepletionLogging: settings.enableOverDepletionLogging,
-      enableUnitConversionLogging: settings.enableUnitConversionLogging,
-      auditLogRetentionDays: settings.auditLogRetentionDays,
-      createdAt: settings.createdAt,
-      updatedAt: settings.updatedAt,
+      // Parse JSON fields for response
+      const result = {
+        id: settings.id,
+        webhookPolicy: settings.webhookPolicy as any,
+        cronSyncPolicy: settings.cronSyncPolicy as any,
+        manualPolicy: settings.manualPolicy as any,
+        enableAutoConversion: settings.enableAutoConversion,
+        conversionFallback: settings.conversionFallback,
+        enableOverDepletionLogging: settings.enableOverDepletionLogging,
+        enableUnitConversionLogging: settings.enableUnitConversionLogging,
+        auditLogRetentionDays: settings.auditLogRetentionDays,
+        createdAt: settings.createdAt,
+        updatedAt: settings.updatedAt,
+      }
+
+      return {
+        success: true,
+        data: result,
+        message: 'Settings reset to defaults',
+      }
     }
-
-    return {
-      success: true,
-      data: result,
-      message: 'Settings reset to defaults',
-    }
-  })
+  )
 }

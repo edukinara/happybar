@@ -1,6 +1,6 @@
-import type { FastifyRequest, FastifyReply } from 'fastify'
-import { ErrorCode } from '@happy-bar/types'
 import { prisma } from '@happy-bar/database'
+import { ErrorCode } from '@happy-bar/types'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 
 /**
  * Middleware to set organization context for all requests
@@ -14,16 +14,17 @@ export async function orgContextMiddleware(
     // Get organization ID from various sources
     const orgIdFromHeader = request.headers['x-organization-id'] as string
     const orgIdFromQuery = (request.query as any)?.organizationId
-    const orgIdFromSession = (request as any).user?.activeOrganizationId
-    
+    const orgIdFromSession = (request.user as any)?.activeOrganizationId
+
     // Priority: Header > Query > Session
     const organizationId = orgIdFromHeader || orgIdFromQuery || orgIdFromSession
-    
+
     if (!organizationId) {
       return reply.code(400).send({
         success: false,
         error: ErrorCode.VALIDATION_ERROR,
-        message: 'Organization context is required. Please specify an organization.'
+        message:
+          'Organization context is required. Please specify an organization.',
       })
     }
 
@@ -32,23 +33,23 @@ export async function orgContextMiddleware(
       const membership = await prisma.member.findFirst({
         where: {
           userId: (request as any).user.id,
-          organizationId: organizationId
-        }
+          organizationId: organizationId,
+        },
       })
 
       if (!membership) {
         return reply.code(403).send({
           success: false,
           error: ErrorCode.FORBIDDEN,
-          message: 'You do not have access to this organization'
+          message: 'You do not have access to this organization',
         })
       }
 
       // Attach organization and member info to request
-      (request as any).organizationId = organizationId
-      (request as any).organization = {
+      ;(request as any).organizationId = organizationId as string
+      ;(request as any).organization = {
         id: organizationId,
-        role: membership.role
+        role: membership.role,
       }
     }
   } catch (error) {
@@ -56,7 +57,7 @@ export async function orgContextMiddleware(
     return reply.code(500).send({
       success: false,
       error: ErrorCode.INTERNAL_ERROR,
-      message: 'Failed to establish organization context'
+      message: 'Failed to establish organization context',
     })
   }
 }
@@ -81,7 +82,7 @@ export async function verifyOrgAccess(
 ): Promise<boolean> {
   const org = (request as any).organization
   if (!org) return false
-  
+
   if (requiredRole) {
     // Check if user has required role
     const roleHierarchy = {
@@ -92,14 +93,15 @@ export async function verifyOrgAccess(
       inventory_manager: 5,
       manager: 6,
       admin: 7,
-      owner: 8
+      owner: 8,
     }
-    
+
     const userLevel = roleHierarchy[org.role as keyof typeof roleHierarchy] || 0
-    const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 999
-    
+    const requiredLevel =
+      roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 999
+
     return userLevel >= requiredLevel
   }
-  
+
   return true
 }

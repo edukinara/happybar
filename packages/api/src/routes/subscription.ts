@@ -1,7 +1,8 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyInstance } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { SubscriptionService } from '../services/subscription'
+import { roleHasPermission } from '../utils/permissions'
 
 // Helper to get organization ID or throw error
 function getOrganizationId(request: any): string {
@@ -59,12 +60,15 @@ async function checkRequiredPermissions(
   }
 
   // Import the role permissions check
-  const { roleHasPermission } = require('../utils/permissions')
   const missingPermissions: string[] = []
 
   for (const permission of requiredPermissions) {
     const [resource, action] = permission.split('.')
-    if (!roleHasPermission(membership.role, resource, action)) {
+    if (
+      resource &&
+      action &&
+      !roleHasPermission(membership.role, resource, action)
+    ) {
       missingPermissions.push(permission)
     }
   }

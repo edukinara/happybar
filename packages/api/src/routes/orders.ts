@@ -1,6 +1,6 @@
-import { OrderStatus, Prisma } from '@happy-bar/database'
+import type { OrderStatus, Prisma } from '@happy-bar/database'
 import { AppError, ErrorCode } from '@happy-bar/types'
-import {
+import type {
   FastifyInstance,
   FastifyPluginAsync,
   FastifyReply,
@@ -15,14 +15,6 @@ function getOrganizationId(request: FastifyRequest): string {
     throw new AppError('Authentication required', ErrorCode.UNAUTHORIZED, 401)
   }
   return request.organization.id
-}
-
-// Helper to get user ID
-function getUserId(request: FastifyRequest): string {
-  if (!(request.user! as any).id) {
-    throw new AppError('Authentication required', ErrorCode.UNAUTHORIZED, 401)
-  }
-  return (request.user! as any).id
 }
 
 interface CreateOrderRequest {
@@ -59,7 +51,7 @@ export const ordersRoutes: FastifyPluginAsync = async function (
     {
       preHandler: [authMiddleware, requirePermission('orders', 'read')],
     },
-    async (request, reply) => {
+    async (request) => {
       const { status, supplierId, limit, offset, startDate, endDate } =
         request.query as {
           status?: string
@@ -489,20 +481,12 @@ export const ordersRoutes: FastifyPluginAsync = async function (
 
       // Send email to supplier if order status changed to SENT
       if (previousStatus !== 'SENT' && updatedOrder.status === 'SENT') {
-        console.log(
-          `Order ${updatedOrder.orderNumber} status changed to SENT, sending emails to supplier contacts`
-        )
-
         // Get all supplier contacts with email addresses
         const contactsWithEmail = updatedOrder.supplier.contacts.filter(
           (contact) => contact.email
         )
 
         if (contactsWithEmail.length > 0) {
-          console.log(
-            `Found ${contactsWithEmail.length} contacts with email addresses for ${updatedOrder.supplier.name}`
-          )
-
           // Prepare base email data
           const organizationMetadata = updatedOrder.organization.metadata as any
           const address = organizationMetadata?.address || {}
@@ -539,11 +523,7 @@ export const ordersRoutes: FastifyPluginAsync = async function (
 
               const emailResult = await sendSupplierOrderEmail(emailData)
 
-              if (emailResult.success) {
-                console.log(
-                  `Successfully sent order email to ${contact.name || 'contact'} (${contact.email}) at ${updatedOrder.supplier.name}`
-                )
-              } else {
+              if (!emailResult.success) {
                 console.error(
                   `Failed to send order email to ${contact.name || 'contact'} (${contact.email}):`,
                   emailResult.error
@@ -602,147 +582,142 @@ export const ordersRoutes: FastifyPluginAsync = async function (
   )
 
   // Get order suggestions based on inventory levels
-  fastify.get(
-    '/suggestions/reorder',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const organizationId = getOrganizationId(request)
+  fastify.get('/suggestions/reorder', async (request: FastifyRequest) => {
+    const organizationId = getOrganizationId(request)
 
-      // Get all inventory items and filter for low stock in JavaScript
-      const allInventoryItems = await fastify.prisma.inventoryItem.findMany({
-        where: {
-          organizationId,
-        },
-        include: {
-          product: {
-            include: {
-              suppliers: {
-                include: { supplier: true },
-                // where: { isPreferred: true },
-              },
-              category: true,
+    // Get all inventory items and filter for low stock in JavaScript
+    const allInventoryItems = await fastify.prisma.inventoryItem.findMany({
+      where: {
+        organizationId,
+      },
+      include: {
+        product: {
+          include: {
+            suppliers: {
+              include: { supplier: true },
+              // where: { isPreferred: true },
             },
-          },
-          location: true,
-        },
-        orderBy: {
-          product: {
-            name: 'asc',
+            category: true,
           },
         },
-      })
-
-      // Filter for low stock items
-      const lowStockItems = allInventoryItems.filter(
-        (item) => item.currentQuantity < item.minimumQuantity
-      )
-
-      // Group by supplier and calculate suggested quantities
-      const suggestions = lowStockItems.reduce(
-        (
-          acc: Record<
-            string,
-            {
-              supplier: any
-              items: any[]
-              product?: any
-              currentQuantity?: number
-              minimumQuantity?: number
-              suggestedQuantity?: number
-              unitCost?: number
-              estimatedCost?: number
-              location?: string
-              orderingUnit?: string
-              packSize?: number
-              totalEstimatedCost: number
-            }
-          >,
-          item
-        ) => {
-          const preferredSupplier = item.product.suppliers[0]
-          if (!preferredSupplier) return acc
-
-          const supplierId = preferredSupplier.supplierId
-          if (!acc[supplierId]) {
-            acc[supplierId] = {
-              supplier: preferredSupplier.supplier,
-              items: [],
-              totalEstimatedCost: 0,
-            }
-          }
-
-          // Calculate the quantity needed to reach minimum
-          const quantityNeeded = item.minimumQuantity - item.currentQuantity
-
-          // Determine ordering unit and calculate suggested quantity
-          let suggestedQuantity: number
-          let unitCost: number
-          let orderingUnit = preferredSupplier.orderingUnit
-
-          if (orderingUnit === 'CASE' && preferredSupplier.packSize) {
-            // When ordering by case, calculate how many cases needed
-            const casesNeeded = Math.ceil(
-              quantityNeeded / preferredSupplier.packSize
-            )
-            const minimumCases =
-              preferredSupplier.minimumOrderUnit === 'CASE'
-                ? preferredSupplier.minimumOrder
-                : Math.ceil(
-                    preferredSupplier.minimumOrder / preferredSupplier.packSize
-                  )
-
-            // Take the maximum of cases needed or minimum order
-            const casesToOrder = Math.max(casesNeeded, minimumCases)
-            suggestedQuantity = casesToOrder // Store as cases
-            unitCost =
-              preferredSupplier.costPerCase ||
-              preferredSupplier.costPerUnit * preferredSupplier.packSize
-          } else {
-            // When ordering by unit, round up to avoid decimals
-            const minimumUnits =
-              preferredSupplier.minimumOrderUnit === 'UNIT'
-                ? preferredSupplier.minimumOrder
-                : preferredSupplier.minimumOrder *
-                  (preferredSupplier.packSize || 1)
-
-            suggestedQuantity = Math.ceil(
-              Math.max(quantityNeeded, minimumUnits)
-            )
-            unitCost = preferredSupplier.costPerUnit
-
-            // If there's a pack size, round up to full packs
-            if (preferredSupplier.packSize && preferredSupplier.packSize > 1) {
-              suggestedQuantity =
-                Math.ceil(suggestedQuantity / preferredSupplier.packSize) *
-                preferredSupplier.packSize
-            }
-          }
-
-          const estimatedCost = suggestedQuantity * unitCost
-
-          acc[supplierId].items.push({
-            product: item.product,
-            currentQuantity: item.currentQuantity,
-            minimumQuantity: item.minimumQuantity,
-            suggestedQuantity,
-            unitCost,
-            estimatedCost,
-            location: item.location,
-            orderingUnit,
-            packSize: preferredSupplier.packSize,
-          })
-          acc[supplierId].totalEstimatedCost += estimatedCost
-
-          return acc
+        location: true,
+      },
+      orderBy: {
+        product: {
+          name: 'asc',
         },
-        {}
-      )
+      },
+    })
 
-      return {
-        success: true,
-        data: Object.values(suggestions),
-      }
+    // Filter for low stock items
+    const lowStockItems = allInventoryItems.filter(
+      (item) => item.currentQuantity < item.minimumQuantity
+    )
+
+    // Group by supplier and calculate suggested quantities
+    const suggestions = lowStockItems.reduce(
+      (
+        acc: Record<
+          string,
+          {
+            supplier: any
+            items: any[]
+            product?: any
+            currentQuantity?: number
+            minimumQuantity?: number
+            suggestedQuantity?: number
+            unitCost?: number
+            estimatedCost?: number
+            location?: string
+            orderingUnit?: string
+            packSize?: number
+            totalEstimatedCost: number
+          }
+        >,
+        item
+      ) => {
+        const preferredSupplier = item.product.suppliers[0]
+        if (!preferredSupplier) return acc
+
+        const supplierId = preferredSupplier.supplierId
+        if (!acc[supplierId]) {
+          acc[supplierId] = {
+            supplier: preferredSupplier.supplier,
+            items: [],
+            totalEstimatedCost: 0,
+          }
+        }
+
+        // Calculate the quantity needed to reach minimum
+        const quantityNeeded = item.minimumQuantity - item.currentQuantity
+
+        // Determine ordering unit and calculate suggested quantity
+        let suggestedQuantity: number
+        let unitCost: number
+        const orderingUnit = preferredSupplier.orderingUnit
+
+        if (orderingUnit === 'CASE' && preferredSupplier.packSize) {
+          // When ordering by case, calculate how many cases needed
+          const casesNeeded = Math.ceil(
+            quantityNeeded / preferredSupplier.packSize
+          )
+          const minimumCases =
+            preferredSupplier.minimumOrderUnit === 'CASE'
+              ? preferredSupplier.minimumOrder
+              : Math.ceil(
+                  preferredSupplier.minimumOrder / preferredSupplier.packSize
+                )
+
+          // Take the maximum of cases needed or minimum order
+          const casesToOrder = Math.max(casesNeeded, minimumCases)
+          suggestedQuantity = casesToOrder // Store as cases
+          unitCost =
+            preferredSupplier.costPerCase ||
+            preferredSupplier.costPerUnit * preferredSupplier.packSize
+        } else {
+          // When ordering by unit, round up to avoid decimals
+          const minimumUnits =
+            preferredSupplier.minimumOrderUnit === 'UNIT'
+              ? preferredSupplier.minimumOrder
+              : preferredSupplier.minimumOrder *
+                (preferredSupplier.packSize || 1)
+
+          suggestedQuantity = Math.ceil(Math.max(quantityNeeded, minimumUnits))
+          unitCost = preferredSupplier.costPerUnit
+
+          // If there's a pack size, round up to full packs
+          if (preferredSupplier.packSize && preferredSupplier.packSize > 1) {
+            suggestedQuantity =
+              Math.ceil(suggestedQuantity / preferredSupplier.packSize) *
+              preferredSupplier.packSize
+          }
+        }
+
+        const estimatedCost = suggestedQuantity * unitCost
+
+        acc[supplierId].items.push({
+          product: item.product,
+          currentQuantity: item.currentQuantity,
+          minimumQuantity: item.minimumQuantity,
+          suggestedQuantity,
+          unitCost,
+          estimatedCost,
+          location: item.location,
+          orderingUnit,
+          packSize: preferredSupplier.packSize,
+        })
+        acc[supplierId].totalEstimatedCost += estimatedCost
+
+        return acc
+      },
+      {}
+    )
+
+    return {
+      success: true,
+      data: Object.values(suggestions),
     }
-  )
+  })
 
   // Get order analytics
   fastify.get(
@@ -754,8 +729,7 @@ export const ordersRoutes: FastifyPluginAsync = async function (
           endDate?: string
           supplierId?: string
         }
-      }>,
-      reply: FastifyReply
+      }>
     ) => {
       const { startDate, endDate, supplierId } = request.query
       const organizationId = getOrganizationId(request)

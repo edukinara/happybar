@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient } from '@happy-bar/database'
-import { DefaultArgs } from '@happy-bar/database/dist/client/runtime/library'
+import type { Prisma, PrismaClient } from '@happy-bar/database'
+import type { DefaultArgs } from '@happy-bar/database/dist/client/runtime/library'
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyPluginAsync, FastifyRequest } from 'fastify'
+import type { FastifyPluginAsync, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import {
   authMiddleware,
@@ -40,7 +40,7 @@ function getOrganizationId(request: FastifyRequest): string {
 async function getLocationFilter(
   request: FastifyRequest,
   prisma: any
-): Promise<{ id: { in: string[] } } | {}> {
+): Promise<{ id: { in: string[] } } | object> {
   const accessibleLocationIds = await getAccessibleLocationIds(
     request.member!.role,
     request.organization!.id,
@@ -319,7 +319,7 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
     },
     async (request: FastifyRequest, _reply) => {
       const { countId } = request.params as { countId: string }
-      const items = request.body as z.infer<typeof countItemSchema>[]
+      const items = countItemSchema.array().parse(request.body)
 
       // Verify count belongs to organization
       const count = await fastify.prisma.count.findFirst({

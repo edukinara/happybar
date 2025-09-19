@@ -1,5 +1,5 @@
-import { Prisma, prisma } from '@happy-bar/database'
-import { Product } from 'autumn-js'
+import { type Prisma, prisma } from '@happy-bar/database'
+import type { Product } from 'autumn-js'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { SubscriptionService } from '../../services/subscription'
@@ -136,7 +136,7 @@ export default async function adminPlatformRoutes(fastify: FastifyInstance) {
         ])
 
         // Get subscription data from Autumn (parallel fetch)
-        let subscriptionData: SubscriptionData = {
+        const subscriptionData: SubscriptionData = {
           totalCustomers: 0,
           activeSubscriptions: 0,
           monthlyRevenue: 0,

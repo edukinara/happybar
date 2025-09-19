@@ -59,7 +59,7 @@ const prisma = new PrismaClient()
 
 // Graceful shutdown
 const gracefulShutdown = async () => {
-  console.log('Shutting down gracefully...')
+  console.warn('Shutting down gracefully...')
   await prisma.$disconnect()
   await fastify.close()
   process.exit(0)
@@ -109,7 +109,7 @@ async function buildServer() {
       credentials: true, // Enable credentials for web app cookies
       maxAge: 86400, // 24 hours preflight cache
       preflightContinue: false,
-      optionsSuccessStatus: 204
+      optionsSuccessStatus: 204,
     })
 
     await fastify.register(jwt, {
@@ -161,15 +161,6 @@ async function buildServer() {
     // Handle all Better Auth routes with a generic handler
     const betterAuthHandler = async (request: any, reply: any) => {
       try {
-        // Log invitation acceptance attempts
-        if (request.url.includes('accept-invitation')) {
-          console.log(
-            '🔥 Better Auth accept-invitation called:',
-            request.method,
-            request.url
-          )
-          console.log('🔥 Request body:', request.body)
-        }
         // Build the full URL
         const protocol = request.headers['x-forwarded-proto'] || 'http'
         const host = request.headers.host
@@ -291,7 +282,10 @@ async function buildServer() {
       try {
         // Check if this is a mobile app request
         const userAgent = request.headers['user-agent'] || ''
-        const isMobileApp = userAgent.includes('okhttp') || userAgent.includes('HappyBar') || userAgent.includes('CFNetwork')
+        const isMobileApp =
+          userAgent.includes('okhttp') ||
+          userAgent.includes('HappyBar') ||
+          userAgent.includes('CFNetwork')
 
         if (isMobileApp && request.headers.authorization) {
           // For mobile app, try direct token validation via Redis
@@ -344,7 +338,6 @@ async function buildServer() {
                       validSession = matchingSession
                       break
                     }
-                  } else {
                   }
                 } catch (parseError) {
                   console.error(
@@ -399,7 +392,6 @@ async function buildServer() {
                 }
                 return
               }
-            } else {
             }
           } catch (error) {
             console.error('🔍 Redis lookup error:', error)
@@ -534,7 +526,7 @@ async function buildServer() {
     })
 
     // Test endpoint to verify middleware hook execution
-    fastify.get('/test-middleware', async (request, reply) => {
+    fastify.get('/test-middleware', async (request) => {
       return {
         message: 'This endpoint should trigger middleware hook',
         organization: (request as any).organization || null,
@@ -543,7 +535,7 @@ async function buildServer() {
     })
 
     // Test endpoint to manually trigger member creation hook
-    fastify.post('/debug/test-member-creation', async (request, reply) => {
+    fastify.post('/debug/test-member-creation', async (request) => {
       try {
         const { userId, organizationId, role } = request.body as any
 
@@ -567,7 +559,7 @@ async function buildServer() {
     // Debug endpoint to check pending assignments
     fastify.get(
       '/debug/pending-assignment/:email/:organizationId',
-      async (request, reply) => {
+      async (request) => {
         try {
           const { email, organizationId } = request.params as {
             email: string
@@ -598,7 +590,7 @@ async function buildServer() {
     )
 
     // Debug endpoint to manually store a pending assignment
-    fastify.post('/debug/store-pending-assignment', async (request, reply) => {
+    fastify.post('/debug/store-pending-assignment', async (request) => {
       try {
         const { email, organizationId, locationIds } = request.body as any
         const { PendingAssignmentManager } = await import(
@@ -630,7 +622,7 @@ async function buildServer() {
     })
 
     // Debug endpoint to manually set active organization
-    fastify.post('/debug/set-active-org', async (request, reply) => {
+    fastify.post('/debug/set-active-org', async (request) => {
       try {
         const { organizationId } = request.body as { organizationId: string }
 
@@ -666,7 +658,7 @@ async function buildServer() {
     })
 
     // Debug endpoint to check session details
-    fastify.get('/debug/session', async (request, reply) => {
+    fastify.get('/debug/session', async (request) => {
       try {
         const sessionData = await auth.api.getSession({
           headers: request.headers as any,

@@ -1,5 +1,8 @@
-import { PrismaClient } from '@happy-bar/database'
-import { UnitConversionResult, UnitConverter } from '../utils/unit-conversion'
+import type { PrismaClient } from '@happy-bar/database'
+import {
+  type UnitConversionResult,
+  UnitConverter,
+} from '../utils/unit-conversion'
 import { AuditLoggingService } from './audit-logging'
 import { InventorySettingsService } from './inventory-settings'
 
@@ -57,7 +60,7 @@ export class InventoryDepletionService {
     options: InventoryDepletionOptions = {}
   ): Promise<InventoryDepletionResult> {
     // Load settings if not provided in options
-    let finalOptions = { ...options }
+    const finalOptions = { ...options }
 
     if (
       options.source &&

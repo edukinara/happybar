@@ -20,7 +20,8 @@
     "start": "node dist/start.js || node dist/index.js",
     "start:prod": "node dist/start.js",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --ext .ts ."
   },
   "dependencies": {
     "@better-auth/expo": "^1.3.7",

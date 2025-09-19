@@ -1,4 +1,4 @@
-import { PrismaClient } from '@happy-bar/database'
+import type { PrismaClient } from '@happy-bar/database'
 
 export interface InventoryDepletionPolicyConfig {
   allowOverDepletion: boolean
@@ -21,7 +21,10 @@ export interface InventorySettingsConfig {
 
 export class InventorySettingsService {
   private prisma: PrismaClient
-  private cache = new Map<string, { settings: InventorySettingsConfig; cachedAt: number }>()
+  private cache = new Map<
+    string,
+    { settings: InventorySettingsConfig; cachedAt: number }
+  >()
   private cacheTimeout = 5 * 60 * 1000 // 5 minutes
 
   constructor(prisma: PrismaClient) {
@@ -64,7 +67,7 @@ export class InventorySettingsService {
     }
 
     // Load from database
-    let settings = await this.prisma.inventorySettings.findUnique({
+    const settings = await this.prisma.inventorySettings.findUnique({
       where: { organizationId },
     })
 
@@ -76,11 +79,17 @@ export class InventorySettingsService {
     } else {
       // Parse JSON fields
       config = {
-        webhookPolicy: settings.webhookPolicy as unknown as InventoryDepletionPolicyConfig,
-        cronSyncPolicy: settings.cronSyncPolicy as unknown as InventoryDepletionPolicyConfig,
-        manualPolicy: settings.manualPolicy as unknown as InventoryDepletionPolicyConfig,
+        webhookPolicy:
+          settings.webhookPolicy as unknown as InventoryDepletionPolicyConfig,
+        cronSyncPolicy:
+          settings.cronSyncPolicy as unknown as InventoryDepletionPolicyConfig,
+        manualPolicy:
+          settings.manualPolicy as unknown as InventoryDepletionPolicyConfig,
         enableAutoConversion: settings.enableAutoConversion,
-        conversionFallback: settings.conversionFallback as 'error' | 'warn' | 'ignore',
+        conversionFallback: settings.conversionFallback as
+          | 'error'
+          | 'warn'
+          | 'ignore',
         enableOverDepletionLogging: settings.enableOverDepletionLogging,
         enableUnitConversionLogging: settings.enableUnitConversionLogging,
         auditLogRetentionDays: settings.auditLogRetentionDays,
@@ -104,7 +113,7 @@ export class InventorySettingsService {
     source: 'webhook' | 'cronSync' | 'manual'
   ): Promise<InventoryDepletionPolicyConfig> {
     const settings = await this.getSettings(organizationId)
-    
+
     switch (source) {
       case 'webhook':
         return settings.webhookPolicy
@@ -138,7 +147,11 @@ export class InventorySettingsService {
     if (source.includes('webhook') || source.includes('pos_webhook')) {
       return 'webhook'
     }
-    if (source.includes('cron') || source.includes('sync') || source.includes('pos_cron_sync')) {
+    if (
+      source.includes('cron') ||
+      source.includes('sync') ||
+      source.includes('pos_cron_sync')
+    ) {
       return 'cronSync'
     }
     return 'manual'

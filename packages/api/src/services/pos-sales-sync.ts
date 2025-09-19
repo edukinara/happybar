@@ -1,5 +1,10 @@
-import { PrismaClient } from '@happy-bar/database'
-import { AppError, ErrorCode, POSSale, POSSaleItem } from '@happy-bar/types'
+import type { PrismaClient } from '@happy-bar/database'
+import {
+  AppError,
+  ErrorCode,
+  type POSSale,
+  type POSSaleItem,
+} from '@happy-bar/types'
 // Remove unused import - APIError from better-auth
 import { InventoryDepletionService } from './inventory-depletion'
 
@@ -569,7 +574,9 @@ export class POSSalesSyncService {
                 completedAt: new Date(),
               },
             })
-          } catch (_error) {}
+          } catch (_error) {
+            // Ignore error
+          }
           results.push({
             integrationId: integration.id,
             integrationName: integration.name,

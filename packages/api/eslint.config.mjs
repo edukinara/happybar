@@ -1,59 +1,13 @@
-// import { FlatCompat } from '@eslint/eslintrc'
-
-// const compat = new FlatCompat({
-//   baseDirectory: import.meta.dirname,
-// })
-
-// const eslintConfig = [
-//   {},
-//   ...compat.config({
-//     extends: ['prettier'],
-//   }),
-//   {
-//     files: ['**/*.ts'],
-//     plugins: {
-//       '@typescript-eslint': typescriptEslint,
-//     },
-//     rules: {
-//       'no-console': [
-//         'warn',
-//         {
-//           allow: ['warn', 'error'],
-//         },
-//       ],
-
-//       '@typescript-eslint/consistent-type-imports': [
-//         'warn',
-//         {
-//           prefer: 'type-imports',
-//           fixStyle: 'inline-type-imports',
-//         },
-//       ],
-
-//       '@typescript-eslint/no-unused-vars': [
-//         'warn',
-//         {
-//           argsIgnorePattern: '^_[^_].*$|^_$',
-//           varsIgnorePattern: '^_[^_].*$|^_$',
-//           caughtErrorsIgnorePattern: '^_[^_].*$|^_$',
-//         },
-//       ],
-
-//       '@typescript-eslint/no-non-null-assertion': ['off'],
-//       '@typescript-eslint/no-explicit-any': ['warn'],
-//     },
-//   },
-// ]
-
 // export default eslintConfig
 
 // @ts-check
 
 import eslint from '@eslint/js'
-import { defineConfig } from 'eslint/config'
+import { defineConfig, globalIgnores } from 'eslint/config'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
+  [globalIgnores(['dist/', 'node_modules/'])],
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {

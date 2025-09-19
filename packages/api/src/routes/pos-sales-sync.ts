@@ -1,5 +1,5 @@
 import { AppError, ErrorCode } from '@happy-bar/types'
-import { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { POSSalesSyncService } from '../services/pos-sales-sync'
 
@@ -66,7 +66,9 @@ const posSalesSync: FastifyPluginAsync = async (fastify) => {
               completedAt: new Date(),
             },
           })
-        } catch (_error) {}
+        } catch (_error) {
+          // Ignore error
+        }
         return {
           integrationId: integration.id,
           integrationName: integration.name,
