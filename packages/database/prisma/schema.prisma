@@ -18,6 +18,8 @@ model Location {
   address            String?
   description        String?
   isActive           Boolean                  @default(true)
+  businessCloseTime  String?                  // Time in HH:mm format (e.g., "02:00" for 2 AM)
+  timezone           String?                  // IANA timezone (e.g., "America/New_York")
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
   alertRules         AlertRule[]

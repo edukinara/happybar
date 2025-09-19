@@ -35,6 +35,7 @@ import {
   type Location,
   type LocationsResponse,
 } from '@/lib/api/locations'
+import { COMMON_TIMEZONES, DEFAULT_BUSINESS_CLOSE_TIMES } from '@happy-bar/types'
 import {
   Building2,
   ChevronDown,
@@ -65,6 +66,8 @@ function LocationsSettings() {
     type: 'STORAGE' as keyof typeof locationTypeNames,
     address: '',
     description: '',
+    businessCloseTime: '',
+    timezone: '',
   })
 
   const [editFormData, setEditFormData] = useState({
@@ -73,6 +76,8 @@ function LocationsSettings() {
     type: 'STORAGE' as keyof typeof locationTypeNames,
     address: '',
     description: '',
+    businessCloseTime: '',
+    timezone: '',
   })
 
   useEffect(() => {
@@ -105,6 +110,8 @@ function LocationsSettings() {
         type: formData.type,
         address: formData.address || undefined,
         description: formData.description || undefined,
+        businessCloseTime: formData.businessCloseTime || undefined,
+        timezone: formData.timezone || undefined,
       })
       toast.success('Location created successfully')
       setIsCreateDialogOpen(false)
@@ -114,6 +121,8 @@ function LocationsSettings() {
         type: 'STORAGE',
         address: '',
         description: '',
+        businessCloseTime: '',
+        timezone: '',
       })
       fetchLocations()
     } catch (error) {
@@ -135,6 +144,8 @@ function LocationsSettings() {
         type: editFormData.type,
         address: editFormData.address || undefined,
         description: editFormData.description || undefined,
+        businessCloseTime: editFormData.businessCloseTime || undefined,
+        timezone: editFormData.timezone || undefined,
       })
       toast.success('Location updated successfully')
       setIsEditDialogOpen(false)
@@ -179,6 +190,8 @@ function LocationsSettings() {
       type: location.type as keyof typeof locationTypeNames,
       address: location.address || '',
       description: location.description || '',
+      businessCloseTime: location.businessCloseTime || '',
+      timezone: location.timezone || '',
     })
     setIsEditDialogOpen(true)
   }
@@ -307,6 +320,43 @@ function LocationsSettings() {
                       }
                       placeholder='Description of this location...'
                     />
+                  </div>
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='business-close-time'>Business Close Time (Optional)</Label>
+                      <Input
+                        id='business-close-time'
+                        type='time'
+                        value={formData.businessCloseTime}
+                        onChange={(e) =>
+                          setFormData({ ...formData, businessCloseTime: e.target.value })
+                        }
+                        placeholder='02:00'
+                      />
+                      <p className='text-xs text-muted-foreground'>
+                        When your business day ends (e.g., 2:00 AM for bars)
+                      </p>
+                    </div>
+                    <div className='space-y-2'>
+                      <Label htmlFor='location-timezone'>Timezone (Optional)</Label>
+                      <Select
+                        value={formData.timezone}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, timezone: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select timezone' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COMMON_TIMEZONES.map((tz) => (
+                            <SelectItem key={tz} value={tz}>
+                              {tz.replace('_', ' ')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
@@ -458,6 +508,18 @@ function LocationsSettings() {
                             {location.address || 'Not specified'}
                           </span>
                         </div>
+                        <div>
+                          <span className='text-muted-foreground'>Business Close:</span>
+                          <span className='ml-2'>
+                            {location.businessCloseTime || 'Not specified'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className='text-muted-foreground'>Timezone:</span>
+                          <span className='ml-2'>
+                            {location.timezone?.replace('_', ' ') || 'Not specified'}
+                          </span>
+                        </div>
                       </div>
                       {location.description && (
                         <div className='text-sm'>
@@ -556,6 +618,43 @@ function LocationsSettings() {
                   }
                   placeholder='Description of this location...'
                 />
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='edit-business-close-time'>Business Close Time (Optional)</Label>
+                  <Input
+                    id='edit-business-close-time'
+                    type='time'
+                    value={editFormData.businessCloseTime}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, businessCloseTime: e.target.value })
+                    }
+                    placeholder='02:00'
+                  />
+                  <p className='text-xs text-muted-foreground'>
+                    When your business day ends (e.g., 2:00 AM for bars)
+                  </p>
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='edit-location-timezone'>Timezone (Optional)</Label>
+                  <Select
+                    value={editFormData.timezone}
+                    onValueChange={(value) =>
+                      setEditFormData({ ...editFormData, timezone: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select timezone' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_TIMEZONES.map((tz) => (
+                        <SelectItem key={tz} value={tz}>
+                          {tz.replace('_', ' ')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <DialogFooter>

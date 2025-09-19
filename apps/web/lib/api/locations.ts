@@ -39,6 +39,8 @@ export interface CreateLocationRequest {
   type: string
   address?: string
   description?: string
+  businessCloseTime?: string
+  timezone?: string
 }
 
 export interface UpdateLocationRequest {
@@ -47,6 +49,8 @@ export interface UpdateLocationRequest {
   type?: string
   address?: string
   description?: string
+  businessCloseTime?: string
+  timezone?: string
   isActive?: boolean
 }
 

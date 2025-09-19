@@ -1,11 +1,12 @@
 // API Types
 
 import type { HappyBarRole } from './auth'
-import { ProductContainer } from './product'
+import type { ProductContainer } from './product'
 
 export * from './adjustment'
 export * from './alert'
 export * from './auth'
+export * from './business-day'
 export * from './inventory'
 export * from './inventory-count'
 export type { InventoryCount as InventoryCountType } from './inventory-count'
@@ -535,7 +536,7 @@ export interface AutumnLocations {
   overage_allowed: boolean
 }
 
-export interface AutumnMetadata {}
+export type AutumnMetadata = object
 
 export interface UserProfile {
   id: string

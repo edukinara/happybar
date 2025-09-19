@@ -15,6 +15,8 @@ export interface Location {
   type: LocationType
   address: string | null
   description: string | null
+  businessCloseTime: string | null
+  timezone: string | null
   isActive: boolean
   createdAt: Date
   updatedAt: Date

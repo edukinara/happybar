@@ -76,12 +76,14 @@ export const locationsRoutes: FastifyPluginAsync = async function (fastify) {
       preHandler: [authMiddleware, requirePermission('admin', 'locations')],
     },
     async (request: any, reply) => {
-      const { name, code, type, address, description } = request.body as {
+      const { name, code, type, address, description, businessCloseTime, timezone } = request.body as {
         name: string
         code?: string
         type?: LocationType
         address?: string
         description?: string
+        businessCloseTime?: string
+        timezone?: string
       }
 
       try {
@@ -93,6 +95,8 @@ export const locationsRoutes: FastifyPluginAsync = async function (fastify) {
             type: type || LocationType.STORAGE,
             address: address?.trim(),
             description: description?.trim(),
+            businessCloseTime: businessCloseTime?.trim(),
+            timezone: timezone?.trim(),
           },
         })
 
@@ -133,12 +137,14 @@ export const locationsRoutes: FastifyPluginAsync = async function (fastify) {
     },
     async (request: any, reply) => {
       const { id } = request.params as { id: string }
-      const { name, code, type, address, description } = request.body as {
+      const { name, code, type, address, description, businessCloseTime, timezone } = request.body as {
         name?: string
         code?: string
         type?: LocationType
         address?: string
         description?: string
+        businessCloseTime?: string
+        timezone?: string
       }
 
       try {
@@ -149,6 +155,10 @@ export const locationsRoutes: FastifyPluginAsync = async function (fastify) {
         if (address !== undefined) updateData.address = address?.trim() || null
         if (description !== undefined)
           updateData.description = description?.trim() || null
+        if (businessCloseTime !== undefined)
+          updateData.businessCloseTime = businessCloseTime?.trim() || null
+        if (timezone !== undefined)
+          updateData.timezone = timezone?.trim() || null
 
         const location = await fastify.prisma.location.update({
           where: {
