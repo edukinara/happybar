@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { inventoryApi, type InventoryTransaction } from '@/lib/api/inventory'
+import { createLocationTimeConfig } from '@/lib/utils/business-day'
 import type { InventoryLevel } from '@happy-bar/types'
 import {
   ArrowDownRight,
@@ -118,6 +119,70 @@ export function TransactionHistoryDrawer({
     }
   }
 
+  // Helper function to get business day key for a transaction
+  const getBusinessDayKey = (transactionDate: string) => {
+    const locationConfig = createLocationTimeConfig(inventoryItem.location)
+
+    if (!locationConfig?.businessCloseTime || !locationConfig?.timezone) {
+      // Fallback to calendar day if no business day settings
+      return new Date(transactionDate).toDateString()
+    }
+
+    try {
+      // Parse business close time
+      const timeParts = locationConfig.businessCloseTime.split(':')
+      if (timeParts.length !== 2 || !timeParts[0] || !timeParts[1]) {
+        return new Date(transactionDate).toDateString()
+      }
+
+      const closeHour = parseInt(timeParts[0], 10)
+      const closeMinute = parseInt(timeParts[1], 10)
+
+      if (
+        isNaN(closeHour) ||
+        isNaN(closeMinute) ||
+        closeHour < 0 ||
+        closeHour > 23 ||
+        closeMinute < 0 ||
+        closeMinute > 59
+      ) {
+        return new Date(transactionDate).toDateString()
+      }
+
+      const txDate = new Date(transactionDate)
+
+      if (closeHour === 0 && closeMinute === 0) {
+        // Standard calendar day
+        return txDate.toDateString()
+      }
+
+      // For business days that span across calendar days
+      // Determine which business day this transaction belongs to
+      const todayCloseTime = new Date(txDate)
+      todayCloseTime.setHours(closeHour, closeMinute, 0, 0)
+
+      let businessDayStart: Date
+
+      if (txDate < todayCloseTime) {
+        // Transaction happened before today's close time
+        // So it belongs to the business day that started yesterday
+        businessDayStart = new Date(txDate)
+        businessDayStart.setDate(businessDayStart.getDate() - 1)
+        businessDayStart.setHours(closeHour, closeMinute, 0, 0)
+      } else {
+        // Transaction happened after today's close time
+        // So it belongs to the business day that started today
+        businessDayStart = new Date(txDate)
+        businessDayStart.setHours(closeHour, closeMinute, 0, 0)
+      }
+
+      return businessDayStart.toDateString()
+    } catch {
+      // Fallback to calendar day on any error
+      return new Date(transactionDate).toDateString()
+    }
+  }
+
   const formatDateGroup = (dateString: string) => {
     const date = new Date(dateString)
     const today = new Date()
@@ -143,12 +208,12 @@ export function TransactionHistoryDrawer({
       ? transactions
       : transactions.filter((t) => t.type === activeTab)
 
-  // Group transactions by date
+  // Group transactions by business day
   const groupedTransactions = useMemo(() => {
     const groups = new Map<string, InventoryTransaction[]>()
 
     filteredTransactions.forEach((transaction) => {
-      const dateKey = new Date(transaction.date).toDateString()
+      const dateKey = getBusinessDayKey(transaction.date)
       if (!groups.has(dateKey)) {
         groups.set(dateKey, [])
       }
@@ -158,14 +223,33 @@ export function TransactionHistoryDrawer({
     // Sort groups by date (newest first) and sort transactions within each group by time (newest first)
     return Array.from(groups.entries())
       .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-      .map(([dateKey, transactions]) => ({
-        dateKey,
-        dateLabel: formatDateGroup(dateKey),
-        transactions: transactions.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        ),
-      }))
-  }, [filteredTransactions])
+      .map(([dateKey, transactions]) => {
+        // Calculate sale statistics for this group
+        const saleTransactions = transactions.filter((t) => t.type === 'sale')
+        const totalSaleQuantity = saleTransactions.reduce(
+          (sum, t) => sum + Math.abs(t.quantity),
+          0
+        )
+        const totalRevenue = saleTransactions.reduce(
+          (sum, t) => sum + (t.reference ? parseFloat(t.reference) : 0),
+          0
+        )
+        const saleCount = saleTransactions.length
+
+        return {
+          dateKey,
+          dateLabel: formatDateGroup(dateKey),
+          transactions: transactions.sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          ),
+          saleStats: {
+            totalQuantity: totalSaleQuantity,
+            totalRevenue: totalRevenue,
+            saleCount: saleCount,
+          },
+        }
+      })
+  }, [filteredTransactions, inventoryItem.location])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -247,13 +331,47 @@ export function TransactionHistoryDrawer({
                         <div key={group.dateKey} className='relative'>
                           {/* Sticky Date Header */}
                           <div className='sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 py-2 mb-4'>
-                            <h3 className='font-semibold text-[16px] text-foreground'>
-                              {group.dateLabel}
-                            </h3>
-                            <p className='text-[14px] text-muted-foreground'>
-                              {group.transactions.length} transaction
-                              {group.transactions.length !== 1 ? 's' : ''}
-                            </p>
+                            <div className='flex items-center justify-between'>
+                              <div>
+                                <h3 className='font-semibold text-[16px] text-foreground'>
+                                  {group.dateLabel}
+                                </h3>
+                                <p className='text-[14px] text-muted-foreground'>
+                                  {group.transactions.length} transaction
+                                  {group.transactions.length !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                              {group.saleStats.saleCount > 0 && (
+                                <div className='text-right'>
+                                  <div className='text-[14px] font-medium text-red-600'>
+                                    -{group.saleStats.totalQuantity.toFixed(2)}{' '}
+                                    {group.saleStats.totalQuantity !== 1
+                                      ? pluralize(
+                                          inventoryItem.product.container ||
+                                            'unit'
+                                        )
+                                      : inventoryItem.product.container ||
+                                        'unit'}{' '}
+                                  </div>
+                                  <div className='text-[12px] text-muted-foreground'>
+                                    {group.saleStats.saleCount} sale
+                                    {group.saleStats.saleCount !== 1 ? 's' : ''}
+                                    {group.saleStats.totalRevenue > 0 && (
+                                      <span className='ml-1'>
+                                        • $
+                                        {group.saleStats.totalRevenue.toLocaleString(
+                                          undefined,
+                                          {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                          }
+                                        )}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
 
                           {/* Transactions for this date */}

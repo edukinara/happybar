@@ -1,12 +1,14 @@
 'use client'
 
 import { LocationFilter } from '@/components/dashboard/LocationFilter'
-import DateRangePicker, { dateToStartOrEnd } from '@/components/dateRangePicker'
+import DateRangePicker from '@/components/dateRangePicker'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { analyticsApi } from '@/lib/api/analytics'
 import { cn } from '@/lib/utils'
+import { convertToBusinessDayRange, createLocationTimeConfig } from '@/lib/utils/business-day'
+import { useLocations } from '@/lib/queries'
 import { subDays } from 'date-fns'
 import {
   Activity,
@@ -21,7 +23,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { type DateRange } from 'react-day-picker'
 
 // Components
@@ -54,12 +56,45 @@ export default function AnalyticsPage() {
     from: subDays(new Date(), 7),
     to: new Date(),
   } as DateRange)
-  const [dateFilter, setDateFilter] = useState<DateRange>({
-    from: dateToStartOrEnd(subDays(new Date(), 7), true, 3),
-    to: dateToStartOrEnd(new Date(), false, 3),
-  } as DateRange)
+  // Memoize initial date filter to prevent recreation on every render
+  const initialDateFilter = useMemo(() => {
+    const sevenDaysAgo = subDays(new Date(), 7)
+    const today = new Date()
+    return {
+      from: new Date(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth(), sevenDaysAgo.getDate(), 0, 0, 0, 0),
+      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
+    } as DateRange
+  }, [])
+
+  const [dateFilter, setDateFilter] = useState<DateRange>(initialDateFilter)
   const [updating, setUpdating] = useState(false)
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
+
+  // Get locations data for business day calculations
+  const { data: locations = [] } = useLocations()
+
+  // Helper function to convert date range to business day range
+  const getFilteredDateRange = useCallback((newDateRange: DateRange, locationId?: string) => {
+    const selectedLocation = locationId
+      ? locations.find(loc => loc.id === locationId)
+      : undefined
+
+    const locationConfig = selectedLocation
+      ? createLocationTimeConfig(selectedLocation)
+      : null
+
+    const businessDayRange = convertToBusinessDayRange(newDateRange, locationConfig)
+
+    if (businessDayRange) {
+      return businessDayRange
+    } else {
+      // Fallback to standard calendar day boundaries if business day conversion fails
+      return {
+        from: new Date(newDateRange.from!.getFullYear(), newDateRange.from!.getMonth(), newDateRange.from!.getDate(), 0, 0, 0, 0),
+        to: new Date(newDateRange.to!.getFullYear(), newDateRange.to!.getMonth(), newDateRange.to!.getDate(), 23, 59, 59, 999),
+      } as DateRange
+    }
+  }, [locations])
 
   // Load analytics data function
   const loadAnalytics = async () => {
@@ -204,7 +239,14 @@ export default function AnalyticsPage() {
             <div className='flex flex-wrap items-center gap-4'>
               <LocationFilter
                 selectedLocationId={selectedLocationId}
-                onLocationChange={setSelectedLocationId}
+                onLocationChange={(locationId) => {
+                  setSelectedLocationId(locationId)
+                  // Update date filter when location changes
+                  if (dateRange.from && dateRange.to) {
+                    const filteredRange = getFilteredDateRange(dateRange, locationId)
+                    setDateFilter(filteredRange)
+                  }
+                }}
                 placeholder='All Locations'
               />
 
@@ -214,14 +256,17 @@ export default function AnalyticsPage() {
                 setRange={(range) => {
                   if (range?.from && range?.to) {
                     setDateRange(range as DateRange)
+                    // Convert to business day range and update filter immediately
+                    const filteredRange = getFilteredDateRange(range as DateRange, selectedLocationId)
+                    setDateFilter(filteredRange)
                   }
                 }}
                 setDateFilter={(newFilter) => {
+                  // Keep for compatibility with DateRangePicker interface
                   if (newFilter?.from && newFilter?.to) {
                     setDateFilter(newFilter as DateRange)
                   }
                 }}
-                offSet={3}
               />
 
               {/* Update Button */}
