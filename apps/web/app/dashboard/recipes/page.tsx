@@ -32,14 +32,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
   Table,
   TableBody,
   TableCell,
@@ -99,6 +91,7 @@ export default function RecipesPage() {
     displayUnit: '', // Unit selected by user (e.g., ml, oz, etc.)
   })
   const [productSelectorOpen, setProductSelectorOpen] = useState(false)
+  const [productSearchQuery, setProductSearchQuery] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -243,6 +236,7 @@ export default function RecipesPage() {
     })
     setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
     setProductSelectorOpen(false)
+    setProductSearchQuery('')
   }
 
   const removeIngredient = (productId: string) => {
@@ -261,6 +255,7 @@ export default function RecipesPage() {
     })
     setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
     setProductSelectorOpen(false)
+    setProductSearchQuery('')
     setEditingRecipe(null)
   }
 
@@ -410,52 +405,73 @@ export default function RecipesPage() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className='w-[400px] p-0'>
-                          <Command>
-                            <CommandInput placeholder='Search products...' className='border-b' />
-                            <ScrollArea className='h-[250px]'>
-                              <CommandList>
-                                <CommandEmpty className='py-6 text-center text-sm'>No product found.</CommandEmpty>
-                                <CommandGroup className='p-2'>
-                                  {products
+                          <div className='flex flex-col'>
+                            <div className='flex items-center border-b px-3'>
+                              <Search className='mr-2 h-4 w-4 shrink-0 opacity-50' />
+                              <Input
+                                placeholder='Search products...'
+                                value={productSearchQuery}
+                                onChange={(e) => setProductSearchQuery(e.target.value)}
+                                className='border-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0'
+                              />
+                            </div>
+                            <ScrollArea className='h-[250px]' type='always'>
+                              <div className='p-2 pb-4'>
+                                {(() => {
+                                  const filteredProducts = products
                                     .filter(
                                       (product) =>
                                         !formData.items.some(
                                           (item) => item.productId === product.id
                                         )
                                     )
-                                    .map((product) => (
-                                      <CommandItem
-                                        key={product.id}
-                                        value={`${product.name} ${product.unitSize}${product.unit}`}
-                                        onSelect={() => {
-                                          setNewIngredient({
-                                            ...newIngredient,
-                                            productId: product.id,
-                                          })
-                                          setProductSelectorOpen(false)
-                                        }}
-                                        className='flex items-center gap-2 px-2 py-3 cursor-pointer'
-                                      >
-                                        <Check
-                                          className={`h-4 w-4 ${
-                                            newIngredient.productId === product.id
-                                              ? 'opacity-100'
-                                              : 'opacity-0'
-                                          }`}
-                                        />
-                                        <div className='flex flex-col flex-1 min-w-0'>
-                                          <span className='font-medium truncate'>{product.name}</span>
-                                          <span className='text-sm text-muted-foreground truncate'>
-                                            {product.unitSize}{product.unit}
-                                            {product.category?.name && ` • ${product.category.name}`}
-                                          </span>
-                                        </div>
-                                      </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                              </CommandList>
+                                    .filter((product) =>
+                                      productSearchQuery === '' ||
+                                      product.name.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
+                                      product.category?.name?.toLowerCase().includes(productSearchQuery.toLowerCase())
+                                    )
+
+                                  if (filteredProducts.length === 0) {
+                                    return (
+                                      <div className='py-6 text-center text-sm text-muted-foreground'>
+                                        No product found.
+                                      </div>
+                                    )
+                                  }
+
+                                  return filteredProducts.map((product) => (
+                                    <div
+                                      key={product.id}
+                                      onClick={() => {
+                                        setNewIngredient({
+                                          ...newIngredient,
+                                          productId: product.id,
+                                        })
+                                        setProductSelectorOpen(false)
+                                        setProductSearchQuery('')
+                                      }}
+                                      className='flex items-center gap-2 px-2 py-3 cursor-pointer rounded-sm hover:bg-accent hover:text-accent-foreground mb-1'
+                                    >
+                                      <Check
+                                        className={`h-4 w-4 ${
+                                          newIngredient.productId === product.id
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
+                                        }`}
+                                      />
+                                      <div className='flex flex-col flex-1 min-w-0'>
+                                        <span className='font-medium truncate'>{product.name}</span>
+                                        <span className='text-sm text-muted-foreground truncate'>
+                                          {product.unitSize}{product.unit}
+                                          {product.category?.name && ` • ${product.category.name}`}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))
+                                })()}
+                              </div>
                             </ScrollArea>
-                          </Command>
+                          </div>
                         </PopoverContent>
                       </Popover>
                     </div>
