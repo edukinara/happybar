@@ -1,5 +1,6 @@
 'use client'
 
+import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,19 +59,11 @@ export default function OrderDetailPage() {
   const params = useParams()
   const orderId = params.id as string
   const router = useRouter()
+  const { showConfirm } = useAlertDialog()
 
   // Use our query hooks
   const { data: orderResponse, isLoading: loading, error } = useOrder(orderId)
   const updateOrderMutation = useUpdateOrder()
-
-  // Debug logging
-  console.log('📦 Order query state:', { 
-    orderId, 
-    loading, 
-    hasData: !!orderResponse, 
-    dataStructure: orderResponse ? Object.keys(orderResponse) : null,
-    order: orderResponse?.data 
-  })
 
   // Local UI state
   const [editing, setEditing] = useState(false)
@@ -120,20 +113,18 @@ export default function OrderDetailPage() {
       updates.receivedDate = new Date().toISOString()
     }
 
-    console.log('🚀 Updating order status:', { orderId: order.id, updates })
     updateOrderMutation.mutate({ id: order.id, data: updates })
   }
 
   const saveNotes = async () => {
     if (!order) return
 
-    console.log('💾 Saving notes:', { orderId: order.id, notes })
     updateOrderMutation.mutate(
       { id: order.id, data: { notes } },
       {
         onSuccess: () => {
-          console.log('✅ Notes saved successfully')
           setEditing(false)
+          toast.success('Notes saved')
         },
       }
     )
@@ -227,8 +218,23 @@ export default function OrderDetailPage() {
         break
 
       case 'SENT':
+        // No action buttons for SENT status - handled by the receiving mode
+        break
+
       case 'PARTIALLY_RECEIVED':
-        // No action buttons for these statuses - handled by the receiving mode
+        actions.push({
+          label: 'Close Order',
+          icon: Check,
+          action: () => {
+            showConfirm(
+              'Are you sure you want to close this order? This will mark it as complete even though not all items were received.',
+              () => updateOrderStatus('RECEIVED'),
+              'Close Order',
+              'Close Order'
+            )
+          },
+          variant: 'default' as const,
+        })
         break
     }
 

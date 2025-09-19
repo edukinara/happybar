@@ -15,6 +15,7 @@ import {
   ThemedHeading,
   ThemedText,
 } from '../components/themed'
+import { APP_CONFIG } from '../constants/config'
 import { useAuthStore } from '../stores/authStore'
 
 export function SettingsScreen() {
@@ -364,9 +365,9 @@ export function SettingsScreen() {
               >
                 Happy Bar Mobile
               </ThemedText>
-              {/* <ThemedText variant='caption' color='onGradientMuted'>
-                Version 1.0.0 • Build 1
-              </ThemedText> */}
+              <ThemedText variant='caption' color='onGradientMuted'>
+                Version {APP_CONFIG.VERSION}
+              </ThemedText>
               <ThemedText
                 variant='caption'
                 color='onGradientMuted'

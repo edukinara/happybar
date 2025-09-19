@@ -183,6 +183,7 @@ export default function OrderDetailScreen({
     order?.status === 'SENT' || order?.status === 'PARTIALLY_RECEIVED'
   const canSendOrder = order?.status === 'DRAFT'
   const canCancelOrder = order?.status === 'DRAFT' || order?.status === 'SENT'
+  const canCloseOrder = order?.status === 'PARTIALLY_RECEIVED'
 
   if (loading) {
     return (
@@ -526,6 +527,36 @@ export default function OrderDetailScreen({
             >
               <ThemedText variant='body' color='onGradient' weight='semibold'>
                 Mark as Fully Received
+              </ThemedText>
+            </ThemedButton>
+          )}
+
+          {canCloseOrder && (
+            <ThemedButton
+              variant='primary'
+              size='lg'
+              onPress={() => {
+                Alert.alert(
+                  'Close Order',
+                  'Are you sure you want to close this order? This will mark it as complete even though not all items were received.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Close Order',
+                      style: 'default',
+                      onPress: () => handleStatusChange('RECEIVED'),
+                    },
+                  ]
+                )
+              }}
+              fullWidth
+              icon={
+                <Ionicons name='checkmark-circle' size={20} color='white' />
+              }
+              className='bg-blue-600 dark:bg-blue-600'
+            >
+              <ThemedText variant='body' color='onGradient' weight='semibold'>
+                Close Order
               </ThemedText>
             </ThemedButton>
           )}
