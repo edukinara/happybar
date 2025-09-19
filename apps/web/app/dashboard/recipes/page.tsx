@@ -175,6 +175,7 @@ export default function RecipesPage() {
       setSubmitting(true)
       await recipesApi.updateRecipe(editingRecipe.id, formData)
       toast.success('Recipe updated successfully')
+      setShowCreateDialog(false)
       setEditingRecipe(null)
       resetForm()
       fetchData()
