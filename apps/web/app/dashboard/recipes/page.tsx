@@ -410,11 +410,11 @@ export default function RecipesPage() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className='w-[400px] p-0'>
-                          <Command>
-                            <CommandInput placeholder='Search products...' />
-                            <CommandEmpty>No product found.</CommandEmpty>
-                            <CommandList>
-                              <CommandGroup>
+                          <Command className='h-[300px]'>
+                            <CommandInput placeholder='Search products...' className='border-b' />
+                            <CommandList className='max-h-[250px] overflow-y-auto'>
+                              <CommandEmpty className='py-6 text-center text-sm'>No product found.</CommandEmpty>
+                              <CommandGroup className='p-2'>
                                 {products
                                   .filter(
                                     (product) =>
@@ -433,17 +433,18 @@ export default function RecipesPage() {
                                         })
                                         setProductSelectorOpen(false)
                                       }}
+                                      className='flex items-center gap-2 px-2 py-3 cursor-pointer'
                                     >
                                       <Check
-                                        className={`mr-2 h-4 w-4 ${
+                                        className={`h-4 w-4 ${
                                           newIngredient.productId === product.id
                                             ? 'opacity-100'
                                             : 'opacity-0'
                                         }`}
                                       />
-                                      <div className='flex flex-col'>
-                                        <span className='font-medium'>{product.name}</span>
-                                        <span className='text-sm text-muted-foreground'>
+                                      <div className='flex flex-col flex-1 min-w-0'>
+                                        <span className='font-medium truncate'>{product.name}</span>
+                                        <span className='text-sm text-muted-foreground truncate'>
                                           {product.unitSize}{product.unit}
                                           {product.category?.name && ` • ${product.category.name}`}
                                         </span>
