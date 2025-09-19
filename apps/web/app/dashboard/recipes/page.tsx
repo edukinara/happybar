@@ -34,7 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getProducts } from '@/lib/api/products'
+import { getProducts, getProductUnits, type ProductUnits } from '@/lib/api/products'
 import { recipesApi } from '@/lib/api/recipes'
 import type {
   CreateRecipeRequest,
@@ -56,6 +56,7 @@ import { toast } from 'sonner'
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [products, setProducts] = useState<InventoryProduct[]>([])
+  const [units, setUnits] = useState<ProductUnits | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -79,6 +80,7 @@ export default function RecipesPage() {
     productId: '',
     quantity: 0,
     displayQuantity: 0, // What the user enters (e.g., 60ml)
+    displayUnit: '', // Unit selected by user (e.g., ml, oz, etc.)
   })
 
   useEffect(() => {
@@ -88,18 +90,20 @@ export default function RecipesPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [recipesData, productsData] = await Promise.all([
+      const [recipesData, productsData, unitsData] = await Promise.all([
         recipesApi.getRecipes({
           page: pagination.page,
           limit: pagination.limit,
           search: searchTerm || undefined,
         }),
         getProducts(),
+        getProductUnits(),
       ])
 
       setRecipes(recipesData.recipes)
       setPagination(recipesData.pagination)
       setProducts(productsData.products)
+      setUnits(unitsData)
     } catch (error) {
       console.error('Failed to fetch data:', error)
       toast.error('Failed to load recipes')
@@ -184,8 +188,8 @@ export default function RecipesPage() {
   }
 
   const addIngredient = () => {
-    if (!newIngredient.productId || newIngredient.displayQuantity <= 0) {
-      toast.error('Please select a product and enter a positive quantity')
+    if (!newIngredient.productId || newIngredient.displayQuantity <= 0 || !newIngredient.displayUnit) {
+      toast.error('Please select a product, enter a quantity, and select a unit')
       return
     }
 
@@ -198,7 +202,7 @@ export default function RecipesPage() {
       return
     }
 
-    // Get the selected product to calculate the fraction
+    // Get the selected product
     const selectedProduct = products.find(
       (p) => p.id === newIngredient.productId
     )
@@ -207,21 +211,20 @@ export default function RecipesPage() {
       return
     }
 
-    // Calculate the fraction: displayQuantity / productUnitQuantity
-    const fractionalQuantity =
-      newIngredient.displayQuantity / selectedProduct.unitSize
-
+    // Store the ingredient with the selected unit and quantity
+    // The backend will handle the conversion
     setFormData({
       ...formData,
       items: [
         ...formData.items,
         {
           productId: newIngredient.productId,
-          quantity: fractionalQuantity,
-        },
+          quantity: newIngredient.displayQuantity,
+          unit: newIngredient.displayUnit, // Store the selected unit
+        } as any,
       ],
     })
-    setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0 })
+    setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
   }
 
   const removeIngredient = (productId: string) => {
@@ -238,7 +241,7 @@ export default function RecipesPage() {
       isActive: true,
       items: [],
     })
-    setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0 })
+    setNewIngredient({ productId: '', quantity: 0, displayQuantity: 0, displayUnit: '' })
     setEditingRecipe(null)
   }
 
@@ -252,11 +255,17 @@ export default function RecipesPage() {
   const getDisplayQuantity = (item: {
     productId: string
     quantity: number
+    unit?: string
   }) => {
     const product = products.find((p) => p.id === item.productId)
     if (!product) return item.quantity.toString()
 
-    // Convert back to display quantity: fractionalQuantity * productUnitSize
+    // If the item has a unit stored, display it as entered
+    if (item.unit) {
+      return `${item.quantity}${item.unit}`
+    }
+
+    // Otherwise use the legacy calculation for existing recipes
     const displayAmount = item.quantity * product.unitSize
     return `${+displayAmount.toFixed(2)}${product.unit}`
   }
@@ -396,7 +405,7 @@ export default function RecipesPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className='flex flex-col'>
+                    <div className='flex gap-2'>
                       <Input
                         type='number'
                         min='0.01'
@@ -408,23 +417,36 @@ export default function RecipesPage() {
                             displayQuantity: parseFloat(e.target.value) || 0,
                           })
                         }
-                        placeholder={`Amount${newIngredient.productId ? ` (${products.find((p) => p.id === newIngredient.productId)?.unit || ''})` : ''}`}
-                        className='w-32'
+                        placeholder='Amount'
+                        className='w-24'
                       />
-                      {newIngredient.productId &&
-                        newIngredient.displayQuantity > 0 && (
-                          <span className='text-xs text-muted-foreground mt-1'>
-                            ={' '}
-                            {(
-                              (newIngredient.displayQuantity /
-                                (products.find(
-                                  (p) => p.id === newIngredient.productId
-                                )?.unitSize || 1)) *
-                              100
-                            ).toFixed(1)}
-                            % of unit
-                          </span>
-                        )}
+                      <Select
+                        value={newIngredient.displayUnit}
+                        onValueChange={(value) =>
+                          setNewIngredient({
+                            ...newIngredient,
+                            displayUnit: value,
+                          })
+                        }
+                      >
+                        <SelectTrigger className='w-32'>
+                          <SelectValue placeholder='Unit' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {units && Object.entries(units.categories).map(([category, unitList]) => (
+                            <div key={category}>
+                              <div className='px-2 py-1 text-sm font-semibold text-muted-foreground'>
+                                {category}
+                              </div>
+                              {unitList.map((unit) => (
+                                <SelectItem key={unit} value={unit}>
+                                  {unit}
+                                </SelectItem>
+                              ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button type='button' onClick={addIngredient} size='sm'>
                       <Plus className='size-4' />

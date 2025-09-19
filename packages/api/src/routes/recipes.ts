@@ -2,6 +2,7 @@ import { PrismaClient } from '@happy-bar/database'
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { authMiddleware, requirePermission, requireAnyPermission, AuthenticatedRequest } from '../middleware/auth-simple'
+import { UnitConverter } from '../utils/unit-conversion'
 
 const prisma = new PrismaClient()
 
@@ -156,6 +157,7 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
             z.object({
               productId: z.string(),
               quantity: z.number().positive('Quantity must be positive'),
+              unit: z.string().optional(), // Unit for conversion
             })
           )
           .min(1, 'Recipe must have at least one ingredient'),
@@ -182,11 +184,19 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
           id: { in: productIds },
           organizationId: organization.id,
         },
+        select: {
+          id: true,
+          unit: true,
+          unitSize: true,
+        },
       })
 
       if (products.length !== productIds.length) {
         return reply.code(400).send({ error: 'Some products not found' })
       }
+
+      // Create a map for easy product lookup
+      const productMap = new Map(products.map(p => [p.id, p]))
 
       // Create recipe with items in transaction
       const result = await prisma.$transaction(async (tx) => {
@@ -200,12 +210,33 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
         })
 
         const recipeItems = await Promise.all(
-          validatedData.items.map((item) =>
-            tx.recipeItem.create({
+          validatedData.items.map((item) => {
+            const product = productMap.get(item.productId)!
+
+            // If a unit is provided and it's different from the product's unit, convert
+            let finalQuantity = item.quantity
+            if (item.unit && item.unit !== product.unit) {
+              const conversion = UnitConverter.convert(
+                item.quantity,
+                item.unit,
+                product.unit,
+                product.unitSize
+              )
+              // Store as fraction of product unit
+              finalQuantity = conversion.convertedAmount / product.unitSize
+            } else if (!item.unit) {
+              // If no unit specified, assume it's already in the correct fraction
+              finalQuantity = item.quantity
+            } else {
+              // If unit matches product unit, convert to fraction
+              finalQuantity = item.quantity / product.unitSize
+            }
+
+            return tx.recipeItem.create({
               data: {
                 recipeId: recipe.id,
                 productId: item.productId,
-                quantity: item.quantity,
+                quantity: finalQuantity,
               },
               include: {
                 product: {
@@ -218,7 +249,7 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
                 },
               },
             })
-          )
+          })
         )
 
         return { ...recipe, items: recipeItems }
@@ -253,6 +284,7 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
             z.object({
               productId: z.string(),
               quantity: z.number().positive('Quantity must be positive'),
+              unit: z.string().optional(), // Unit for conversion
             })
           )
           .optional(),
@@ -317,20 +349,49 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
               id: { in: productIds },
               organizationId: organization.id,
             },
+            select: {
+              id: true,
+              unit: true,
+              unitSize: true,
+            },
           })
 
           if (products.length !== productIds.length) {
             throw new Error('Some products not found')
           }
 
-          // Create new items
+          // Create a map for easy product lookup
+          const productMap = new Map(products.map(p => [p.id, p]))
+
+          // Create new items with unit conversion
           const recipeItems = await Promise.all(
-            validatedData.items.map((item) =>
-              tx.recipeItem.create({
+            validatedData.items.map((item) => {
+              const product = productMap.get(item.productId)!
+
+              // If a unit is provided and it's different from the product's unit, convert
+              let finalQuantity = item.quantity
+              if (item.unit && item.unit !== product.unit) {
+                const conversion = UnitConverter.convert(
+                  item.quantity,
+                  item.unit,
+                  product.unit,
+                  product.unitSize
+                )
+                // Store as fraction of product unit
+                finalQuantity = conversion.convertedAmount / product.unitSize
+              } else if (!item.unit) {
+                // If no unit specified, assume it's already in the correct fraction
+                finalQuantity = item.quantity
+              } else {
+                // If unit matches product unit, convert to fraction
+                finalQuantity = item.quantity / product.unitSize
+              }
+
+              return tx.recipeItem.create({
                 data: {
                   recipeId: id,
                   productId: item.productId,
-                  quantity: item.quantity,
+                  quantity: finalQuantity,
                 },
                 include: {
                   product: {
@@ -343,7 +404,7 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
                   },
                 },
               })
-            )
+            })
           )
 
           return { ...recipe, items: recipeItems }

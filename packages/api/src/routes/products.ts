@@ -2,6 +2,7 @@ import { AppError, ErrorCode } from '@happy-bar/types'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { authMiddleware, requirePermission } from '../middleware/auth-simple'
+import { UNIT_CATEGORIES } from '../utils/unit-conversion'
 
 // Validation schemas
 const productSupplierSchema = z.object({
@@ -948,6 +949,17 @@ export async function productRoutes(fastify: FastifyInstance) {
     })
 
     return { success: true, data: { mapping } }
+  })
+
+  // Get available units
+  fastify.get('/units', async (_request, reply) => {
+    return {
+      success: true,
+      data: {
+        categories: UNIT_CATEGORIES,
+        allUnits: [...UNIT_CATEGORIES.Volume, ...UNIT_CATEGORIES.Weight, ...UNIT_CATEGORIES.Container]
+      }
+    }
   })
 
   // Get product mappings

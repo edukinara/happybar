@@ -12,6 +12,15 @@ import type { APIRes } from './types'
 // Re-export types for convenience
 export type { Category, POSProduct, Product, ProductMappingResponse }
 
+export interface ProductUnits {
+  categories: {
+    Volume: string[]
+    Weight: string[]
+    Container: string[]
+  }
+  allUnits: string[]
+}
+
 export interface MappingSuggestion {
   productId: string
   posProductId: string
@@ -293,6 +302,16 @@ export async function deleteProductMapping(
   } else {
     // If no explicit success field, assume success if no error was thrown
     return { success: true }
+  }
+}
+
+export async function getProductUnits(): Promise<ProductUnits> {
+  const response = await apiClient.get<APIRes<ProductUnits>>('/api/products/units')
+
+  if (response && response.success && response.data) {
+    return response.data
+  } else {
+    throw new Error('Failed to fetch product units')
   }
 }
 

@@ -4,7 +4,7 @@
  */
 
 // Base units for volume (all converted to ml)
-const VOLUME_TO_ML: Record<string, number> = {
+export const VOLUME_TO_ML: Record<string, number> = {
   'ml': 1,
   'cl': 10,
   'dl': 100,
@@ -19,7 +19,7 @@ const VOLUME_TO_ML: Record<string, number> = {
 }
 
 // Base units for weight (all converted to grams)
-const WEIGHT_TO_GRAMS: Record<string, number> = {
+export const WEIGHT_TO_GRAMS: Record<string, number> = {
   'g': 1,
   'kg': 1000,
   'oz': 28.3495,   // Weight ounce
@@ -28,7 +28,7 @@ const WEIGHT_TO_GRAMS: Record<string, number> = {
 }
 
 // Container/unit types that represent full inventory depletion
-const FULL_DEPLETION_UNITS = new Set([
+export const FULL_DEPLETION_UNITS = new Set([
   'container',
   'unit',
   'bottle',
@@ -194,3 +194,16 @@ export class UnitConverter {
     ]
   }
 }
+
+// Export unit arrays for frontend use
+export const VOLUME_UNITS = Object.keys(VOLUME_TO_ML)
+export const WEIGHT_UNITS = Object.keys(WEIGHT_TO_GRAMS)
+export const CONTAINER_UNITS = Array.from(FULL_DEPLETION_UNITS)
+export const ALL_UNITS = [...VOLUME_UNITS, ...WEIGHT_UNITS, ...CONTAINER_UNITS]
+
+// Unit categories for UI grouping
+export const UNIT_CATEGORIES = {
+  Volume: VOLUME_UNITS,
+  Weight: WEIGHT_UNITS,
+  Container: CONTAINER_UNITS
+} as const

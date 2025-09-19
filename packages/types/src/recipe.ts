@@ -34,6 +34,7 @@ export interface CreateRecipeRequest {
   items: {
     productId: string
     quantity: number
+    unit?: string // Optional unit for conversion
   }[]
 }
 
@@ -44,6 +45,7 @@ export interface UpdateRecipeRequest {
   items?: {
     productId: string
     quantity: number
+    unit?: string // Optional unit for conversion
   }[]
 }
 
