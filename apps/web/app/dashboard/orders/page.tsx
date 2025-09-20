@@ -69,14 +69,18 @@ export default function OrdersPage() {
   })
 
   // Use query hooks for data fetching
-  const { data: ordersResponse, isLoading: loading, error } = useOrders({
+  const {
+    data: ordersResponse,
+    isLoading: loading,
+    error,
+  } = useOrders({
     status: statusFilter !== 'ALL' ? statusFilter : undefined,
     limit: pagination.limit,
     offset: pagination.offset,
   })
-  
+
   const updateOrderMutation = useUpdateOrder()
-  
+
   const orders = ordersResponse?.data || []
   const totalOrders = ordersResponse?.pagination?.total || 0
 
@@ -110,7 +114,9 @@ export default function OrdersPage() {
       { id: orderId, data: { status: newStatus } },
       {
         onSuccess: () => {
-          toast.success(`Order status updated to ${ORDER_STATUS_LABELS[newStatus]}`)
+          toast.success(
+            `Order status updated to ${ORDER_STATUS_LABELS[newStatus]}`
+          )
         },
         onError: () => {
           toast.error('Failed to update order status')
@@ -141,14 +147,18 @@ export default function OrdersPage() {
         <div className='text-center'>
           <AlertCircle className='h-12 w-12 text-red-500 mx-auto mb-4' />
           <h2 className='text-xl font-semibold mb-2'>Failed to load orders</h2>
-          <p className='text-muted-foreground'>Please try refreshing the page</p>
+          <p className='text-muted-foreground'>
+            Please try refreshing the page
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen brand-gradient relative'>
+    <div className='min-h-full relative -m-4'>
+      {/* Animated background gradient */}
+      <div className='fixed inset-0 brand-gradient -z-10' />
       {/* Floating orbs */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <div className='brand-orb-primary w-96 h-96 absolute -top-20 -left-20 animate-float' />
@@ -156,7 +166,7 @@ export default function OrdersPage() {
         <div className='brand-orb-primary w-64 h-64 absolute bottom-40 left-1/3 animate-float' />
       </div>
 
-      <div className='relative z-10 p-6 space-y-6'>
+      <div className='relative z-10 p-4 space-y-6'>
         {/* Header */}
         <div className='flex items-center justify-between'>
           <div>
@@ -365,7 +375,9 @@ export default function OrdersPage() {
                           {order.status === 'DRAFT' && (
                             <>
                               <Button size='sm' variant='outline' asChild>
-                                <Link href={`/dashboard/orders/${order.id}/edit`}>
+                                <Link
+                                  href={`/dashboard/orders/${order.id}/edit`}
+                                >
                                   <Edit className='size-4 mr-1' />
                                   Edit
                                 </Link>
@@ -395,10 +407,7 @@ export default function OrdersPage() {
               <div className='flex items-center justify-between mt-6'>
                 <p className='text-sm text-muted-foreground'>
                   Showing {pagination.offset + 1} to{' '}
-                  {Math.min(
-                    pagination.offset + pagination.limit,
-                    totalOrders
-                  )}{' '}
+                  {Math.min(pagination.offset + pagination.limit, totalOrders)}{' '}
                   of {totalOrders} orders
                 </p>
                 <div className='flex gap-2'>

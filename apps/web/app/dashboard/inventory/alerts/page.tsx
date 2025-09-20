@@ -1,6 +1,5 @@
 'use client'
 
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { alertsApi, type Alert, type AlertSummary } from '@/lib/api/alerts'
 import { inventoryApi } from '@/lib/api/inventory'
+import { useLocationStore } from '@/lib/stores/location-store'
 import type { InventoryLevel } from '@happy-bar/types'
 import {
   AlertTriangle,
@@ -34,11 +34,11 @@ export default function InventoryAlertsPage() {
   const [lowStockItems, setLowStockItems] = useState<InventoryLevel[]>([])
   const [varianceAlerts, setVarianceAlerts] = useState<Alert[]>([])
   const [alertSummary, setAlertSummary] = useState<AlertSummary | null>(null)
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >()
   const [loading, setLoading] = useState(true)
   const [evaluating, setEvaluating] = useState(false)
+
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
 
   useEffect(() => {
     loadData()
@@ -143,11 +143,6 @@ export default function InventoryAlertsPage() {
           </p>
         </div>
         <div className='flex items-center gap-4'>
-          <LocationFilter
-            selectedLocationId={selectedLocationId}
-            onLocationChange={setSelectedLocationId}
-            placeholder='All locations'
-          />
           <Button asChild variant='outline'>
             <Link href='/dashboard/settings'>
               <Settings className='size-4 mr-2' />

@@ -12,12 +12,14 @@ Product images are displayed throughout the mobile app in various contexts: inve
 
 **Library**: `expo-image` (v2.4.0)
 **Benefits**:
+
 - Built-in disk and memory caching
 - Better memory management than React Native's default Image
 - WebP support for smaller file sizes
 - Progressive loading and blur placeholders
 
 **Configuration**:
+
 ```typescript
 cachePolicy="memory-disk" // Cache in both memory and disk
 contentFit="contain"      // Prevent image distortion
@@ -32,6 +34,7 @@ recyclingKey={uri}        // Optimize for list performance
 **Cache Key**: Uses image URI as unique identifier
 
 **Implementation**:
+
 - Automatic cache cleanup when limits are reached
 - Preloading of critical images (first 10 in lists)
 - Cache size monitoring and management utilities
@@ -39,11 +42,13 @@ recyclingKey={uri}        // Optimize for list performance
 ### 3. Progressive Loading
 
 **Strategy**: Load images based on priority and viewport position
+
 - **High Priority**: Scan modals, detail views (load immediately)
 - **Normal Priority**: Main inventory lists (load with small delay)
 - **Low Priority**: Long lists, off-screen items (load progressively)
 
 **Queue Management**:
+
 - Maximum 5 concurrent image loads globally
 - Queue system for managing load order
 - Index-based delays to prevent network congestion
@@ -51,6 +56,7 @@ recyclingKey={uri}        // Optimize for list performance
 ### 4. Optimized Image Components
 
 #### ProductImage Component
+
 ```typescript
 <ProductImage
   uri={product.image}
@@ -62,12 +68,14 @@ recyclingKey={uri}        // Optimize for list performance
 ```
 
 **Features**:
+
 - Consistent fallback icons
 - Loading state indicators
 - Error handling with graceful degradation
 - Responsive sizing based on container
 
 #### LazyProductImage Component
+
 ```typescript
 <LazyProductImage
   uri={product.image}
@@ -79,6 +87,7 @@ recyclingKey={uri}        // Optimize for list performance
 ```
 
 **Features**:
+
 - Viewport-aware loading
 - Progressive loading based on list position
 - Concurrent load limiting
@@ -90,23 +99,25 @@ Predefined variants for consistent performance across the app:
 
 ```typescript
 ProductImageVariants = {
-  small: { size: 40, borderRadius: 6 },      // Search, history
-  medium: { size: 50, borderRadius: 8 },     // Inventory lists
-  large: { size: 60, borderRadius: 10 },     // Detail views
-  listItem: { priority: 'low' },             // List optimization
-  modal: { priority: 'high', showLoadingIndicator: true }
+  small: { size: 40, borderRadius: 6 }, // Search, history
+  medium: { size: 50, borderRadius: 8 }, // Inventory lists
+  large: { size: 60, borderRadius: 10 }, // Detail views
+  listItem: { priority: 'low' }, // List optimization
+  modal: { priority: 'high', showLoadingIndicator: true },
 }
 ```
 
 ## Performance Metrics
 
 ### Before Optimization
+
 - Image load time: 2-3 seconds per image
 - Memory usage: 150-200MB with image-heavy screens
 - Scroll lag: Noticeable stuttering in long lists
 - Cache misses: ~70% for returning users
 
 ### After Optimization
+
 - Image load time: 200-500ms per image
 - Memory usage: 80-120MB with image-heavy screens
 - Scroll performance: Smooth 60fps scrolling
@@ -151,18 +162,19 @@ ProductImageVariants = {
 ## Monitoring and Debugging
 
 ### Cache Statistics
+
 ```typescript
 import { getImageCacheSize, clearImageCache } from '@/utils/imageConfig'
 
 // Monitor cache usage
 const cacheSize = await getImageCacheSize()
-console.log(`Image cache: ${cacheSize}MB`)
 
 // Clear cache if needed
 await clearImageCache()
 ```
 
 ### Performance Monitoring
+
 - Use React DevTools Profiler for render performance
 - Monitor memory usage with device tools
 - Track image load times with network tab

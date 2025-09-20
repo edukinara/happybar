@@ -49,7 +49,7 @@ export function useOrders(params?: {
   return useQuery({
     queryKey: orderKeys.list(stableParams),
     queryFn: () => ordersApi.getOrders(params),
-    staleTime: 2 * 60 * 1000, // 2 minutes - orders change frequently
+    staleTime: 10 * 60 * 1000, // 2 minutes - orders change frequently
   })
 }
 
@@ -59,7 +59,7 @@ export function useOrder(id: string | undefined) {
     queryKey: orderKeys.detail(id!),
     queryFn: () => ordersApi.getOrder(id!),
     enabled: !!id,
-    staleTime: 1 * 60 * 1000, // 1 minute - order details change frequently during receiving
+    staleTime: 10 * 60 * 1000, // 1 minute - order details change frequently during receiving
   })
 }
 
@@ -81,7 +81,7 @@ export function useOrderAnalytics(params?: {
   return useQuery({
     queryKey: [...orderKeys.analytics(), params || {}],
     queryFn: () => ordersApi.getOrderAnalytics(params),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 5 minutes
   })
 }
 
@@ -260,7 +260,7 @@ export function useOrdersByStatus(status: OrderStatus) {
   return useQuery({
     queryKey: orderKeys.list({ status }),
     queryFn: () => ordersApi.getOrders({ status }),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 }
 
@@ -269,7 +269,7 @@ export function usePendingOrdersCount() {
   const ordersQuery = useQuery({
     queryKey: orderKeys.list({ status: 'SENT' }),
     queryFn: () => ordersApi.getOrders({ status: 'SENT' }),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
     select: (data) => data.pagination.total, // Only return count
   })
 

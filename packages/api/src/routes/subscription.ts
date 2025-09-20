@@ -211,16 +211,6 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
     const user = (request as any).user!
     const customerId = validatedData.id || user.id
 
-    // Debug: Log user object to understand available fields
-    console.log('User object for customer creation:', {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      keys: Object.keys(user),
-    })
-
     try {
       // First check if customer already exists
       try {
@@ -251,13 +241,6 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
 
       const userEmail =
         validatedData.email || user.email || `user-${customerId}@example.com`
-
-      console.log('Creating customer with:', {
-        id: customerId,
-        email: userEmail,
-        name: userName,
-        fingerprint: validatedData.fingerprint || getOrganizationId(request),
-      })
 
       const customer = await SubscriptionService.createCustomer({
         id: customerId,
@@ -373,17 +356,6 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
       try {
         await SubscriptionService.getCustomer(customerId)
       } catch (error) {
-        // Customer doesn't exist, create them
-        // Debug: Log user object to understand available fields
-        console.log('User object for customer creation (checkout):', {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          keys: Object.keys(user),
-        })
-
         // Better Auth user object might have firstName/lastName or name
         const userName =
           user.name ||
@@ -395,13 +367,6 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           'Unknown User'
 
         const userEmail = user.email || `user-${customerId}@example.com`
-
-        console.log('Creating customer in checkout with:', {
-          id: customerId,
-          email: userEmail,
-          name: userName,
-          fingerprint: organizationId,
-        })
 
         await SubscriptionService.createCustomer({
           id: customerId,

@@ -134,13 +134,7 @@ export const inventoryRoutes: FastifyPluginAsync = async function (fastify) {
           location: true,
         },
         orderBy: [
-          {
-            product: {
-              sales: {
-                _count: 'desc',
-              },
-            },
-          },
+          { product: { salesCount: 'desc' } }, // Order by pre-computed sales count (fast!)
           { product: { name: 'asc' } },
           { location: { name: 'asc' } },
         ],

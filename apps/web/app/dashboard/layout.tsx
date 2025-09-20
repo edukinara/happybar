@@ -1,6 +1,7 @@
 'use client'
 
 import { AppSidebar } from '@/components/app-sidebar'
+import { LocationSelector } from '@/components/dashboard/LocationSelector'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { NavUser } from '@/components/nav-user'
@@ -90,8 +91,8 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
-            <div className='flex items-center gap-2 px-4'>
+          <header className='flex h-22 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
+            <div className='flex items-center gap-0 sm:gap-2 px-4'>
               <SidebarTrigger className='-ml-1' />
               <Separator
                 orientation='vertical'
@@ -99,12 +100,20 @@ export default function DashboardLayout({
               />
               <DynamicBreadcrumb />
             </div>
-            <div className='flex flex-row items-center gap-2 ml-auto px-3'>
-              <SimpleThemeToggle />
-              <NavUser user={userData} />
+            <div className='flex flex-col-reverse sm:flex-row flex-wrap items-end sm:items-center justify-end gap-2 sm:gap-4 ml-auto px-3'>
+              <LocationSelector />
+              <Separator
+                orientation='vertical'
+                className='hidden sm:flex data-[orientation=vertical]:h-4'
+              />
+              <div className='flex items-center'>
+                <SimpleThemeToggle />
+                <NavUser user={userData} />
+              </div>
             </div>
           </header>
-          <div className='flex flex-1 flex-col gap-4 p-4 pt-0 max-w-full overflow-hidden'>
+          <Separator />
+          <div className='flex flex-1 flex-col gap-4 p-4 max-w-full overflow-auto max-h-[calc(100vh_-_100px)] sm:max-h-[calc(100vh_-_54px)]'>
             <ErrorBoundary>{children}</ErrorBoundary>
           </div>
         </SidebarInset>
@@ -119,7 +128,7 @@ function DynamicBreadcrumb() {
   const breadcrumbs = generateBreadcrumbs(pathname)
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className='hidden md:block'>
       <BreadcrumbList>
         {breadcrumbs.map((crumb, index) => (
           <React.Fragment key={crumb.href}>

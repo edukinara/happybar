@@ -41,7 +41,7 @@ function PermissionDeniedFallback({
   const { user, logout } = useAuth()
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4'>
+    <div className='min-h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4'>
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
           <div className='mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center'>
@@ -96,7 +96,7 @@ function PermissionDeniedFallback({
  */
 function AuthLoadingFallback() {
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900'>
+    <div className='min-h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900'>
       <div className='text-center'>
         <div className='animate-spin rounded-full size-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
         <p className='text-gray-600 dark:text-gray-400'>

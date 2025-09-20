@@ -5,7 +5,7 @@ const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
   dim: '\x1b[2m',
-  
+
   // Text colors
   red: '\x1b[31m',
   green: '\x1b[32m',
@@ -15,7 +15,7 @@ const colors = {
   cyan: '\x1b[36m',
   white: '\x1b[37m',
   gray: '\x1b[90m',
-  
+
   // Background colors
   bgRed: '\x1b[41m',
   bgGreen: '\x1b[42m',
@@ -27,14 +27,14 @@ const colors = {
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-export class DevLogger {
+export class Devwarnger {
   private static formatTimestamp(): string {
-    return new Date().toLocaleTimeString('en-US', { 
+    return new Date().toLocaleTimeString('en-US', {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      timeZoneName: 'short'
+      timeZoneName: 'short',
     })
   }
 
@@ -42,99 +42,123 @@ export class DevLogger {
     const method = request.method.padEnd(6)
     const url = request.url
     const ip = request.ip || request.socket.remoteAddress || 'unknown'
-    
+
     return `${colors.cyan}${method}${colors.reset} ${colors.blue}${url}${colors.reset} ${colors.gray}(${ip})${colors.reset}`
   }
 
   static middleware(message: string, request?: FastifyRequest) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
     const requestInfo = request ? ` ${this.formatRequest(request)}` : ''
-    
-    console.log(`\n${colors.bgMagenta}${colors.white} MIDDLEWARE ${colors.reset} ${colors.gray}${timestamp}${colors.reset}${requestInfo}`)
-    console.log(`${colors.magenta}│${colors.reset} ${message}`)
+
+    console.warn(
+      `\n${colors.bgMagenta}${colors.white} MIDDLEWARE ${colors.reset} ${colors.gray}${timestamp}${colors.reset}${requestInfo}`
+    )
+    console.warn(`${colors.magenta}│${colors.reset} ${message}`)
   }
 
   static auth(message: string, details?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgBlue}${colors.white} AUTH ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.blue}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgBlue}${colors.white} AUTH ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.blue}│${colors.reset} ${message}`)
+
     if (details) {
-      console.log(`${colors.blue}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.blue}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.blue}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.blue}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static success(message: string, details?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgGreen}${colors.white} SUCCESS ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.green}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgGreen}${colors.white} SUCCESS ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.green}│${colors.reset} ${message}`)
+
     if (details) {
-      console.log(`${colors.green}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.green}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.green}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.green}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static error(message: string, error?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgRed}${colors.white} ERROR ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.red}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgRed}${colors.white} ERROR ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.red}│${colors.reset} ${message}`)
+
     if (error) {
       const errorDetails = {
         message: error.message,
         code: error.code,
         name: error.name,
-        ...(error.statusCode && { statusCode: error.statusCode })
+        ...(error.statusCode && { statusCode: error.statusCode }),
       }
-      console.log(`${colors.red}│${colors.reset} ${colors.dim}${JSON.stringify(errorDetails, null, 2).split('\n').join(`\n${colors.red}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.red}│${colors.reset} ${colors.dim}${JSON.stringify(errorDetails, null, 2).split('\n').join(`\n${colors.red}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static warn(message: string, details?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgYellow}${colors.white} WARNING ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.yellow}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgYellow}${colors.white} WARNING ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.yellow}│${colors.reset} ${message}`)
+
     if (details) {
-      console.log(`${colors.yellow}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.yellow}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.yellow}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.yellow}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static info(message: string, details?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgCyan}${colors.white} INFO ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.cyan}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgCyan}${colors.white} INFO ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.cyan}│${colors.reset} ${message}`)
+
     if (details) {
-      console.log(`${colors.cyan}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.cyan}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.cyan}│${colors.reset} ${colors.dim}${JSON.stringify(details, null, 2).split('\n').join(`\n${colors.cyan}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static jwt(message: string, payload?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgMagenta}${colors.white} JWT ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.magenta}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgMagenta}${colors.white} JWT ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.magenta}│${colors.reset} ${message}`)
+
     if (payload) {
       // Format JWT payload nicely
       const formattedPayload = {
@@ -142,34 +166,42 @@ export class DevLogger {
         email: payload.email,
         role: payload.role,
         organizationId: payload.organizationId,
-        ...(payload.exp && { expiresAt: new Date(payload.exp * 1000).toISOString() })
+        ...(payload.exp && {
+          expiresAt: new Date(payload.exp * 1000).toISOString(),
+        }),
       }
-      console.log(`${colors.magenta}│${colors.reset} ${colors.dim}${JSON.stringify(formattedPayload, null, 2).split('\n').join(`\n${colors.magenta}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.magenta}│${colors.reset} ${colors.dim}${JSON.stringify(formattedPayload, null, 2).split('\n').join(`\n${colors.magenta}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static user(message: string, user?: any) {
     if (!isDevelopment) return
-    
+
     const timestamp = this.formatTimestamp()
-    
-    console.log(`\n${colors.bgGreen}${colors.white} USER ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`)
-    console.log(`${colors.green}│${colors.reset} ${message}`)
-    
+
+    console.warn(
+      `\n${colors.bgGreen}${colors.white} USER ${colors.reset} ${colors.gray}${timestamp}${colors.reset}`
+    )
+    console.warn(`${colors.green}│${colors.reset} ${message}`)
+
     if (user) {
       const userDetails = {
         id: user.id,
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
         role: user.role,
-        organizationId: user.organizationId
+        organizationId: user.organizationId,
       }
-      console.log(`${colors.green}│${colors.reset} ${colors.dim}${JSON.stringify(userDetails, null, 2).split('\n').join(`\n${colors.green}│${colors.reset} ${colors.dim}`)}${colors.reset}`)
+      console.warn(
+        `${colors.green}│${colors.reset} ${colors.dim}${JSON.stringify(userDetails, null, 2).split('\n').join(`\n${colors.green}│${colors.reset} ${colors.dim}`)}${colors.reset}`
+      )
     }
   }
 
   static separator() {
     if (!isDevelopment) return
-    console.log(`${colors.gray}${'─'.repeat(80)}${colors.reset}`)
+    console.warn(`${colors.gray}${'─'.repeat(80)}${colors.reset}`)
   }
 }

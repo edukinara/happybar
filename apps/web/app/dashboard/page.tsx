@@ -1,7 +1,6 @@
 'use client'
 
 import { AlertSummaryCard } from '@/components/alerts/AlertSummary'
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,7 +18,7 @@ import {
   useLocations,
   useLowStockItems,
 } from '@/lib/queries'
-import { useSelectedLocation } from '@/lib/stores'
+import { useLocationStore } from '@/lib/stores/location-store'
 import type { Integration } from '@happy-bar/types'
 import {
   AlertTriangle,
@@ -35,8 +34,8 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 
 export default function DashboardPage() {
-  // Use global location state first
-  const { selectedLocationId, setSelectedLocationId } = useSelectedLocation()
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
 
   // Essential queries with stable query keys
   const inventoryQuery = useInventory()
@@ -84,7 +83,7 @@ export default function DashboardPage() {
       totalItems: uniqueProducts.size,
       lowStockItems: lowStockItems.length,
       totalValue,
-      recentCounts: recentCounts.slice(0, 5),
+      recentCounts: recentCounts.slice(0, 2),
     }
   }, [inventory, lowStockItems, recentCounts])
 
@@ -259,36 +258,39 @@ export default function DashboardPage() {
         </div>
 
         {/* Location-Based Inventory Dashboard */}
-        <Card className='brand-card gap-3'>
-          <CardHeader>
-            <div className='flex items-center justify-between'>
+        {selectedLocationId && (
+          <Card className='brand-card gap-3'>
+            <CardHeader>
               <div>
                 <CardTitle className='brand-text-gradient'>
                   Location Inventory Overview
                 </CardTitle>
                 <CardDescription>
-                  Inventory metrics broken down by location
+                  Inventory metrics for selected location
                 </CardDescription>
               </div>
-              <LocationFilter
-                useGlobalState={true}
-                placeholder='All locations'
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingLocationData ? (
-              <div className='flex items-center justify-center py-8'>
-                <HappyBarLoader
-                  className='p-16'
-                  text='Loading location data...'
-                />
-              </div>
-            ) : selectedLocationId ? (
-              // Single location view
-              (() => {
+            </CardHeader>
+            <CardContent>
+              {loadingLocationData ? (
+                <div className='flex items-center justify-center py-8'>
+                  <HappyBarLoader
+                    className='p-16'
+                    text='Loading location data...'
+                  />
+                </div>
+              ) : (() => {
                 const locationStat = getSelectedLocationStats()
-                if (!locationStat) return <div>Location not found</div>
+                if (!locationStat) {
+                  return (
+                    <div className='text-center py-8 text-muted-foreground'>
+                      <MapPin className='h-12 w-12 mx-auto mb-4' />
+                      <h3 className='text-lg font-medium mb-2'>
+                        Location data not found
+                      </h3>
+                      <p>Please select a valid location from the top menu</p>
+                    </div>
+                  )
+                }
 
                 return (
                   <div className='space-y-2'>
@@ -382,88 +384,10 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )
-              })()
-            ) : (
-              // All locations overview
-              <div className='space-y-6'>
-                <div className='grid gap-4'>
-                  {locationStats.map((stat) => (
-                    <Card
-                      key={stat.location.id}
-                      className='cursor-pointer hover:bg-accent/5'
-                      onClick={() => setSelectedLocationId(stat.location.id)}
-                    >
-                      <CardContent className='px-4'>
-                        <div className='flex items-center justify-between'>
-                          <div className='flex items-center gap-3'>
-                            <MapPin className='size-5 text-muted-foreground' />
-                            <div>
-                              <h4 className='font-semibold'>
-                                {stat.location.name}
-                              </h4>
-                              <p className='text-sm text-muted-foreground'>
-                                {stat.location.type} • {stat.totalItems} items
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className='flex items-center gap-6'>
-                            <div className='text-right'>
-                              <div className='text-sm font-medium'>
-                                $
-                                {stat.totalValue.toLocaleString(undefined, {
-                                  maximumFractionDigits: 2,
-                                })}
-                              </div>
-                              <div className='text-xs text-muted-foreground'>
-                                Total Value
-                              </div>
-                            </div>
-
-                            <div className='text-right'>
-                              <div className='text-sm font-medium text-orange-600'>
-                                {stat.lowStockItems}
-                              </div>
-                              <div className='text-xs text-muted-foreground'>
-                                Low Stock
-                              </div>
-                            </div>
-
-                            <div className='text-right min-w-[80px]'>
-                              <div className='text-sm font-medium text-green-600'>
-                                {stat.stockHealth.toFixed(0)}%
-                              </div>
-                              <Progress
-                                value={stat.stockHealth}
-                                className='mt-1 w-16'
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {locationStats.length === 0 && (
-                  <div className='text-center py-8 text-muted-foreground'>
-                    <MapPin className='h-12 w-12 mx-auto mb-4' />
-                    <h3 className='text-lg font-medium mb-2'>
-                      No locations found
-                    </h3>
-                    <p>Create your first location to see inventory data</p>
-                    <Button asChild className='mt-4'>
-                      <Link href='/dashboard/settings#manageLocations' scroll>
-                        <MapPin className='mr-2 size-4' />
-                        Manage Locations
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              })()}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recent Activity & Alerts */}
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>

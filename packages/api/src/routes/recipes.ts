@@ -1,90 +1,94 @@
 import { PrismaClient } from '@happy-bar/database'
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { authMiddleware, requirePermission, requireAnyPermission, AuthenticatedRequest } from '../middleware/auth-simple'
+import { authMiddleware, requirePermission } from '../middleware/auth-simple'
 import { UnitConverter } from '../utils/unit-conversion'
 
 const prisma = new PrismaClient()
 
 export default async function recipesRoutes(fastify: FastifyInstance) {
   // Get all recipes for organization
-  fastify.get('/', {
-    preHandler: [authMiddleware, requirePermission('recipes', 'read')]
-  }, async (request: any, reply) => {
-    const organization = request.organization!
+  fastify.get(
+    '/',
+    {
+      preHandler: [authMiddleware, requirePermission('recipes', 'read')],
+    },
+    async (request: any, reply) => {
+      const organization = request.organization!
 
-    const { page = 1, limit = 20, search, isActive } = request.query as any
+      const { page = 1, limit = 20, search, isActive } = request.query as any
 
-    const where: any = {
-      organizationId: organization.id,
-    }
-
-    if (search) {
-      where.name = {
-        contains: search,
-        mode: 'insensitive',
+      const where: any = {
+        organizationId: organization.id,
       }
-    }
 
-    if (isActive !== undefined) {
-      where.isActive = isActive === 'true'
-    }
+      if (search) {
+        where.name = {
+          contains: search,
+          mode: 'insensitive',
+        }
+      }
 
-    const offset = (page - 1) * limit
+      if (isActive !== undefined) {
+        where.isActive = isActive === 'true'
+      }
 
-    const [recipes, total] = await Promise.all([
-      prisma.recipe.findMany({
-        where,
-        include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  unit: true,
-                  costPerUnit: true,
+      const offset = (page - 1) * limit
+
+      const [recipes, total] = await Promise.all([
+        prisma.recipe.findMany({
+          where,
+          include: {
+            items: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    unit: true,
+                    costPerUnit: true,
+                  },
                 },
               },
             },
           },
+          orderBy: { name: 'asc' },
+          skip: offset,
+          take: Number(limit),
+        }),
+        prisma.recipe.count({ where }),
+      ])
+
+      // Calculate total cost for each recipe
+      const recipesWithCosts = recipes.map((recipe) => {
+        const totalCost = recipe.items.reduce(
+          (sum, item) => sum + item.quantity * (item.product.costPerUnit || 0),
+          0
+        )
+        const costPerServing =
+          recipe.yield > 0 ? totalCost / recipe.yield : totalCost
+
+        return {
+          ...recipe,
+          totalCost,
+          costPerServing,
+        }
+      })
+
+      return reply.send({
+        success: true,
+        data: {
+          recipes: recipesWithCosts,
+          pagination: {
+            page: Number(page),
+            limit: Number(limit),
+            total,
+            totalPages: Math.ceil(total / Number(limit)),
+          },
         },
-        orderBy: { name: 'asc' },
-        skip: offset,
-        take: Number(limit),
-      }),
-      prisma.recipe.count({ where }),
-    ])
-
-    // Calculate total cost for each recipe
-    const recipesWithCosts = recipes.map((recipe) => {
-      const totalCost = recipe.items.reduce(
-        (sum, item) => sum + item.quantity * (item.product.costPerUnit || 0),
-        0
-      )
-      const costPerServing =
-        recipe.yield > 0 ? totalCost / recipe.yield : totalCost
-
-      return {
-        ...recipe,
-        totalCost,
-        costPerServing,
-      }
-    })
-
-    return reply.send({
-      success: true,
-      data: {
-        recipes: recipesWithCosts,
-        pagination: {
-          page: Number(page),
-          limit: Number(limit),
-          total,
-          totalPages: Math.ceil(total / Number(limit)),
-        },
-      },
-    })
-  })
+      })
+    }
+  )
 
   // Get specific recipe
   fastify.get('/:id', async (request, reply) => {
@@ -196,7 +200,7 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
       }
 
       // Create a map for easy product lookup
-      const productMap = new Map(products.map(p => [p.id, p]))
+      const productMap = new Map(products.map((p) => [p.id, p]))
 
       // Create recipe with items in transaction
       const result = await prisma.$transaction(async (tx) => {
@@ -361,7 +365,7 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
           }
 
           // Create a map for easy product lookup
-          const productMap = new Map(products.map(p => [p.id, p]))
+          const productMap = new Map(products.map((p) => [p.id, p]))
 
           // Create new items with unit conversion
           const recipeItems = await Promise.all(
@@ -544,250 +548,275 @@ export default async function recipesRoutes(fastify: FastifyInstance) {
   })
 
   // Get recipe POS mapping suggestions
-  fastify.get('/mapping-suggestions/:integrationId', {
-    preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')]
-  }, async (request: any, reply) => {
-    const organization = request.organization!
-    const { integrationId } = request.params as { integrationId: string }
+  fastify.get(
+    '/mapping-suggestions/:integrationId',
+    {
+      preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')],
+    },
+    async (request: any, reply) => {
+      const organization = request.organization!
+      const { integrationId } = request.params as { integrationId: string }
 
-    const suggestions = await generateRecipeMappingSuggestions(
-      prisma,
-      organization.id,
-      integrationId
-    )
+      const suggestions = await generateRecipeMappingSuggestions(
+        prisma,
+        organization.id,
+        integrationId
+      )
 
-    return reply.send({ success: true, data: { suggestions } })
-  })
+      return reply.send({ success: true, data: { suggestions } })
+    }
+  )
 
   // Create recipe POS mapping
-  fastify.post('/pos-mappings', {
-    preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')]
-  }, async (request: any, reply) => {
-    const organization = request.organization!
-    
-    const validatedData = z.object({
-      recipeId: z.string(),
-      posProductId: z.string(),
-      isActive: z.boolean().default(true),
-    }).parse(request.body)
+  fastify.post(
+    '/pos-mappings',
+    {
+      preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')],
+    },
+    async (request: any, reply) => {
+      const organization = request.organization!
 
-    // Verify recipe and POS product exist and belong to organization
-    const [recipe, posProduct] = await Promise.all([
-      prisma.recipe.findFirst({
+      const validatedData = z
+        .object({
+          recipeId: z.string(),
+          posProductId: z.string(),
+          isActive: z.boolean().default(true),
+        })
+        .parse(request.body)
+
+      // Verify recipe and POS product exist and belong to organization
+      const [recipe, posProduct] = await Promise.all([
+        prisma.recipe.findFirst({
+          where: {
+            id: validatedData.recipeId,
+            organizationId: organization.id,
+          },
+        }),
+        prisma.pOSProduct.findFirst({
+          where: {
+            id: validatedData.posProductId,
+            organizationId: organization.id,
+          },
+        }),
+      ])
+
+      if (!recipe) {
+        return reply.code(404).send({ error: 'Recipe not found' })
+      }
+
+      if (!posProduct) {
+        return reply.code(404).send({ error: 'POS product not found' })
+      }
+
+      // Check if mapping already exists
+      const existingMapping = await prisma.recipePOSMapping.findFirst({
         where: {
-          id: validatedData.recipeId,
+          organizationId: organization.id,
+          recipeId: validatedData.recipeId,
+          posProductId: validatedData.posProductId,
+        },
+      })
+
+      if (existingMapping) {
+        return reply.code(409).send({ error: 'Mapping already exists' })
+      }
+
+      const mapping = await prisma.recipePOSMapping.create({
+        data: {
+          recipeId: validatedData.recipeId,
+          posProductId: validatedData.posProductId,
+          isActive: validatedData.isActive,
           organizationId: organization.id,
         },
-      }),
-      prisma.pOSProduct.findFirst({
-        where: {
-          id: validatedData.posProductId,
-          organizationId: organization.id,
-        },
-      }),
-    ])
-
-    if (!recipe) {
-      return reply.code(404).send({ error: 'Recipe not found' })
-    }
-
-    if (!posProduct) {
-      return reply.code(404).send({ error: 'POS product not found' })
-    }
-
-    // Check if mapping already exists
-    const existingMapping = await prisma.recipePOSMapping.findFirst({
-      where: {
-        organizationId: organization.id,
-        recipeId: validatedData.recipeId,
-        posProductId: validatedData.posProductId,
-      },
-    })
-
-    if (existingMapping) {
-      return reply.code(409).send({ error: 'Mapping already exists' })
-    }
-
-    const mapping = await prisma.recipePOSMapping.create({
-      data: {
-        recipeId: validatedData.recipeId,
-        posProductId: validatedData.posProductId,
-        isActive: validatedData.isActive,
-        organizationId: organization.id,
-      },
-      include: {
-        recipe: true,
-        posProduct: {
-          include: {
-            integration: true,
+        include: {
+          recipe: true,
+          posProduct: {
+            include: {
+              integration: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    return reply.send({ success: true, data: { mapping } })
-  })
+      return reply.send({ success: true, data: { mapping } })
+    }
+  )
 
   // Get recipe POS mappings
-  fastify.get('/pos-mappings', {
-    preHandler: [authMiddleware, requirePermission('recipes', 'read')]
-  }, async (request: any, reply) => {
-    const organization = request.organization!
-    
-    const query = request.query as {
-      integrationId?: string
-      recipeId?: string
-      posProductId?: string
-      isActive?: string
-    }
+  fastify.get(
+    '/pos-mappings',
+    {
+      preHandler: [authMiddleware, requirePermission('recipes', 'read')],
+    },
+    async (request: any, reply) => {
+      const organization = request.organization!
 
-    const where: any = {
-      organizationId: organization.id,
-    }
-
-    if (query.integrationId) {
-      where.posProduct = {
-        integrationId: query.integrationId,
+      const query = request.query as {
+        integrationId?: string
+        recipeId?: string
+        posProductId?: string
+        isActive?: string
       }
-    }
 
-    if (query.recipeId) {
-      where.recipeId = query.recipeId
-    }
+      const where: any = {
+        organizationId: organization.id,
+      }
 
-    if (query.posProductId) {
-      where.posProductId = query.posProductId
-    }
+      if (query.integrationId) {
+        where.posProduct = {
+          integrationId: query.integrationId,
+        }
+      }
 
-    if (query.isActive !== undefined) {
-      where.isActive = query.isActive === 'true'
-    }
+      if (query.recipeId) {
+        where.recipeId = query.recipeId
+      }
 
-    const mappings = await prisma.recipePOSMapping.findMany({
-      where,
-      include: {
-        recipe: true,
-        posProduct: {
-          include: {
-            integration: true,
+      if (query.posProductId) {
+        where.posProductId = query.posProductId
+      }
+
+      if (query.isActive !== undefined) {
+        where.isActive = query.isActive === 'true'
+      }
+
+      const mappings = await prisma.recipePOSMapping.findMany({
+        where,
+        include: {
+          recipe: true,
+          posProduct: {
+            include: {
+              integration: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+        orderBy: { createdAt: 'desc' },
+      })
 
-    return reply.send({ success: true, data: { mappings } })
-  })
+      return reply.send({ success: true, data: { mappings } })
+    }
+  )
 
   // Update recipe POS mapping
-  fastify.put('/pos-mappings/:id', {
-    preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')]
-  }, async (request: any, reply) => {
-    const organization = request.organization!
-    const { id } = request.params as { id: string }
-    
-    const validatedData = z.object({
-      recipeId: z.string(),
-      posProductId: z.string(),
-      isActive: z.boolean().default(true),
-    }).parse(request.body)
+  fastify.put(
+    '/pos-mappings/:id',
+    {
+      preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')],
+    },
+    async (request: any, reply) => {
+      const organization = request.organization!
+      const { id } = request.params as { id: string }
 
-    // Check if mapping exists and belongs to organization
-    const existingMapping = await prisma.recipePOSMapping.findFirst({
-      where: {
-        id,
-        organizationId: organization.id,
-      },
-    })
+      const validatedData = z
+        .object({
+          recipeId: z.string(),
+          posProductId: z.string(),
+          isActive: z.boolean().default(true),
+        })
+        .parse(request.body)
 
-    if (!existingMapping) {
-      return reply.code(404).send({ error: 'Mapping not found' })
-    }
-
-    // Verify recipe and POS product exist and belong to organization
-    const [recipe, posProduct] = await Promise.all([
-      prisma.recipe.findFirst({
+      // Check if mapping exists and belongs to organization
+      const existingMapping = await prisma.recipePOSMapping.findFirst({
         where: {
-          id: validatedData.recipeId,
+          id,
           organizationId: organization.id,
         },
-      }),
-      prisma.pOSProduct.findFirst({
-        where: {
-          id: validatedData.posProductId,
-          organizationId: organization.id,
-        },
-      }),
-    ])
-
-    if (!recipe) {
-      return reply.code(404).send({ error: 'Recipe not found' })
-    }
-
-    if (!posProduct) {
-      return reply.code(404).send({ error: 'POS product not found' })
-    }
-
-    // Check if mapping to this recipe-pos product combination already exists (different mapping ID)
-    const conflictingMapping = await prisma.recipePOSMapping.findFirst({
-      where: {
-        organizationId: organization.id,
-        recipeId: validatedData.recipeId,
-        posProductId: validatedData.posProductId,
-        id: { not: id },
-      },
-    })
-
-    if (conflictingMapping) {
-      return reply.code(409).send({ 
-        error: 'Another mapping already exists for this recipe-POS product combination' 
       })
-    }
 
-    const updatedMapping = await prisma.recipePOSMapping.update({
-      where: { id },
-      data: {
-        recipeId: validatedData.recipeId,
-        posProductId: validatedData.posProductId,
-        isActive: validatedData.isActive,
-      },
-      include: {
-        recipe: true,
-        posProduct: {
-          include: {
-            integration: true,
+      if (!existingMapping) {
+        return reply.code(404).send({ error: 'Mapping not found' })
+      }
+
+      // Verify recipe and POS product exist and belong to organization
+      const [recipe, posProduct] = await Promise.all([
+        prisma.recipe.findFirst({
+          where: {
+            id: validatedData.recipeId,
+            organizationId: organization.id,
+          },
+        }),
+        prisma.pOSProduct.findFirst({
+          where: {
+            id: validatedData.posProductId,
+            organizationId: organization.id,
+          },
+        }),
+      ])
+
+      if (!recipe) {
+        return reply.code(404).send({ error: 'Recipe not found' })
+      }
+
+      if (!posProduct) {
+        return reply.code(404).send({ error: 'POS product not found' })
+      }
+
+      // Check if mapping to this recipe-pos product combination already exists (different mapping ID)
+      const conflictingMapping = await prisma.recipePOSMapping.findFirst({
+        where: {
+          organizationId: organization.id,
+          recipeId: validatedData.recipeId,
+          posProductId: validatedData.posProductId,
+          id: { not: id },
+        },
+      })
+
+      if (conflictingMapping) {
+        return reply.code(409).send({
+          error:
+            'Another mapping already exists for this recipe-POS product combination',
+        })
+      }
+
+      const updatedMapping = await prisma.recipePOSMapping.update({
+        where: { id },
+        data: {
+          recipeId: validatedData.recipeId,
+          posProductId: validatedData.posProductId,
+          isActive: validatedData.isActive,
+        },
+        include: {
+          recipe: true,
+          posProduct: {
+            include: {
+              integration: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    return reply.send({ success: true, data: { mapping: updatedMapping } })
-  })
+      return reply.send({ success: true, data: { mapping: updatedMapping } })
+    }
+  )
 
   // Delete recipe POS mapping
-  fastify.delete('/pos-mappings/:id', {
-    preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')]
-  }, async (request: any, reply) => {
-    const organization = request.organization!
-    const { id } = request.params as { id: string }
+  fastify.delete(
+    '/pos-mappings/:id',
+    {
+      preHandler: [authMiddleware, requirePermission('recipes', 'pos_mapping')],
+    },
+    async (request: any, reply) => {
+      const organization = request.organization!
+      const { id } = request.params as { id: string }
 
-    const mapping = await prisma.recipePOSMapping.findFirst({
-      where: {
-        id,
-        organizationId: organization.id,
-      },
-    })
+      const mapping = await prisma.recipePOSMapping.findFirst({
+        where: {
+          id,
+          organizationId: organization.id,
+        },
+      })
 
-    if (!mapping) {
-      return reply.code(404).send({ error: 'Mapping not found' })
+      if (!mapping) {
+        return reply.code(404).send({ error: 'Mapping not found' })
+      }
+
+      await prisma.recipePOSMapping.delete({
+        where: { id },
+      })
+
+      return reply.send({ success: true })
     }
-
-    await prisma.recipePOSMapping.delete({
-      where: { id },
-    })
-
-    return reply.send({ success: true })
-  })
+  )
 }
 
 // Helper function to generate recipe mapping suggestions
@@ -796,8 +825,6 @@ async function generateRecipeMappingSuggestions(
   organizationId: string,
   integrationId: string
 ) {
-  console.log(`🔍 Generating recipe mapping suggestions for integration ${integrationId}`)
-
   // Get unmapped POS products (exclude those already mapped to recipes)
   const posProducts = await prisma.pOSProduct.findMany({
     where: {
@@ -813,8 +840,6 @@ async function generateRecipeMappingSuggestions(
       },
     },
   })
-
-  console.log(`📦 Found ${posProducts.length} unmapped POS products`)
 
   // Get all active recipes for this organization
   const allRecipes = await prisma.recipe.findMany({
@@ -836,13 +861,12 @@ async function generateRecipeMappingSuggestions(
   })
 
   // Filter out recipes that are already mapped to this specific integration
-  const recipes = allRecipes.filter(recipe => 
-    !recipe.recipePOSMappings.some(mapping => 
-      mapping.posProduct.integrationId === integrationId
-    )
+  const recipes = allRecipes.filter(
+    (recipe) =>
+      !recipe.recipePOSMappings.some(
+        (mapping) => mapping.posProduct.integrationId === integrationId
+      )
   )
-
-  console.log(`📋 Found ${recipes.length} unmapped recipes (${allRecipes.length} total recipes)`)
 
   const suggestions = []
 
@@ -864,83 +888,105 @@ async function generateRecipeMappingSuggestions(
     }
   }
 
-  console.log(`💡 Generated ${suggestions.length} suggestions`)
-  
   // Sort by confidence descending
   return suggestions.sort((a, b) => b.confidence - a.confidence)
 }
 
 // Helper function to calculate recipe mapping confidence
-function calculateRecipeMappingConfidence(recipe: any, posProduct: any): number {
+function calculateRecipeMappingConfidence(
+  recipe: any,
+  posProduct: any
+): number {
   let confidence = 0
   const recipeName = recipe.name.toLowerCase()
   const posName = posProduct.name.toLowerCase()
 
-  console.log(`🧮 Calculating confidence for "${recipe.name}" vs "${posProduct.name}"`)
-
   // Exact name match
   if (recipeName === posName) {
     confidence += 0.9
-    console.log(`  ✅ Exact match: +0.9`)
   }
   // Partial name match
   else if (recipeName.includes(posName) || posName.includes(recipeName)) {
     confidence += 0.6
-    console.log(`  ✅ Partial match: +0.6`)
   }
   // Word-by-word comparison for better matching
   else {
     const recipeWords = recipeName.split(/\s+/)
     const posWords = posName.split(/\s+/)
     let matchingWords = 0
-    
+
     for (const posWord of posWords) {
-      if (posWord.length >= 3 && recipeWords.some((recipeWord: string) => 
-        recipeWord.includes(posWord) || posWord.includes(recipeWord)
-      )) {
+      if (
+        posWord.length >= 3 &&
+        recipeWords.some(
+          (recipeWord: string) =>
+            recipeWord.includes(posWord) || posWord.includes(recipeWord)
+        )
+      ) {
         matchingWords++
       }
     }
-    
+
     if (matchingWords > 0) {
-      const wordConfidence = (matchingWords / Math.max(posWords.length, recipeWords.length)) * 0.5
+      const wordConfidence =
+        (matchingWords / Math.max(posWords.length, recipeWords.length)) * 0.5
       confidence += wordConfidence
-      console.log(`  ✅ Word matching (${matchingWords}/${Math.max(posWords.length, recipeWords.length)}): +${wordConfidence}`)
     }
   }
 
   // Look for common recipe/cocktail keywords
-  const recipeKeywords = ['cocktail', 'drink', 'mixed', 'specialty', 'signature', 'margarita', 'martini', 'beer', 'wine', 'shot', 'liqueur']
-  
-  const hasRecipeKeywords = recipeKeywords.some(keyword => 
-    recipeName.includes(keyword) || posName.includes(keyword)
+  const recipeKeywords = [
+    'cocktail',
+    'drink',
+    'mixed',
+    'specialty',
+    'signature',
+    'margarita',
+    'martini',
+    'beer',
+    'wine',
+    'shot',
+    'liqueur',
+  ]
+
+  const hasRecipeKeywords = recipeKeywords.some(
+    (keyword) => recipeName.includes(keyword) || posName.includes(keyword)
   )
-  
+
   if (hasRecipeKeywords) {
     confidence += 0.2
-    console.log(`  ✅ Recipe keywords: +0.2`)
   }
 
   // Category match (if POS product has drink/beverage category)
   if (posProduct.category) {
-    const drinkCategories = ['drink', 'cocktail', 'beverage', 'mixed', 'alcohol', 'bar', 'beer', 'wine', 'spirit', 'liquor']
-    if (drinkCategories.some(cat => 
-      posProduct.category.toLowerCase().includes(cat)
-    )) {
+    const drinkCategories = [
+      'drink',
+      'cocktail',
+      'beverage',
+      'mixed',
+      'alcohol',
+      'bar',
+      'beer',
+      'wine',
+      'spirit',
+      'liquor',
+    ]
+    if (
+      drinkCategories.some((cat) =>
+        posProduct.category.toLowerCase().includes(cat)
+      )
+    ) {
       confidence += 0.3
-      console.log(`  ✅ Drink category (${posProduct.category}): +0.3`)
     }
   }
 
   // Base score for any recipe to any POS product to show some suggestions
   if (confidence === 0) {
     confidence = 0.1
-    console.log(`  ℹ️  Base score: +0.1`)
   }
 
   const finalConfidence = Math.min(confidence, 1.0)
-  console.log(`  🎯 Final confidence: ${finalConfidence}`)
-  
+
   return finalConfidence
 }
 
@@ -957,21 +1003,38 @@ function getRecipeMappingReasons(recipe: any, posProduct: any): string[] {
     reasons.push('Partial name match')
   }
 
-  const recipeKeywords = ['cocktail', 'drink', 'mixed', 'specialty', 'signature']
+  const recipeKeywords = [
+    'cocktail',
+    'drink',
+    'mixed',
+    'specialty',
+    'signature',
+  ]
   const recipeName = recipe.name.toLowerCase()
   const posName = posProduct.name.toLowerCase()
-  
-  if (recipeKeywords.some(keyword => 
-    recipeName.includes(keyword) || posName.includes(keyword)
-  )) {
+
+  if (
+    recipeKeywords.some(
+      (keyword) => recipeName.includes(keyword) || posName.includes(keyword)
+    )
+  ) {
     reasons.push('Contains recipe keywords')
   }
 
   if (posProduct.category) {
-    const drinkCategories = ['drink', 'cocktail', 'beverage', 'mixed', 'alcohol', 'bar']
-    if (drinkCategories.some(cat => 
-      posProduct.category.toLowerCase().includes(cat)
-    )) {
+    const drinkCategories = [
+      'drink',
+      'cocktail',
+      'beverage',
+      'mixed',
+      'alcohol',
+      'bar',
+    ]
+    if (
+      drinkCategories.some((cat) =>
+        posProduct.category.toLowerCase().includes(cat)
+      )
+    ) {
       reasons.push('Drink/beverage category')
     }
   }

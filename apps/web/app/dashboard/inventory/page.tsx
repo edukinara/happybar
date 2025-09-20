@@ -1,7 +1,6 @@
 'use client'
 
 import { TransactionHistoryDrawer } from '@/components/dashboard/Inventory/TransactionHistoryDrawer'
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { InputWithIcon } from '@/components/InputWithIcon'
 import { Badge } from '@/components/ui/badge'
@@ -33,7 +32,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useInventory } from '@/lib/queries'
-import { useSelectedLocation } from '@/lib/stores'
+import { useLocationStore } from '@/lib/stores/location-store'
 import { cn } from '@/lib/utils'
 import type { InventoryLevel } from '@happy-bar/types'
 import {
@@ -105,7 +104,7 @@ export default function InventoryPage() {
   const { data: inventory = [], isLoading: loading, error } = useInventory()
 
   // Use global location state
-  const { selectedLocationId } = useSelectedLocation()
+  const { selectedLocationId } = useLocationStore()
 
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -380,7 +379,7 @@ export default function InventoryPage() {
         </CardHeader>
         <CardContent>
           <div className='flex flex-wrap items-center justify-between mb-4 w-full gap-2'>
-            <div className='flex items-center space-x-2 w-full sm:max-w-sm'>
+            <div className='flex items-center space-x-2 w-full'>
               <InputWithIcon
                 Icon={Search}
                 iconStyle='size-4 text-muted-foreground'
@@ -390,7 +389,6 @@ export default function InventoryPage() {
                 className='md:max-w-sm xs:w-full xs:max-w-full'
               />
             </div>
-            <LocationFilter useGlobalState={true} />
           </div>
 
           {totalItems === 0 ? (

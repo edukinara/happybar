@@ -286,7 +286,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
     if (session.apiId && session.syncStatus === 'synced') {
       try {
         await countApi.updateCount(session.apiId, { status: 'COMPLETED' })
-        // console.log('Count completed on backend:', session.apiId)
       } catch (error) {
         console.error('Failed to update count status on backend:', error)
         // Mark as sync failed
@@ -399,7 +398,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
 
       // If session is not synced, try to sync it first
       if (!session.apiId || session.syncStatus !== 'synced') {
-        // console.log('Session not synced, attempting to sync first...')
         await get().syncSessionWithAPI(session.id)
         // Re-fetch session after sync
         const updatedSession = get().countSessions.find(
@@ -436,8 +434,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
         partialUnit: item.countedQuantity % 1,
         notes: `Scanned via mobile app - Barcode: ${item.barcode}`,
       })
-
-      // console.log('Successfully saved count item to API')
     } catch (error) {
       console.error('Failed to save count item to API:', error)
       // In a production app, you might want to queue failed items for retry
@@ -572,7 +568,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
 
       // Validate count status before creating local session
       if (apiCount.status === 'COMPLETED' || apiCount.status === 'APPROVED') {
-        // console.log(`Count ${apiCount.id} is already ${apiCount.status}, cannot resume for editing`)
         throw new Error(
           `Count is already ${apiCount.status.toLowerCase()} and cannot be resumed for editing`
         )
@@ -691,8 +686,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
           if (activeSessionId === session.id) {
             newActiveSessionId = null
           }
-
-          // console.log(`🧹 Cleaning up deleted session: ${session.name} (API ID: ${session.apiId})`)
         }
         // If the session exists in backend but is no longer active, update its status
         else if (
@@ -722,8 +715,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
             if (activeSessionId === session.id) {
               newActiveSessionId = null
             }
-
-            // console.log(`📝 Updated session status: ${session.name} -> ${backendCount.status}`)
           }
         }
       }
@@ -739,8 +730,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
           ),
           activeSessionId: newActiveSessionId,
         }))
-
-        // console.log(`🧹 Cleaned up ${staleSessions.length} stale count sessions`)
       }
 
       // Update active session if it changed
@@ -826,7 +815,6 @@ export const useCountStore = create<CountStore>()((set, get) => ({
     try {
       // Batch save all count items for this area (like web app does)
       // Note: Mobile app already saves items in real-time, but this ensures consistency
-      // console.log(`Batch saving ${currentAreaItems.length} items for area completion`)
 
       if (currentAreaItems.length > 0) {
         const savePromises = currentAreaItems.map((item) =>
@@ -840,15 +828,12 @@ export const useCountStore = create<CountStore>()((set, get) => ({
             })
             .catch((error) => {
               // Log but don't fail - item might already be saved from real-time sync
-              // console.log(`Item ${item.productName} may already be saved:`, error.message)
+
               return null
             })
         )
 
         await Promise.all(savePromises)
-        // console.log(`Completed batch save for ${currentAreaItems.length} items`)
-      } else {
-        // console.log(`No items to batch save for area completion`)
       }
 
       // Then sync area status to backend (like web app does)
@@ -886,7 +871,7 @@ export const useCountStore = create<CountStore>()((set, get) => ({
         return { hasMoreAreas: true, nextArea }
       } else {
         // All areas complete - auto-complete the count (like web app does)
-        // console.log('All areas completed, auto-completing count:', session.apiId)
+
         await countApi.updateCount(session.apiId, { status: 'COMPLETED' })
 
         // Update local state to COMPLETED

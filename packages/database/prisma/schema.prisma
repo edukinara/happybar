@@ -77,6 +77,8 @@ model Product {
   image               String?
   isActive            Boolean              @default(true)
   posProductId        String?
+  salesCount          Int                  @default(0) // Pre-computed sales count for performance
+  salesCountUpdatedAt DateTime?            // Track when sales count was last updated
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   container           String?

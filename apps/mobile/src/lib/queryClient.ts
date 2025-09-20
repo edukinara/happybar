@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 
       // Cache time configuration
-      staleTime: 2 * 60 * 1000, // 2 minutes - data is fresh for 2 minutes
+      staleTime: 10 * 60 * 1000, // 2 minutes - data is fresh for 2 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache for 10 minutes
 
       // Refetch configuration

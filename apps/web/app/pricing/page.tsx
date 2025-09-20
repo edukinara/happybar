@@ -355,14 +355,14 @@ export default function PricingPage() {
 
   if (loading) {
     return (
-      <div className='min-h-screen flex items-center justify-center'>
+      <div className='min-h-full flex items-center justify-center'>
         <HappyBarLoader />
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen relative overflow-hidden'>
+    <div className='min-h-full relative overflow-hidden'>
       {/* Animated background gradient */}
       <div className='absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-amber-50 dark:from-neutral-900 dark:via-purple-900/10 dark:to-neutral-900 -z-10' />
 

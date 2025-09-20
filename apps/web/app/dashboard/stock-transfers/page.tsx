@@ -1,6 +1,5 @@
 'use client'
 
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import { StockTransferDialog } from '@/components/inventory/stock-transfer-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,6 +24,7 @@ import {
   type StockTransferRequest,
 } from '@/lib/api/stock-transfers'
 import { useAuth } from '@/lib/auth/auth-context'
+import { useLocationStore } from '@/lib/stores/location-store'
 import {
   AlertTriangle,
   ArrowRight,
@@ -55,9 +55,8 @@ export default function StockTransfersPage() {
   const [inventoryItems, setInventoryItems] = useState<InventoryLevel[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >()
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -304,13 +303,6 @@ export default function StockTransfersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className='flex justify-end mb-4'>
-            <LocationFilter
-              selectedLocationId={selectedLocationId}
-              onLocationChange={setSelectedLocationId}
-              placeholder='Filter by location'
-            />
-          </div>
           {filteredMovements.length === 0 ? (
             <div className='text-center py-8'>
               <ArrowRight className='h-12 w-12 text-muted-foreground mx-auto mb-4' />

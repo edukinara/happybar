@@ -59,7 +59,7 @@ export function useCatalog(params?: { limit?: number; search?: string }) {
   return useQuery({
     queryKey: productKeys.list(stableParams),
     queryFn: () => productsApi.searchCatalog(params),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 5 minutes
   })
 }
 
@@ -69,7 +69,7 @@ export function useProduct(id: string | undefined) {
     queryKey: productKeys.detail(id!),
     queryFn: () => productsApi.getProduct(id!),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 }
 

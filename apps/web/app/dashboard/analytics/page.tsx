@@ -1,14 +1,16 @@
 'use client'
 
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import DateRangePicker from '@/components/dateRangePicker'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { analyticsApi } from '@/lib/api/analytics'
+import { useLocationStore } from '@/lib/stores/location-store'
 import { cn } from '@/lib/utils'
-import { convertToBusinessDayRange, createLocationTimeConfig } from '@/lib/utils/business-day'
-import { useLocations } from '@/lib/queries'
+import {
+  convertToBusinessDayRange,
+  createLocationTimeConfig,
+} from '@/lib/utils/business-day'
 import { subDays } from 'date-fns'
 import {
   Activity,
@@ -51,7 +53,6 @@ interface AnalyticsSummary {
 }
 
 export default function AnalyticsPage() {
-  const [selectedLocationId, setSelectedLocationId] = useState<string>()
   const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 7),
     to: new Date(),
@@ -61,8 +62,24 @@ export default function AnalyticsPage() {
     const sevenDaysAgo = subDays(new Date(), 7)
     const today = new Date()
     return {
-      from: new Date(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth(), sevenDaysAgo.getDate(), 0, 0, 0, 0),
-      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
+      from: new Date(
+        sevenDaysAgo.getFullYear(),
+        sevenDaysAgo.getMonth(),
+        sevenDaysAgo.getDate(),
+        0,
+        0,
+        0,
+        0
+      ),
+      to: new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59,
+        999
+      ),
     } as DateRange
   }, [])
 
@@ -70,31 +87,51 @@ export default function AnalyticsPage() {
   const [updating, setUpdating] = useState(false)
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
 
-  // Get locations data for business day calculations
-  const { data: locations = [] } = useLocations()
+  // Get selected location from global store
+  const { selectedLocationId, getSelectedLocation } = useLocationStore()
 
   // Helper function to convert date range to business day range
-  const getFilteredDateRange = useCallback((newDateRange: DateRange, locationId?: string) => {
-    const selectedLocation = locationId
-      ? locations.find(loc => loc.id === locationId)
-      : undefined
+  const getFilteredDateRange = useCallback(
+    (newDateRange: DateRange) => {
+      const selectedLocation = getSelectedLocation()
 
-    const locationConfig = selectedLocation
-      ? createLocationTimeConfig(selectedLocation)
-      : null
+      const locationConfig = selectedLocation
+        ? createLocationTimeConfig(selectedLocation)
+        : null
 
-    const businessDayRange = convertToBusinessDayRange(newDateRange, locationConfig)
+      const businessDayRange = convertToBusinessDayRange(
+        newDateRange,
+        locationConfig
+      )
 
-    if (businessDayRange) {
-      return businessDayRange
-    } else {
-      // Fallback to standard calendar day boundaries if business day conversion fails
-      return {
-        from: new Date(newDateRange.from!.getFullYear(), newDateRange.from!.getMonth(), newDateRange.from!.getDate(), 0, 0, 0, 0),
-        to: new Date(newDateRange.to!.getFullYear(), newDateRange.to!.getMonth(), newDateRange.to!.getDate(), 23, 59, 59, 999),
-      } as DateRange
-    }
-  }, [locations])
+      if (businessDayRange) {
+        return businessDayRange
+      } else {
+        // Fallback to standard calendar day boundaries if business day conversion fails
+        return {
+          from: new Date(
+            newDateRange.from!.getFullYear(),
+            newDateRange.from!.getMonth(),
+            newDateRange.from!.getDate(),
+            0,
+            0,
+            0,
+            0
+          ),
+          to: new Date(
+            newDateRange.to!.getFullYear(),
+            newDateRange.to!.getMonth(),
+            newDateRange.to!.getDate(),
+            23,
+            59,
+            59,
+            999
+          ),
+        } as DateRange
+      }
+    },
+    [getSelectedLocation]
+  )
 
   // Load analytics data function
   const loadAnalytics = async () => {
@@ -103,7 +140,7 @@ export default function AnalyticsPage() {
     setUpdating(true)
     try {
       const params = {
-        locationId: selectedLocationId,
+        locationId: selectedLocationId || undefined,
         startDate: dateFilter.from.toISOString(),
         endDate: dateFilter.to.toISOString(),
       }
@@ -113,7 +150,7 @@ export default function AnalyticsPage() {
         analyticsApi.getMenuEngineering(params),
         analyticsApi.getWasteAnalysis(params),
         analyticsApi.getForecasting({
-          locationId: selectedLocationId,
+          locationId: selectedLocationId || undefined,
           horizon: '30',
         }),
       ])
@@ -161,6 +198,14 @@ export default function AnalyticsPage() {
     }
   }
 
+  // Update date filter when location changes
+  useEffect(() => {
+    if (dateRange.from && dateRange.to) {
+      const filteredRange = getFilteredDateRange(dateRange)
+      setDateFilter(filteredRange)
+    }
+  }, [selectedLocationId, dateRange, getFilteredDateRange])
+
   // Load initial data on location change only
   useEffect(() => {
     loadAnalytics()
@@ -195,7 +240,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className='min-h-screen brand-gradient relative'>
+    <div className='max-h-screen brand-gradient -m-4 overflow-auto'>
       {/* Floating orbs */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <div className='brand-orb-primary w-96 h-96 absolute -top-20 -right-20 animate-float' />
@@ -237,19 +282,6 @@ export default function AnalyticsPage() {
         <Card className='brand-card'>
           <CardContent className='px-6'>
             <div className='flex flex-wrap items-center gap-4'>
-              <LocationFilter
-                selectedLocationId={selectedLocationId}
-                onLocationChange={(locationId) => {
-                  setSelectedLocationId(locationId)
-                  // Update date filter when location changes
-                  if (dateRange.from && dateRange.to) {
-                    const filteredRange = getFilteredDateRange(dateRange, locationId)
-                    setDateFilter(filteredRange)
-                  }
-                }}
-                placeholder='All Locations'
-              />
-
               {/* Date Range Picker */}
               <DateRangePicker
                 range={dateRange}
@@ -257,7 +289,9 @@ export default function AnalyticsPage() {
                   if (range?.from && range?.to) {
                     setDateRange(range as DateRange)
                     // Convert to business day range and update filter immediately
-                    const filteredRange = getFilteredDateRange(range as DateRange, selectedLocationId)
+                    const filteredRange = getFilteredDateRange(
+                      range as DateRange
+                    )
                     setDateFilter(filteredRange)
                   }
                 }}
@@ -486,49 +520,49 @@ export default function AnalyticsPage() {
 
           <TabsContent value='forecasting' className='space-y-4'>
             <ForecastingDashboardV2
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>
 
           <TabsContent value='variance' className='space-y-4'>
             <VarianceAnalysis
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>
 
           <TabsContent value='menu-engineering' className='space-y-4'>
             <MenuEngineeringV2
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>
 
           <TabsContent value='waste' className='space-y-4'>
             <WasteAnalysisV2
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>
 
           <TabsContent value='purchasing' className='space-y-4'>
             <PurchasingAnalyticsV2
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>
 
           <TabsContent value='financial' className='space-y-4'>
             <FinancialMetricsV2
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>
 
           <TabsContent value='operations' className='space-y-4'>
             <OperationalMetricsV2
-              locationId={selectedLocationId}
+              locationId={selectedLocationId || undefined}
               dateRange={{ from: dateFilter.from!, to: dateFilter.to! }}
             />
           </TabsContent>

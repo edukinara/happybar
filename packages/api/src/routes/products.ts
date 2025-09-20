@@ -750,8 +750,7 @@ export async function productRoutes(fastify: FastifyInstance) {
   })
 
   // Import POS products
-  fastify.post('/import-pos-products', async (request, reply) => {
-    console.log('🚀 Starting POS product import...', request.body)
+  fastify.post('/import-pos-products', async (request, _reply) => {
     const validatedData = posProductImportSchema.parse(request.body)
 
     const integration = await fastify.prisma.pOSIntegration.findFirst({
@@ -824,27 +823,12 @@ export async function productRoutes(fastify: FastifyInstance) {
         syncResult.productsSync.products &&
         syncResult.productsSync.products.length > 0
       ) {
-        console.log(
-          `📦 About to save ${syncResult.productsSync.products.length} products to database`
-        )
-        console.log(
-          `Organization: ${getOrganizationId(request)}, Integration: ${validatedData.integrationId}`
-        )
-
         await syncService.saveProductsToDatabase(
           getOrganizationId(request),
           validatedData.integrationId,
           syncResult.productsSync.products
         )
         importedCount = syncResult.productsSync.products.length
-
-        console.log(`✅ Successfully processed ${importedCount} products`)
-      } else {
-        console.log('❌ No products to save - sync result:', {
-          hasProductsSync: !!syncResult.productsSync,
-          hasProducts: !!syncResult.productsSync?.products,
-          productCount: syncResult.productsSync?.products?.length || 0,
-        })
       }
 
       // Auto-map products if requested
@@ -957,8 +941,12 @@ export async function productRoutes(fastify: FastifyInstance) {
       success: true,
       data: {
         categories: UNIT_CATEGORIES,
-        allUnits: [...UNIT_CATEGORIES.Volume, ...UNIT_CATEGORIES.Weight, ...UNIT_CATEGORIES.Container]
-      }
+        allUnits: [
+          ...UNIT_CATEGORIES.Volume,
+          ...UNIT_CATEGORIES.Weight,
+          ...UNIT_CATEGORIES.Container,
+        ],
+      },
     }
   })
 

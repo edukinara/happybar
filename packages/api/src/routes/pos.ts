@@ -3,9 +3,9 @@ import {
   AppError,
   ErrorCode,
   POSType,
-  ToastCredentials,
+  type ToastCredentials,
 } from '@happy-bar/types'
-import { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { POSSyncService } from '../services/pos-sync'
 import { toastPartnerService } from '../services/toast-partner'
@@ -21,14 +21,7 @@ async function cleanupDeselectedGroups(
   prisma: unknown,
   organizationId: string
 ) {
-  console.log(
-    `🧹 Starting cleanup for deselected groups. Selected groups: ${selectedGroupGuids.length}`
-  )
-
   if (selectedGroupGuids.length === 0) {
-    console.log(
-      `⚠️ No selected groups - skipping cleanup to prevent deleting all products`
-    )
     return
   }
 
@@ -57,40 +50,23 @@ async function cleanupDeselectedGroups(
     },
   })
 
-  console.log(
-    `🔍 Found ${productsToDelete.length} products to potentially delete from deselected groups`
-  )
-
   if (productsToDelete.length > 0) {
     // IMPORTANT: Check for products with mappings and warn
     const productsWithMappings = productsToDelete.filter(
-      (p: any) => 
-        (p.mappings && p.mappings.length > 0) || 
+      (p: any) =>
+        (p.mappings && p.mappings.length > 0) ||
         (p.recipePOSMappings && p.recipePOSMappings.length > 0)
     )
 
     if (productsWithMappings.length > 0) {
-      console.log(
-        `⚠️ WARNING: ${productsWithMappings.length} products have mappings that would be deleted:`
-      )
-      productsWithMappings.forEach((p: any) => {
-        const productMappingCount = p.mappings?.length || 0
-        const recipeMappingCount = p.recipePOSMappings?.length || 0
-        console.log(`   - "${p.name}" has ${productMappingCount} product mappings and ${recipeMappingCount} recipe mappings`)
-      })
-
       // For safety, only delete products WITHOUT any mappings
       const safeProductsToDelete = productsToDelete.filter(
-        (p: any) => 
-          (!p.mappings || p.mappings.length === 0) && 
+        (p: any) =>
+          (!p.mappings || p.mappings.length === 0) &&
           (!p.recipePOSMappings || p.recipePOSMappings.length === 0)
       )
 
       if (safeProductsToDelete.length > 0) {
-        console.log(
-          `🗑️ Safely deleting ${safeProductsToDelete.length} products without mappings`
-        )
-
         await (prisma as any).pOSProduct.deleteMany({
           where: {
             id: { in: safeProductsToDelete.map((p: { id: string }) => p.id) },
@@ -101,10 +77,6 @@ async function cleanupDeselectedGroups(
 
       // Mark products with mappings as inactive instead of deleting
       if (productsWithMappings.length > 0) {
-        console.log(
-          `🔒 Marking ${productsWithMappings.length} products with product/recipe mappings as inactive`
-        )
-
         for (const product of productsWithMappings) {
           await (prisma as any).pOSProduct.update({
             where: { id: product.id },
@@ -116,11 +88,6 @@ async function cleanupDeselectedGroups(
         }
       }
     } else {
-      // No mappings, safe to delete all
-      console.log(
-        `🗑️ Deleting ${productsToDelete.length} products (no mappings to preserve)`
-      )
-
       await (prisma as any).pOSProduct.deleteMany({
         where: {
           id: { in: productsToDelete.map((p: { id: string }) => p.id) },
@@ -128,8 +95,6 @@ async function cleanupDeselectedGroups(
         },
       })
     }
-  } else {
-    console.log(`✅ No products need cleanup`)
   }
 }
 

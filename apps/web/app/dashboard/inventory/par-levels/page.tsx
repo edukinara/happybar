@@ -42,11 +42,12 @@ import { useAlertDialog } from '@/hooks/use-alert-dialog'
 import { inventoryApi } from '@/lib/api/inventory'
 import { useInventory, useLocations } from '@/lib/queries'
 import { useProducts } from '@/lib/queries/products'
+import { useLocationStore } from '@/lib/stores/location-store'
+import { useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Package, Save, Search, Target } from 'lucide-react'
 import Image from 'next/image'
 import pluralize from 'pluralize'
 import { useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 
 interface ParLevelItem {
   id: string
@@ -77,15 +78,18 @@ interface ParLevelItem {
 export default function ParLevelsPage() {
   const { showError } = useAlertDialog()
   const queryClient = useQueryClient()
-  
+
   // Use React Query hooks for data fetching
-  const { data: locationsData = [], isLoading: locationsLoading } = useLocations()
+  const { data: locationsData = [], isLoading: locationsLoading } =
+    useLocations()
   const { data: productsData, isLoading: productsLoading } = useProducts()
-  const { data: inventoryLevelsData = [], isLoading: inventoryLoading } = useInventory()
-  
+  const { data: inventoryLevelsData = [], isLoading: inventoryLoading } =
+    useInventory()
+
   const [items, setItems] = useState<ParLevelItem[]>([])
   const [saving, setSaving] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState<string>('all')
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -105,7 +109,7 @@ export default function ParLevelsPage() {
     if (!productsData?.products || !locationsData.length || inventoryLoading) {
       return
     }
-    
+
     processInventoryItems()
   }, [productsData?.products, locationsData, inventoryLevelsData])
 
@@ -117,10 +121,7 @@ export default function ParLevelsPage() {
     const products = productsData.products
     const locations = locationsData
 
-    // Set default location if only one location exists
-    if (locations.length === 1 && selectedLocation === 'all') {
-      setSelectedLocation(locations[0]!.id)
-    }
+    // Auto-selection now handled by global location store
 
     // Create a map of existing inventory items by productId + locationId
     const inventoryMap = new Map()
@@ -256,7 +257,7 @@ export default function ParLevelsPage() {
 
       await Promise.all(updatePromises)
       setPendingChanges({})
-      
+
       // Invalidate React Query cache to refresh data
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
     } catch (error) {
@@ -270,7 +271,7 @@ export default function ParLevelsPage() {
   const filteredItems = items.filter((item) => {
     // Location filter
     const matchesLocation =
-      selectedLocation === 'all' || item.locationId === selectedLocation
+      !selectedLocationId || item.locationId === selectedLocationId
 
     // Search filter
     const matchesSearch =
@@ -342,7 +343,7 @@ export default function ParLevelsPage() {
       <div>
         <h1 className='text-3xl font-bold tracking-tight'>Par Levels</h1>
         <p className='text-muted-foreground'>
-          Set target inventory levels for each product by location
+          Set target inventory levels for each product
         </p>
       </div>
 
@@ -363,26 +364,6 @@ export default function ParLevelsPage() {
             </div>
           </div>
           <div className='flex gap-2 flex-wrap'>
-            <div className='space-y-2'>
-              <Label htmlFor='location'>Location</Label>
-              <Select
-                value={selectedLocation}
-                onValueChange={setSelectedLocation}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select a location' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>All Locations</SelectItem>
-                  {locationsData.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className='flex-1 space-y-2'>
               <Label htmlFor='category'>Category</Label>
               <Select

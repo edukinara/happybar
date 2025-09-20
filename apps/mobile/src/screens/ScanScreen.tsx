@@ -3,16 +3,9 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { useQueryClient } from '@tanstack/react-query'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
-import React, {
-  Profiler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, BackHandler, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { CameraErrorBoundary } from '../components/CameraErrorBoundary'
 
 import { Box } from '@/components/ui/box'
 import { Center } from '@/components/ui/center'
@@ -893,30 +886,5 @@ function ScanScreenComponent() {
         </Box>
       )}
     </Box>
-  )
-}
-
-export function ScanScreen() {
-  const onRender = (
-    id: string,
-    phase: 'mount' | 'update' | 'nested-update',
-    actualDuration: number
-  ) => {
-    if (actualDuration > 16) {
-      // Longer than 1 frame at 60fps
-      console.log(`🔄 ScanScreen ${phase}: ${actualDuration.toFixed(2)}ms`)
-    }
-  }
-
-  return (
-    <CameraErrorBoundary
-      onReset={() => {
-        // Reset any camera-related state if needed
-      }}
-    >
-      <Profiler id='ScanScreen' onRender={onRender}>
-        <ScanScreenComponent />
-      </Profiler>
-    </CameraErrorBoundary>
   )
 }

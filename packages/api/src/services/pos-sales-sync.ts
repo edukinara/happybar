@@ -6,15 +6,18 @@ import {
   type POSSaleItem,
 } from '@happy-bar/types'
 // Remove unused import - APIError from better-auth
+import { SalesCountUpdater } from '../utils/sales-count-updater'
 import { InventoryDepletionService } from './inventory-depletion'
 
 export class POSSalesSyncService {
   private prisma: PrismaClient
   private inventoryService: InventoryDepletionService
+  private salesCountUpdater: SalesCountUpdater
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma
     this.inventoryService = new InventoryDepletionService(prisma)
+    this.salesCountUpdater = new SalesCountUpdater(prisma)
   }
 
   /**
@@ -456,16 +459,10 @@ export class POSSalesSyncService {
       !lastCountDate || sale.timestamp > lastCountDate
 
     if (!shouldDepleteInventory) {
-      console.log(
-        `⏭️  Skipping inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred before last approved count (${lastCountDate?.toISOString()})`
-      )
       return { isNew: true, saleId: saleRecord.id }
     }
 
     // Process inventory depletion for each aggregated sale item
-    console.log(
-      `✅ Processing inventory depletion for sale ${sale.externalId} (${sale.timestamp.toISOString()}) - occurred after last approved count`
-    )
     const inventoryResults = []
     const inventoryErrors = []
 
@@ -496,6 +493,25 @@ export class POSSalesSyncService {
         // Don't fail the entire sale if individual item depletion fails
         // This allows sales to be recorded even if inventory mapping is incomplete
       }
+    }
+
+    // Update sales counts for all products involved in this sale
+    // Extract unique product IDs from the created sale items
+    const productIds = saleRecord.items
+      .map((item) => item.productId)
+      .filter((id): id is string => id !== null && id !== undefined)
+
+    if (productIds.length > 0) {
+      // Update sales counts asynchronously to avoid blocking the response
+      this.salesCountUpdater
+        .updateMultipleProductSalesCounts(productIds)
+        .catch((error) => {
+          console.error(
+            'Failed to update sales counts after sale creation:',
+            error
+          )
+          // Don't throw - this shouldn't fail the sale creation
+        })
     }
 
     return { isNew: true, saleId: saleRecord.id }

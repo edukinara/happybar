@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select'
 import { inventoryApi } from '@/lib/api/inventory'
 import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
+import { useLocationStore } from '@/lib/stores/location-store'
 import {
   CountType,
   InventoryCountStatus,
@@ -36,8 +37,10 @@ export default function InventoryCountsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [locationFilter, setLocationFilter] = useState<string>('all')
   const [locations, setLocations] = useState<LocationsResponse>([])
+
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
 
   const fetchInventoryCounts = async () => {
     try {
@@ -252,20 +255,6 @@ export default function InventoryCountsPage() {
             </SelectItem>
           </SelectContent>
         </Select>
-
-        <Select value={locationFilter} onValueChange={setLocationFilter}>
-          <SelectTrigger className='w-full sm:w-48'>
-            <SelectValue placeholder='Filter by location' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='all'>All Locations</SelectItem>
-            {locations.map((location) => (
-              <SelectItem value={location.id} key={location.id}>
-                {location.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Counts List */}
@@ -299,8 +288,8 @@ export default function InventoryCountsPage() {
               return count.status === statusFilter
             })
             .filter((count) => {
-              if (locationFilter === 'all') return true
-              return count.location?.id === locationFilter
+              if (!selectedLocationId) return true
+              return count.location?.id === selectedLocationId
             })
             .map((count) => (
               <Card

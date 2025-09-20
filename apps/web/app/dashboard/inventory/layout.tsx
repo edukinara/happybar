@@ -43,7 +43,7 @@ const tabs = [
     label: 'Par Levels',
     href: '/dashboard/inventory/par-levels',
     icon: Target,
-    description: 'Set target inventory levels for each product by location',
+    description: 'Set target inventory levels for each product',
   },
   {
     id: 'adjustments',

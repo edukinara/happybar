@@ -4,7 +4,6 @@
  * This script provides better logging and graceful shutdown handling
  */
 
-import { spawn } from 'child_process'
 import path from 'path'
 
 // Render provides PORT environment variable
@@ -12,12 +11,13 @@ const PORT = process.env.PORT || '3001'
 const HOST = '0.0.0.0' // Always bind to all interfaces in containers
 
 // Set Node options for better memory management
-process.env.NODE_OPTIONS = process.env.NODE_OPTIONS || '--max-old-space-size=512'
+process.env.NODE_OPTIONS =
+  process.env.NODE_OPTIONS || '--max-old-space-size=512'
 
-console.log('🚀 Starting Happy Bar API Server...')
-console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`)
-console.log(`🔌 Port: ${PORT}`)
-console.log(`🌐 Host: ${HOST}`)
+console.warn('🚀 Starting Happy Bar API Server...')
+console.warn(`📍 Environment: ${process.env.NODE_ENV || 'development'}`)
+console.warn(`🔌 Port: ${PORT}`)
+console.warn(`🌐 Host: ${HOST}`)
 
 // Override environment variables for consistent behavior
 process.env.PORT = PORT
@@ -25,7 +25,7 @@ process.env.HOST = HOST
 
 // Function to handle graceful shutdown
 const gracefulShutdown = (signal: string) => {
-  console.log(`\n📦 Received ${signal}, shutting down gracefully...`)
+  console.warn(`\n📦 Received ${signal}, shutting down gracefully...`)
   process.exit(0)
 }
 
@@ -47,7 +47,7 @@ process.on('unhandledRejection', (reason, promise) => {
 // Start the main application
 const indexPath = path.join(__dirname, 'index.js')
 
-console.log('📂 Starting from:', indexPath)
+console.warn('📂 Starting from:', indexPath)
 
 // Use dynamic import to start the server
 import(indexPath).catch((error) => {

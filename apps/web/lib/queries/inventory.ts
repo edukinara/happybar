@@ -35,7 +35,7 @@ export function useInventory(_params?: {
   return useQuery({
     queryKey,
     queryFn: () => inventoryApi.getInventoryLevels(),
-    staleTime: 2 * 60 * 1000, // 2 minutes - inventory changes frequently
+    staleTime: 10 * 60 * 1000, // 2 minutes - inventory changes frequently
   })
 }
 
@@ -45,7 +45,7 @@ export function useInventoryByLocation(locationId: string | undefined) {
     queryKey: inventoryKeys.byLocation(locationId!),
     queryFn: () => inventoryApi.getLocationInventory(locationId!),
     enabled: !!locationId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 }
 
@@ -54,7 +54,7 @@ export function useLowStockItems() {
   return useQuery({
     queryKey: inventoryKeys.lowStock(),
     queryFn: () => inventoryApi.getLowStockItems(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 5 minutes
   })
 }
 
@@ -63,7 +63,7 @@ export function useInventoryStats(locationId?: string) {
   return useQuery({
     queryKey: [...inventoryKeys.stats(), { locationId }],
     queryFn: () => inventoryApi.getDashboardStats(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 }
 
@@ -73,7 +73,7 @@ export function useInventoryItem(id: string | undefined) {
     queryKey: inventoryKeys.detail(id!),
     queryFn: () => inventoryApi.getProduct(id!),
     enabled: !!id,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 }
 
@@ -99,7 +99,7 @@ export function useInventoryCounts(params?: {
   return useQuery({
     queryKey: [...inventoryKeys.counts(), stableParams],
     queryFn: () => inventoryApi.getInventoryCounts(params),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 }
 

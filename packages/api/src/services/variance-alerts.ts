@@ -56,7 +56,7 @@ export class VarianceAlertService {
 
     // Extract variance alert config from inventory settings
     const varianceAlertPolicy = (settings as any).varianceAlertPolicy || {}
-    
+
     return {
       ...defaultConfig,
       ...varianceAlertPolicy,
@@ -302,10 +302,10 @@ export class VarianceAlertService {
     try {
       // Get usage analysis data (this would typically be called periodically)
       const usageData = await this.getUsageAnalysisData(organizationId)
-      
+
       // Evaluate for alerts
       const alerts = await this.evaluateUsageVariance(organizationId, usageData)
-      
+
       // Create alerts in database
       await this.createAlerts(organizationId, alerts)
 
@@ -375,15 +375,18 @@ export class VarianceAlertService {
     })
 
     // Calculate theoretical vs actual usage for each product
-    const productUsageMap = new Map<string, {
-      productId: string
-      productName: string
-      theoreticalQuantity: number
-      actualQuantityChange: number
-      salesCount: number
-      countEvents: number
-      costPerUnit: number
-    }>()
+    const productUsageMap = new Map<
+      string,
+      {
+        productId: string
+        productName: string
+        theoreticalQuantity: number
+        actualQuantityChange: number
+        salesCount: number
+        countEvents: number
+        costPerUnit: number
+      }
+    >()
 
     // Process sales to calculate theoretical usage
     for (const saleItem of saleItems) {
@@ -391,11 +394,11 @@ export class VarianceAlertService {
         // Recipe-based product - calculate ingredient usage
         for (const recipeItem of saleItem.recipe.items) {
           if (!recipeItem.product) continue // Skip if product is null
-          
+
           const productId = recipeItem.product.id
           const productName = recipeItem.product.name
           const theoreticalUsage = recipeItem.quantity * saleItem.quantity
-          
+
           if (!productUsageMap.has(productId)) {
             productUsageMap.set(productId, {
               productId,
@@ -407,7 +410,7 @@ export class VarianceAlertService {
               costPerUnit: recipeItem.product.costPerUnit || 0,
             })
           }
-          
+
           const existing = productUsageMap.get(productId)!
           existing.theoreticalQuantity += theoreticalUsage
           existing.salesCount += saleItem.quantity
@@ -416,7 +419,7 @@ export class VarianceAlertService {
         // Direct product sale
         const productId = saleItem.product.id
         const productName = saleItem.product.name
-        
+
         if (!productUsageMap.has(productId)) {
           productUsageMap.set(productId, {
             productId,
@@ -428,7 +431,7 @@ export class VarianceAlertService {
             costPerUnit: saleItem.product.costPerUnit || 0,
           })
         }
-        
+
         const existing = productUsageMap.get(productId)!
         existing.theoreticalQuantity += saleItem.quantity
         existing.salesCount += saleItem.quantity
@@ -440,11 +443,11 @@ export class VarianceAlertService {
       for (const area of count.areas) {
         for (const countItem of area.items) {
           const productId = countItem.product.id
-          
+
           if (productUsageMap.has(productId)) {
             const existing = productUsageMap.get(productId)!
             existing.countEvents += 1
-            
+
             // Calculate actual quantity change using variance data
             // Use the variance field if available, otherwise calculate from expected vs total
             if (countItem.variance !== null) {
@@ -473,14 +476,17 @@ export class VarianceAlertService {
     for (const [productId, data] of productUsageMap) {
       if (data.theoreticalQuantity > 0 || data.actualQuantityChange > 0) {
         // For testing purposes, let's create some realistic variance scenarios
-        const actualQuantity = data.theoreticalQuantity + (data.actualQuantityChange || 0)
+        const actualQuantity =
+          data.theoreticalQuantity + (data.actualQuantityChange || 0)
         const variance = actualQuantity - data.theoreticalQuantity
-        const variancePercent = data.theoreticalQuantity > 0 
-          ? (variance / data.theoreticalQuantity) * 100 
-          : 0
-        const efficiency = data.theoreticalQuantity > 0 
-          ? (data.theoreticalQuantity / Math.max(actualQuantity, 0.1)) * 100
-          : 100
+        const variancePercent =
+          data.theoreticalQuantity > 0
+            ? (variance / data.theoreticalQuantity) * 100
+            : 0
+        const efficiency =
+          data.theoreticalQuantity > 0
+            ? (data.theoreticalQuantity / Math.max(actualQuantity, 0.1)) * 100
+            : 100
         const costImpact = variance * data.costPerUnit
 
         productAnalysis.push({
@@ -498,8 +504,6 @@ export class VarianceAlertService {
 
     // If no real data, create some test data for demonstration
     if (productAnalysis.length === 0) {
-      console.log('No usage data found, creating test scenarios for variance alerts...')
-      
       // Get some products from the organization to create test scenarios
       const products = await this.prisma.product.findMany({
         where: { organizationId },
@@ -515,7 +519,7 @@ export class VarianceAlertService {
             actualQuantity: 13, // 30% over
             efficiency: 65, // Low efficiency
           },
-          // Low efficiency scenario  
+          // Low efficiency scenario
           {
             theoreticalQuantity: 20,
             actualQuantity: 28, // 40% over
@@ -531,7 +535,7 @@ export class VarianceAlertService {
 
         const scenario = scenarios[productAnalysis.length % scenarios.length]
         if (!scenario) continue // Skip if no scenario found
-        
+
         const variance = scenario.actualQuantity - scenario.theoreticalQuantity
         const variancePercent = (variance / scenario.theoreticalQuantity) * 100
         const costImpact = variance * (product.costPerUnit || 5) // Default $5 cost

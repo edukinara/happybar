@@ -330,7 +330,9 @@ export default function RecipesPage() {
   }
 
   return (
-    <div className='min-h-screen brand-gradient relative'>
+    <div className='min-h-full relative -m-4'>
+      {/* Animated background gradient */}
+      <div className='fixed inset-0 brand-gradient -z-10' />
       {/* Floating orbs */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <div className='brand-orb-accent w-96 h-96 absolute -top-20 -left-20 animate-float' />
@@ -338,7 +340,7 @@ export default function RecipesPage() {
         <div className='brand-orb-accent w-64 h-64 absolute bottom-48 left-1/2 animate-float' />
       </div>
 
-      <div className='relative z-10 p-6 space-y-6'>
+      <div className='relative z-10 p-4 space-y-6'>
         {/* Page Header */}
         <div className='flex items-center justify-between'>
           <div>

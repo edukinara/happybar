@@ -168,7 +168,7 @@ export class POSSyncService {
 
       // If we have sales to sync, save them to database
       if (syncResult.salesSync && syncResult.salesSync.imported > 0) {
-        console.log(`Would sync ${syncResult.salesSync.imported} sales`)
+        // would sync
       }
 
       return syncResult

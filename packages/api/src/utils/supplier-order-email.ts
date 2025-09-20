@@ -29,7 +29,6 @@ export interface SupplierOrderEmailData {
 export async function sendSupplierOrderEmail(data: SupplierOrderEmailData) {
   if (!resend) {
     console.warn('Resend API key not configured, skipping supplier order email')
-    console.log('Would send supplier order email:', data)
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -43,7 +42,6 @@ export async function sendSupplierOrderEmail(data: SupplierOrderEmailData) {
       html: generateSupplierOrderEmailHTML(data),
     })
 
-    console.log('Supplier order email sent successfully:', result)
     return { success: true, id: result.data?.id }
   } catch (error) {
     console.error('Failed to send supplier order email:', error)

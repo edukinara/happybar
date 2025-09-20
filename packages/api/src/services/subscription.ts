@@ -287,17 +287,12 @@ export class SubscriptionService {
    * Get feature usage for customer
    */
   static async getFeatureUsage(
-    customerId: string,
-    featureId: string,
-    entityId?: string
+    _customerId: string,
+    _featureId: string,
+    _entityId?: string
   ) {
     try {
       // Note: This might need to be updated based on actual Autumn SDK API
-      console.log('Feature usage tracking not yet implemented for:', {
-        customerId,
-        featureId,
-        entityId,
-      })
       return { usage: 0 }
     } catch (error) {
       console.error('Failed to get feature usage:', error)
@@ -308,13 +303,9 @@ export class SubscriptionService {
   /**
    * Get feature balances for customer
    */
-  static async getFeatureBalances(customerId: string, entityId?: string) {
+  static async getFeatureBalances(_customerId: string, _entityId?: string) {
     try {
       // Note: This might need to be updated based on actual Autumn SDK API
-      console.log('Feature balances not yet implemented for:', {
-        customerId,
-        entityId,
-      })
       return { balances: {} }
     } catch (error) {
       console.error('Failed to get feature balances:', error)

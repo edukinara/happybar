@@ -163,7 +163,6 @@ async function main() {
   //         },
   //       })
 
-  //   console.log('✅ Created product:', product.name)
   // }
 
   // // Create a sample supplier
@@ -183,15 +182,6 @@ async function main() {
   //     terms: 'NET30',
   //   },
   // })
-
-  // console.log('✅ Created supplier:', supplier.name)
-
-  // console.log('🎉 Database seed completed successfully!')
-  // console.log('')
-  // console.log('Demo credentials:')
-  // console.log('  Email: admin@demo.com')
-  // console.log('  Password: demo123')
-  // console.log('  Domain: demo')
 
   // const prods = await prisma.recipe.findMany({
   //   omit: {

@@ -379,14 +379,8 @@ export class ToastPartnerService {
    * Process webhook update from Toast
    * This is called when restaurants are added/removed/updated
    */
-  async processWebhookUpdate(webhookData: any): Promise<void> {
+  async processWebhookUpdate(_webhookData: any): Promise<void> {
     try {
-      // Log the webhook for debugging
-      console.log(
-        'Received Toast webhook update:',
-        JSON.stringify(webhookData, null, 2)
-      )
-
       // TODO: Implement webhook processing logic
       // This would typically:
       // 1. Validate the webhook signature

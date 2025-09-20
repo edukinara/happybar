@@ -44,7 +44,6 @@ export interface SupplierOrderEmailData {
 export async function sendInvitationEmail(data: InvitationEmailData) {
   if (!resend) {
     console.warn('Resend API key not configured, skipping email send')
-    console.log('Would send invitation email:', data)
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -59,7 +58,6 @@ export async function sendInvitationEmail(data: InvitationEmailData) {
       html: generateInvitationEmailHTML(data),
     })
 
-    console.log('Invitation email sent successfully:', result)
     return { success: true, id: result.data?.id }
   } catch (error) {
     console.error('Failed to send invitation email:', error)
@@ -313,8 +311,9 @@ function generateInvitationEmailHTML(data: InvitationEmailData): string {
 
 export async function sendVerificationEmail(data: VerificationEmailData) {
   if (!resend) {
-    console.warn('Resend API key not configured, skipping email verification send')
-    console.log('Would send verification email:', data)
+    console.warn(
+      'Resend API key not configured, skipping email verification send'
+    )
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -328,7 +327,6 @@ export async function sendVerificationEmail(data: VerificationEmailData) {
       html: generateVerificationEmailHTML(data),
     })
 
-    console.log('Verification email sent successfully:', result)
     return { success: true, id: result.data?.id }
   } catch (error) {
     console.error('Failed to send verification email:', error)

@@ -1,7 +1,6 @@
 'use client'
 
 import { UsageAlertsIntegration } from '@/components/alerts/UsageAlertsIntegration'
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import { HappyBarLoader } from '@/components/HappyBarLoader'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { inventoryApi, type UsageAnalysisResponse } from '@/lib/api/inventory'
+import { useLocationStore } from '@/lib/stores/location-store'
 import type { StockMovement } from '@happy-bar/types'
 import {
   AlertTriangle,
@@ -129,7 +129,8 @@ interface CountSummary {
 export default function InventoryReportsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
-  const [selectedLocationId, setSelectedLocationId] = useState<string>()
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -258,14 +259,6 @@ export default function InventoryReportsPage() {
                 onChange={(e) =>
                   setDateRange((prev) => ({ ...prev, end: e.target.value }))
                 }
-              />
-            </div>
-            <div className='flex flex-col gap-1 py-1'>
-              <Label>Location</Label>
-              <LocationFilter
-                selectedLocationId={selectedLocationId}
-                onLocationChange={setSelectedLocationId}
-                placeholder='All Locations'
               />
             </div>
             <div className='flex items-end py-1'>

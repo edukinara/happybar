@@ -1,6 +1,5 @@
 'use client'
 
-import { LocationFilter } from '@/components/dashboard/LocationFilter'
 import AddProductDialog from '@/components/dashboard/Products/AddProductDialog'
 import BulkCatalogMatchingDialog from '@/components/dashboard/Products/BulkCatalogMatchingDialog'
 import BulkSupplierDialog from '@/components/dashboard/Products/BulkSupplierDialog'
@@ -55,6 +54,7 @@ import {
   useDeleteProduct,
   useProducts,
 } from '@/lib/queries/products'
+import { useLocationStore } from '@/lib/stores/location-store'
 import type {
   CatalogProduct,
   InventoryProduct,
@@ -138,9 +138,8 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { data: categories, isFetching: fetchingCategories } = useCategories()
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >()
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   )
@@ -591,7 +590,6 @@ export default function ProductsPage() {
                               `Are you sure you want to delete ${selectedProducts.size} products?`,
                               () => {
                                 // TODO: Implement bulk delete
-                                // console.log('Bulk delete:', Array.from(selectedProducts))
                               },
                               'Delete Products',
                               'Delete'
@@ -624,11 +622,6 @@ export default function ProductsPage() {
                         ))}
                     </SelectContent>
                   </Select>
-                  <LocationFilter
-                    selectedLocationId={selectedLocationId}
-                    onLocationChange={setSelectedLocationId}
-                    placeholder='Filter by location'
-                  />
                 </div>
               </div>
             </div>

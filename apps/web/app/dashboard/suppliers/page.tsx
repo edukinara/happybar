@@ -114,7 +114,9 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div className='min-h-screen brand-gradient relative'>
+    <div className='min-h-full -m-4 relative'>
+      {/* Animated background gradient */}
+      <div className='fixed inset-0 brand-gradient -z-10' />
       {/* Floating orbs */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <div className='brand-orb-primary w-96 h-96 absolute -top-20 -right-20 animate-float' />
@@ -122,7 +124,7 @@ export default function SuppliersPage() {
         <div className='brand-orb-primary w-64 h-64 absolute bottom-32 right-1/4 animate-float' />
       </div>
 
-      <div className='relative z-10 p-6 space-y-6'>
+      <div className='relative z-10 p-4 space-y-6'>
         {/* Header */}
         <div className='flex items-center justify-between'>
           <div>

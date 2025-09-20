@@ -21,6 +21,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { inventoryApi } from '@/lib/api/inventory'
 import { locationsApi, type LocationsResponse } from '@/lib/api/locations'
+import { useLocationStore } from '@/lib/stores/location-store'
 import { CountType } from '@happy-bar/types'
 import { ArrowLeft, Calendar, FileText, MapPin } from 'lucide-react'
 import Link from 'next/link'
@@ -33,6 +34,10 @@ export default function NewInventoryCountPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [locations, setLocations] = useState<LocationsResponse>([])
+
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
+
   const [storageAreas, setStorageAreas] = useState<
     Array<{
       id: string
@@ -42,7 +47,7 @@ export default function NewInventoryCountPage() {
   >([])
   const [formData, setFormData] = useState({
     name: '',
-    locationId: '',
+    locationId: selectedLocationId || '',
     type: CountType.FULL,
     notes: '',
   })
@@ -65,8 +70,10 @@ export default function NewInventoryCountPage() {
     try {
       const data = await locationsApi.getLocations()
       setLocations(data)
-      // Auto-select first location if only one exists
-      if (data.length === 1) {
+      // Use global selected location if available, otherwise auto-select first if only one exists
+      if (selectedLocationId && data.some(loc => loc.id === selectedLocationId)) {
+        setFormData((prev) => ({ ...prev, locationId: selectedLocationId }))
+      } else if (data.length === 1) {
         setFormData((prev) => ({ ...prev, locationId: data[0]!.id }))
       }
     } catch (error) {

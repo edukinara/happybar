@@ -279,7 +279,9 @@ export default function SettingsPage() {
 
   return (
     <SettingsRoute>
-      <div className='min-h-screen brand-gradient relative'>
+      <div className='min-h-full -m-4 relative'>
+        {/* Animated background gradient */}
+        <div className='fixed inset-0 brand-gradient -z-10' />
         {/* Floating orbs */}
         <div className='absolute inset-0 overflow-hidden pointer-events-none'>
           <div className='brand-orb-accent w-96 h-96 absolute -top-20 -left-20 animate-float' />
@@ -287,7 +289,7 @@ export default function SettingsPage() {
           <div className='brand-orb-accent w-64 h-64 absolute bottom-40 left-2/3 animate-float' />
         </div>
 
-        <div className='relative z-10 p-6 space-y-6'>
+        <div className='relative z-10 p-4 space-y-6'>
           <div className='flex items-center justify-between'>
             <div>
               <h1 className='text-3xl font-bold tracking-tight brand-text-gradient'>

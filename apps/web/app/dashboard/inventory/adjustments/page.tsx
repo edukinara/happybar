@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { inventoryApi } from '@/lib/api/inventory'
+import { useLocationStore } from '@/lib/stores/location-store'
 import type {
   AdjustmentReason,
   InventoryItemWithBasicProduct,
@@ -61,7 +62,8 @@ export default function InventoryAdjustmentsPage() {
   const [products, setProducts] = useState<InventoryItemWithBasicProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [selectedLocationId, setSelectedLocationId] = useState<string>()
+  // Use global location state
+  const { selectedLocationId } = useLocationStore()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [pagination, setPagination] = useState({
     page: 1,
@@ -88,7 +90,7 @@ export default function InventoryAdjustmentsPage() {
       setLoading(true)
       const [adjustmentsData, productsData] = await Promise.all([
         inventoryApi.getAdjustments({
-          locationId: selectedLocationId,
+          locationId: selectedLocationId || undefined,
           page: pagination.page,
           limit: pagination.limit,
         }),
@@ -390,7 +392,7 @@ export default function InventoryAdjustmentsPage() {
             <div
               className={`text-2xl font-bold ${stats.netImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}
             >
-              ${Math.abs(stats.netImpact).toFixed(2)}
+              ${Math.abs(stats.netImpact).toLocaleString()}
             </div>
             <p className='text-xs text-muted-foreground'>
               {stats.netImpact >= 0 ? 'Net gain' : 'Net loss'} in inventory
@@ -423,11 +425,6 @@ export default function InventoryAdjustmentsPage() {
                 History of all inventory adjustments
               </CardDescription>
             </div>
-            <LocationFilter
-              selectedLocationId={selectedLocationId}
-              onLocationChange={setSelectedLocationId}
-              placeholder='Filter by location'
-            />
           </div>
         </CardHeader>
         <CardContent>
@@ -518,14 +515,14 @@ export default function InventoryAdjustmentsPage() {
                           className={`font-medium ${isIncrease ? 'text-green-600' : 'text-red-600'}`}
                         >
                           {isIncrease ? '+' : '-'}
-                          {adjustment.quantity}
+                          {+adjustment.quantity.toFixed(2)}
                         </span>
                       </TableCell>
                       <TableCell>
                         <span
                           className={`font-medium ${isIncrease ? 'text-green-600' : 'text-red-600'}`}
                         >
-                          {isIncrease ? '+' : '-'}${value.toFixed(2)}
+                          {isIncrease ? '+' : '-'}${value.toLocaleString()}
                         </span>
                       </TableCell>
                       <TableCell>

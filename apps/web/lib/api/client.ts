@@ -10,7 +10,7 @@ class ApiClient {
         typeof window !== 'undefined'
           ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
           : 'http://localhost:3001',
-      timeout: 10000,
+      timeout: 15000, // Increased from 10s for better reliability
       headers: {
         'Content-Type': 'application/json',
       },

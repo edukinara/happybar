@@ -40,7 +40,7 @@ export class AlertNotificationService {
       }
 
       // Get organization members who should receive notifications
-      const members = await this.prisma.member.findMany({
+      const _members = await this.prisma.member.findMany({
         where: {
           organizationId,
           // Only notify admin and manager roles for critical alerts
@@ -52,15 +52,15 @@ export class AlertNotificationService {
       })
 
       // For now, just log the notification (in production, integrate with email service)
-      console.log(`📧 EMAIL ALERT: ${alert.title}`)
-      console.log(
-        `   Recipients: ${members.map((m) => m.user.email).join(', ')}`
-      )
-      console.log(`   Message: ${alert.message}`)
-      console.log(`   Severity: ${alert.severity}`)
-      if (alert.costImpact) {
-        console.log(`   Cost Impact: $${Math.abs(alert.costImpact).toFixed(2)}`)
-      }
+      // console.warn(`📧 EMAIL ALERT: ${alert.title}`)
+      // console.warn(
+      //   `   Recipients: ${members.map((m) => m.user.email).join(', ')}`
+      // )
+      // console.warn(`   Message: ${alert.message}`)
+      // console.warn(`   Severity: ${alert.severity}`)
+      // if (alert.costImpact) {
+      //   console.warn(`   Cost Impact: $${Math.abs(alert.costImpact).toFixed(2)}`)
+      // }
 
       // TODO: Integrate with email service (SendGrid, AWS SES, etc.)
       // await emailService.send({
@@ -93,12 +93,6 @@ export class AlertNotificationService {
       if (!alertRule?.notifyDashboard) {
         return // Dashboard notifications disabled
       }
-
-      // For now, just log the notification (in production, send via WebSocket)
-      console.log(`🔔 DASHBOARD ALERT: ${alert.title}`)
-      console.log(`   Organization: ${organizationId}`)
-      console.log(`   Type: ${alert.type}`)
-      console.log(`   Severity: ${alert.severity}`)
 
       // TODO: Send via WebSocket to connected dashboard clients
       // await websocketService.sendToOrganization(organizationId, {
@@ -172,8 +166,8 @@ export class AlertNotificationService {
       }
 
       // For now, just log (in production, send to Slack)
-      console.log(`💬 SLACK ALERT: ${alert.title}`)
-      console.log(`   Webhook: ${slackWebhookUrl}`)
+      // console.warn(`💬 SLACK ALERT: ${alert.title}`)
+      // console.warn(`   Webhook: ${slackWebhookUrl}`)
 
       // TODO: Send to Slack
       // await fetch(slackWebhookUrl, {

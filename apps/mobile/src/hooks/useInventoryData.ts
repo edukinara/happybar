@@ -275,12 +275,15 @@ export const useCatalog = (params?: { limit?: number; search?: string }) => {
       return response.data
     },
     enabled: !!(params?.search && params.search.length >= 3),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 5 minutes
   })
 }
 
 // Suppliers hook
-export const useSuppliers = (params?: { active?: boolean; search?: string }) => {
+export const useSuppliers = (params?: {
+  active?: boolean
+  search?: string
+}) => {
   return useQuery({
     queryKey: ['suppliers', params],
     queryFn: async () => {
@@ -424,7 +427,7 @@ export const useCompletedCounts = () => {
 // Count approval mutation
 export const useApproveCount = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (countId: string) => {
       const response = await countApi.approveCount(countId)
